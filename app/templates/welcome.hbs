@@ -1,0 +1,112 @@
+{{!--
+<div class="bc-play-pause">
+<div id="carouselButtons">
+<button {{action "bcPlay"}} id="playButton" type="button" class="btn btn-default">
+<span class="fa fa-play"></span>
+</button>
+<button {{action "bcPause"}} id="pauseButton" type="button" class="btn btn-default">
+<span class="fa fa-pause"></span>
+</button>
+</div>
+</div>
+--}}
+
+{{!-- holding
+
+-- this is carousel --
+
+<div id="carousel-example-generic" class="carousel slide" data-ride="carousel" data-interval="4000">
+  <!-- Indicators -->
+  <ol class="carousel-indicators">
+    <li data-target="#carousel-example-generic" data-slide-to="0" class="bc-icon bc-1-icon"></li>
+    <li data-target="#carousel-example-generic" data-slide-to="1" class="active bc-icon bc-2-icon"></li>
+    <li data-target="#carousel-example-generic" data-slide-to="2" class="bc-icon bc-3-icon"></li>
+  {{#link-to "cesium"}}<li class="bc-icon bc-geoportal-icon"><span>Enter to<br>Geoportal</span></li>{{/link-to}}
+  </ol>
+
+  <!-- Wrapper for slides -->
+  <div class="carousel-inner" role="listbox">
+    <div class="item">
+      <div id="bc-1" class="bc-slider-height"></div>
+      <div class="bc-caption-bottom">
+        <div class="bc-img-example"></div
+        <p>Sed no viris vidisse, eam ex rebum inimicus consequat. Nihil efficiantur has cu, inani euismod dolorem has et. Nusquam fierent scaevola mel cu. Graeci aliquip reprehendunt ei qui, justo cetero cum at.</p>
+        <p>Lorem ipsum dolor sit amet, enim nullam complectitur ad vel, brute debet eum ea. Qui scaevola sadipscing no. Ut animal eripuit qui. Ei mel inani simul laudem, no pri civibus sapientem.<br>Pri iisque inermis in. Ne nec utroque albucius, hinc intellegebat id nam. An vel amet nostro, latine definitionem nam eu. Eu postulant referrentur necessitatibus cum, purto reformidans at sed, veri nostrud democritum quo ne.</p>
+      </div>
+    </div>
+
+    <div class="item active">
+      <div id="bc-2" class="bc-slider-height"></div>
+      <div class="bc-caption-bottom">
+      <p>Has id detracto persequeris definitiones, pri an falli repudiare. Sit quot minimum an, id vix erat euripidis. Ius voluptaria dissentiunt ea, ex maiorum alienum pri, an has vidit probo. Ex porro ridens accumsan mei, id solum patrioque sententiae has. Veri commodo gloriatur eu est, zril viderer apeirian sea no.</p>
+      </div>
+    </div>
+    <div class="item">
+      <div id="bc-3" class="bc-slider-height"></div>
+      <div class="bc-caption-bottom">
+        <p>Sit et saepe debitis ullamcorper. Dicat essent quaerendum in eum. Ei ius meliore vivendo prodesset, has ut causae honestatis. Ex nec modo corrumpit, ne pro dicat discere alienum.</p>
+            {{#link-to "cesium"}}<div class="bc-gif-example"></div>{{/link-to}}
+      <p>Falli qualisque nam id, ex vis elitr nostrum hendrerit. Clita aliquip intellegam vel ex. Dicat augue nostro in sit. Vel brute vocent in, porro ponderum ea nec, ad mel blandit nominati.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+    <span id="bc-carousel-control" class="fa fa-chevron-left fa-5x" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+    <span id="bc-carousel-control" class="fa fa-chevron-right fa-5x" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>
+
+end holding --}} 
+
+{{!-- holding
+
+-- this is original welcome --
+
+<div class="bcg screen" id="screen-welcome" data-video="http://player.vimeo.com/external/97766235.hd.mp4?s=7164cf5084a9202595219b22b4506f2f">
+  <div class="full-height">
+    <div class="sloganContainer">
+      <span class="slogan">
+        Visualizing different forest futures...
+      </span>
+    </div>
+    <div>
+      <div>
+        {{#link-to "cesium" id="banner-text"}}
+          <span class="img-circle bannerContainer">
+            <div class="fill-lite explore-text">
+              <br>Explore<br>Forest<br>Forecasts<br>Here
+            </div>
+          </span>
+        {{/link-to}}
+      </div>
+    </div>
+    <div class="col-md-6 fill-lite left-overlap">
+      <div class="hsContainer">
+        <div class="hsContent welcome-content">
+          <div id="welcome-left"class="row">
+            {{#link-to "headlines" "about" class="btn-text" tagName="button"}}About{{/link-to}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 fill-dark right-overlap">
+      <div class="hsContainer">
+        <div class="hsContent welcome-content">
+          <div id="welcome-right" class="row">
+            {{#link-to "headlines" "methods" class="btn-text" tagName="button"}}Methods{{/link-to}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+--}}
+
+{{outlet}}

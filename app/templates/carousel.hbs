@@ -1,0 +1,60 @@
+<div class="bc-play-pause">
+<div id="carouselButtons">
+<button {{action "bcPlay"}} id="playButton" type="button" class="btn btn-default">
+<span class="fa fa-play"></span>
+</button>
+<button {{action "bcPause"}} id="pauseButton" type="button" class="btn btn-default">
+<span class="fa fa-pause"></span>
+</button>
+</div>
+</div>
+
+<div id="carousel-example-generic" class="carousel slide" data-ride="carousel" data-interval="4000">
+  <!-- Indicators -->
+  <ol class="carousel-indicators">
+    <li data-target="#carousel-example-generic" data-slide-to="0" class="bc-icon bc-1-icon"></li>
+    <li data-target="#carousel-example-generic" data-slide-to="1" class="active bc-icon bc-2-icon"></li>
+    <li data-target="#carousel-example-generic" data-slide-to="2" class="bc-icon bc-3-icon"></li>
+  </ol>
+
+  <!-- Wrapper for slides -->
+  <div class="carousel-inner" role="listbox">
+    <div class="item">
+      <div id="bc-1" class="bc-slider-height"></div>
+      <div class="bc-caption-top">
+        <div class="bc-img-example"></div>
+        Sed no viris vidisse, eam ex rebum inimicus consequat. Nihil efficiantur has cu, inani euismod dolorem has et. Nusquam fierent scaevola mel cu. Graeci aliquip reprehendunt ei qui, justo cetero cum at.
+      </div>
+      <div class="bc-caption-bottom">
+      Lorem ipsum dolor sit amet, enim nullam complectitur ad vel, brute debet eum ea. Qui scaevola sadipscing no. Ut animal eripuit qui. Ei mel inani simul laudem, no pri civibus sapientem.<br>Pri iisque inermis in. Ne nec utroque albucius, hinc intellegebat id nam. An vel amet nostro, latine definitionem nam eu. Eu postulant referrentur necessitatibus cum, purto reformidans at sed, veri nostrud democritum quo ne.
+      </div>
+    </div>
+
+    <div class="item active">
+      <div id="bc-2" class="bc-slider-height"></div>
+      <div class="bc-caption-bottom">
+      Has id detracto persequeris definitiones, pri an falli repudiare. Sit quot minimum an, id vix erat euripidis. Ius voluptaria dissentiunt ea, ex maiorum alienum pri, an has vidit probo. Ex porro ridens accumsan mei, id solum patrioque sententiae has. Veri commodo gloriatur eu est, zril viderer apeirian sea no.
+      </div>
+    </div>
+    <div class="item">
+      <div id="bc-3" class="bc-slider-height"></div>
+      <div class="bc-caption-top">
+      Sit et saepe debitis ullamcorper. Dicat essent quaerendum in eum. Ei ius meliore vivendo prodesset, has ut causae honestatis. Ex nec modo corrumpit, ne pro dicat discere alienum.
+            {{#link-to "cesium"}}<div class="bc-gif-example"></div>{{/link-to}}
+      </div>
+      <div class="bc-caption-bottom">
+      Falli qualisque nam id, ex vis elitr nostrum hendrerit. Clita aliquip intellegam vel ex. Dicat augue nostro in sit. Vel brute vocent in, porro ponderum ea nec, ad mel blandit nominati.
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+    <span id="bc-carousel-control" class="fa fa-chevron-left fa-5x" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+    <span id="bc-carousel-control" class="fa fa-chevron-right fa-5x" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>

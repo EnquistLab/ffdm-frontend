@@ -1,0 +1,301 @@
+// bootstrap carousel example
+
+// sass
+$bc-icon-border: 3px solid rgba(0,0,0,0.4);
+ 
+// responsiveness
+// for devices with height <= 700px
+// ..like 13 inch laptops and such
+
+@media screen and (max-height: 700px) {
+  .bc-1-icon, .bc-2-icon, .bc-3-icon, .bc-geoportal-icon {
+  background-size: 100px 100px !important;
+  }
+  .bc-icon {
+    height: 100px !important;
+    width: 100px !important;
+  }
+  .bc-caption-bottom {
+    bottom: 21% !important;
+  }
+}
+@media screen and (min-height: 701px) {
+  .bc-icon {
+    height: 150px !important;
+    width: 150px !important;
+  }
+}
+.bc-caption-bottom p {
+    padding: 0px 10px;
+}
+
+.bc-icon {
+  height: 150px;
+  width: 150px;
+  border: $bc-icon-border !important;
+  overflow: hidden;
+}
+.bc-icon:hover {
+  border: solid 5px rgba(0,0,0,0.5) !important;
+}
+.bc-1-icon, .bc-2-icon, .bc-3-icon, .bc-geoportal-icon {
+  background-size: 150px 150px;
+}
+
+#bc-1 {
+  background: url(images/bc-1.jpg) no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+#bc-2 {
+  background: url(images/bc-2.jpg) no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+#bc-3 {
+  background: url(images/bc-3.jpg) no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bc-1-icon {
+  background: url(images/bc-1-icon.jpg);
+}
+.bc-2-icon {
+  background: url(images/bc-2-icon.jpg);
+}
+.bc-3-icon {
+  background: url(images/bc-3-icon.jpg);
+}
+.bc-geoportal-icon {
+  padding-top: 26px;
+  color: rgba(0,30,0,0.8);
+  font-size: 1.6em;
+  background:
+    linear-gradient(
+      rgba(0, 100, 0, 0.3), 
+      rgba(0, 100, 0, 0.3)
+      ),
+    url(images/bc-1-icon.jpg);
+}
+.bc-geoportal-icon:hover {
+  color: rgba(250,0,0,0.6);
+}
+.bc-gif-example {
+  background: url(images/aspen_only.gif) no-repeat center;
+  background-size: contain;
+  height: 200px;
+}
+.bc-img-example {
+  background: url(images/aces-logo.png) no-repeat center;
+  background-size: contain;
+  height: 143px;
+}
+
+.bc-top-spacer {
+//  padding-top: 90px;
+}
+.bc-slider-height {
+  height: 100%;
+}
+#bc-carousel-control {
+  margin-top: 200%;
+}
+#carousel-example-generic, .carousel-inner, .item {
+  height: 100% !important;
+}
+#carousel-example-generic {
+//  margin-top: 90px !important;
+}
+.bc-play-pause {
+  bottom: 35px;
+  left: 40px;
+  position: absolute;
+  z-index: 1 !important;
+  .btn {
+    background-color: rgba(0,0,0,0.3);
+    color: white
+  }
+  .btn:hover {
+    background-color: rgba(0,0,0,0.6);
+  }
+}
+
+// from bootstrap-sass-official
+// Optional indicator pips
+//
+// Add an unordered list with the following class and add a list item for each
+// slide your carousel holds.
+
+.bc-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  z-index: 15;
+  width: 60%;
+  margin-left: -30%;
+  padding-left: 0;
+  list-style: none;
+  text-align: center;
+
+  
+  li {
+    display: inline-block;
+    width:  10px;
+    height: 10px;
+    margin: 1px;
+    text-indent: -999px;
+    border: 1px solid rgba(0,0,0,0.5);
+    border-radius: 10px;
+    cursor: pointer;
+
+    // IE8-9 hack for event handling
+    //
+    // Internet Explorer 8-9 does not support clicks on elements without a set
+    // `background-color`. We cannot use `filter` since that's not viewed as a
+    // background color by the browser. Thus, a hack is needed.
+    // See https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
+    //
+    // For IE8, we set solid black as it doesn't support `rgba()`. For IE9, we
+    // set alpha transparency for the best results possible.
+    
+    background-color: none !important; // IE8
+    background-color: none !important; // IE9
+  }
+  .active {
+    margin: 0;
+    width:  12px;
+    height: 12px;
+    background-color: none !important;
+    border: red solid 2px !important;
+  }
+}
+.bc-caption-top {
+  font-size: 1.5em;
+  bottom: 23%;
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  z-index: 10;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: white;
+  background: rgba(0,0,0,0.5);
+  text-align: center;
+  text-shadow: black;
+  & .btn {
+    text-shadow: none; // No shadow for button elements in carousel-caption
+  }
+}
+
+// make new carousel-caption class, combine with custom carousel-caption class
+// Optional captions
+// -----------------------------
+// Hidden by default for smaller viewports
+.bc-caption-bottom {
+  font-size: 1.5em;
+  background: rgba(0,0,0,0.5);
+  bottom: 30%;
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  z-index: 10;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: white;
+  text-align: center;
+  text-shadow: black;
+  & .btn {
+    text-shadow: none; // No shadow for button elements in carousel-caption
+  }
+}
+
+
+// Scale up controls for tablets and up
+/*@media screen and (min-width: $screen-sm-min) {
+
+  // Scale up the controls a smidge
+  .carousel-control {
+    .glyphicon-chevron-left,
+    .glyphicon-chevron-right,
+    .icon-prev,
+    .icon-next {
+      width: 30px;
+      height: 30px;
+      margin-top: -15px;
+      font-size: 30px;
+    }
+    .glyphicon-chevron-left,
+    .icon-prev {
+      margin-left: -15px;
+    }
+    .glyphicon-chevron-right,
+    .icon-next {
+      margin-right: -15px;
+    }
+  }
+
+  // Show and left align the captions
+  .carousel-caption {
+    left: 20%;
+    right: 20%;
+    padding-bottom: 30px;
+  }
+
+  // Move up the indicators
+  .carousel-indicators {
+    bottom: 20px;
+  }
+}
+*/
+
+// carousel indicators (small icon boxes)
+// this is boostrap carousel default
+// add !important to selected style to override defaults
+// or, reconfigure the bootstrap javascript..
+.carousel-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  z-index: 15;
+  width: 60%;
+  margin-left: -30%;
+  padding-left: 0;
+  list-style: none;
+  text-align: center;
+
+  
+  li {
+    display: inline-block;
+    width:  10px;
+    height: 10px;
+    margin: 1px;
+    // this hides the text within the box/icon
+    text-indent: 0px !important;
+    border: $bc-icon-border !important;
+    border-radius: 10px;
+    cursor: pointer;
+
+    // IE8-9 hack for event handling
+    //
+    // Internet Explorer 8-9 does not support clicks on elements without a set
+    // `background-color`. We cannot use `filter` since that's not viewed as a
+    // background color by the browser. Thus, a hack is needed.
+    // See https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
+    //
+    // For IE8, we set solid black as it doesn't support `rgba()`. For IE9, we
+    // set alpha transparency for the best results possible.
+    
+    // daniel !! below is bootstrap default
+    //background-color: #000 \9; // IE8
+    //background-color: rgba(0,0,0,0); // IE9
+  }
+  .active {
+    margin: 0;
+    width:  12px;
+    height: 12px;
+//    background-color: $carousel-indicator-active-bg;
+    border: red solid 2px !important;
+  }
+}
+
+

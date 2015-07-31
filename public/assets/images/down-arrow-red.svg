@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   id="Layer_1"
+   xml:space="preserve"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="down-arrow-white.svg"
+   inkscape:export-filename="/home/danielson/docs/future-forests/app/images/down-arrow-red.svg.png"
+   inkscape:export-xdpi="4.2800002"
+   inkscape:export-ydpi="4.2800002"><sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1322"
+     inkscape:window-height="750"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="0.4609375"
+     inkscape:cx="-54.237288"
+     inkscape:cy="256"
+     inkscape:window-x="44"
+     inkscape:window-y="18"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Layer_1" /><metadata
+     id="metadata9"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+     id="defs7" /><path
+     d="m 267.26305,268.48259 -10.16955,9.07605 0,-38.90126 c 0,0.004 -0.47396,-0.005 -1.07538,-0.005 -0.60143,2e-5 -1.11162,0.005 -1.11162,0.005 l 0,38.90126 -10.16955,-9.06238 c -0.57347,0.52181 -0.39434,0.3479 -0.81808,0.77163 -0.42373,0.42373 -0.28797,0.29198 -0.72648,0.77294 0,0 11.89181,10.82565 12.0285,10.935 0.13668,0.10935 0.38272,0.32805 0.77911,0.32805 0.3964,0 0.66977,-0.2187 0.77912,-0.32805 0.10935,-0.10935 12.0285,-10.935 12.0285,-10.935 -0.20124,-0.27057 -0.28847,-0.34792 -0.62921,-0.70049 -0.38996,-0.3935 -0.38007,-0.3901 -0.91536,-0.85775 z"
+     id="path3"
+     style="fill:#d90000;fill-opacity:1"
+     inkscape:connector-curvature="0" /></svg>

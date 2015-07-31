@@ -1,0 +1,97 @@
+<section class="full-height" {{bind-attr id="headline.classId"}}>
+  <div class="bcg">
+    <div class="fill-lite">
+      <div class="hsContainer">
+        <div class="hsContent">
+          <h1>{{headline.title}}</h1>
+          {{#if headline.detail}}
+            <button class="btn-text" {{action "toggleDetail" headline.detailId}}>Learn More {{fa-icon "chevron-down"}}</i></button>
+          {{else}}
+          {{/if}}
+          <div class="down-arrow">
+            {{#if headline.down}}
+            {{else}}
+              <div class="svg-down-arrow" {{action "scrollToHeadline" headline.detailId}}>&nbsp;</div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="detail" {{bind-attr id="headline.detailId"}}>
+  <div class="hsContainer">
+    <div id="headline-detail" class="hsContent">
+  <div class="row">
+  <div class="row">
+    <div class="col-md-12">
+      <h2></h2>
+     </div>
+   </div>
+    <div id="detail-content">
+   {{{headline.detail}}}
+   </div>
+   
+   
+   {{#if headline.mountains}}
+      <div class="row">
+        <p class="chart-click">Click on a location below</p>
+        <div class="mtn-btn-container">
+          <ul>
+            {{#each mountain in headline.mountains}}
+              <li><button class="btn-chart" {{action "getMountain" mountain}} on="click">{{mountain.name}}</button></li>
+            {{/each}}
+          </ul>
+        </div>
+        <div class="col-md-12">
+          <img {{bind-attr id=headline.mountainContainer}} class="img-mtn"></img>
+        </div>
+      </div>
+      {{else}}
+      {{/if}}
+
+      {{#if headline.charts}}
+        <div class="row">
+          <p class="chart-click">Click on a tree species below</p>
+          <div class="chart-btn-container">
+            <ul>
+              {{#each chart in headline.charts}}
+                <li><button class="btn-chart" {{action "getChart" chart}} on="click">{{chart.plant.name}}</button></li><br>
+              {{/each}}
+            </ul>
+          </div>
+          <div class="col-md-6 chartAlign">
+           <img {{bind-attr id=headline.pictureContainer}} class="img-chart"></img>
+          </div>
+          <div class="col-md-6">
+            <img {{bind-attr id=headline.chartContainer}} class="img-fig"></img>
+          </div>
+        </div>
+      {{else}}
+      {{/if}}
+      </div>
+
+{{!--
+   {{#if headline.charts}}
+    <div class="row">
+      Click on a tree species below<br><br>
+      {{#each chart in headline.charts}}
+        <button class="btn-chart" {{action "getChart" chart}} on="click">{{chart.plant.name}}</button>
+      {{/each}}
+    <div class="col-md-6 chartAlign">    
+      <img {{bind-attr id=headline.pictureContainer}} class="img-chart"></img>
+    </div>
+    <div class="col-md-6">
+      <img {{bind-attr id=headline.chartContainer}} class="img-fig"></img>
+    </div>
+    </div>
+    {{else}}
+    {{/if}}
+
+    </div>
+--}}
+    <button class="btn-text" {{action "toggleDetail" headline.detailId}}>Close {{fa-icon "chevron-up"}}</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,325 @@
+// Responsive styling
+//
+// View thresholds:
+//   welcome.hbs: 1001px
+//
+
+@media screen and (max-width: 1001px) {
+  #breadcrumbs {
+    display: none !important;
+  }
+  #welcome-left {
+    margin-left: -164% !important;
+  }
+  #welcome-right {
+    margin-left: 50% !important;
+  }
+  .explore-text {
+    font-size: 0.75em !important;
+  }
+  .sloganContainer {
+    font-size: 2.3em !important;
+  }
+  .navbar-hide {
+    display: none !important; 
+  }
+  .navbar-header {
+    width: 100% !important;
+  }
+  .navbar-brand {
+    font-size: 2.6em !important;
+  }
+  .navbar-brand-collapsed {
+    padding-left: 0 !important;
+  }
+  .navbar-toggle {
+    display: none !important;
+  }
+  .navbar-right {
+    overflow: hidden !important;
+  }
+  .breadcrumbs li:before {
+    top: -3px !important;
+  }
+  .breadcrumbs li:after {
+    top: -3px !important;
+  }
+  #header-left {
+    width: 50% !important;
+  }
+  .navbar-ffdm-header {
+    width: 25% !important;
+    float: left;
+  }
+  #navContainer {
+    float: left;
+  }
+}
+
+// application.hbs
+@media (max-width: 1233px) and (min-width: 1001px) {
+  #header-mid {
+    width: 26% !important;
+  }
+  .navbar-brand {
+    padding: 0px !important;
+    margin: 0px !important;
+  }
+  #header-left {
+    width: 34% !important;
+  }
+}
+
+// application.hbs small screen --remove globe
+@media screen and (max-width: 501px) {
+  .navbar-header {
+    display: none;
+  }
+}
+// application.hbs very small screen
+@media screen and (max-width: 416px) {
+  .navbar-brand {
+    font-size: 28px !important;
+  }
+}
+@media (max-width: 416px) and (min-width: 800px) {
+  .navbar-brand {
+    font-size: 38px !important;
+  }
+}
+// application.hbs small screen
+@media screen and (max-width: 800px) {
+  .navbar-brand {
+    padding-left: 0px !important;
+  }
+  #navContainer {
+    padding-left: 25px;
+  }
+  .navbar-brand-sub {
+    padding-top: 0px !important;
+  }
+  #header-left {
+    width: 64% !important;
+  }
+  #header-mid {
+    width: 34% !important;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .map-step {
+    font-size: 14px !important;
+  }
+}
+@media screen and (min-width: 1000px) {
+  #navbar-brand-collapsed {
+    display: none !important;
+  }
+}
+
+// cesium controls
+
+@media screen and (max-height: 800px) {
+  .map-step {
+  }
+  #select-group, #year-group, #submit-group, #rcp-group, #map-legend {
+    margin: 4px !important;
+  }
+  }
+@media screen and (max-width: 400px) {
+  .navbar-brand {
+    padding-bottom: 0px;
+  }
+  .logo-globe {
+    display: none;
+  }
+  .container-fluid {
+    padding-top: 0px;
+  }
+  #cesium-submain {
+    overflow: scroll !important;
+  }
+}
+
+// application.hbs
+@media screen and (max-width: 1233px) {
+	.heading-slim {
+		display: inherit !important;
+	}
+	.heading-wide {
+		display: none;
+	}
+	#header-right {
+		width: 40% !important;
+	}
+}
+
+// cesium for tablet
+@media screen and (max-width: 999px) {
+  #cesium-submain {
+    overflow-y: scroll !important;
+  }  
+  #cesium-left-col {
+    width: 32%;
+    font-size:11px;
+  }
+  #cesium-mid-col {
+    display: none;
+  }
+  #cesium-right-col {
+    width: 67.5%;
+  }
+  #map-legend, .credits-container {
+    display: none;
+  }
+  .map-legend-tablet, .credits-container-tablet, .year-group-tablet {
+    display: inherit !important;
+  }
+  .credits-container-tablet {
+    width: 40%;
+  }
+  .year-group-large {
+    display: none;
+  }
+}
+@media screen and (min-width: 1000px) {
+  .credits-container-tablet {
+    display: none;
+  } 
+  .year-group-tablet {
+  display: none;
+  }
+}
+@media screen and (min-width: 1500px) {
+  .map-step {
+    font-size: 20px !important;
+  }
+}
+
+// fix left and middle column to pixel widths for larger screens
+@media screen and (min-width: 1280px) {
+  #cesium-left-col {
+    width: 300px !important;
+    float: left !important;
+  }
+  #cesium-right-col {
+    float: right !important;
+  }
+  #cesium-mid-col {
+    width: 130px !important;
+    margin-left: 0.4%;
+  }
+}
+@media screen and (max-width: 1280px) {
+  #map-legend {
+    h3 {
+      font-size: 13px;
+    }
+  }
+}
+
+// cesium-container for larger screens
+@media screen and (min-width: 1280px) {
+  #cesium-right-col {
+    width: 66%;
+  }
+}
+@media screen and (min-width: 1350px) {
+  #cesium-right-col {
+    width: 67%;
+  }
+}
+@media screen and (min-width: 1400px) {
+  #cesium-right-col {
+    width: 68%;
+  }
+}
+@media screen and (min-width: 1450px) {
+  #cesium-right-col {
+    width: 69%;
+  }
+}
+@media screen and (min-width: 1500px) {
+  #cesium-right-col {
+    width: 70%;
+  }
+}
+@media screen and (min-width: 1550px) {
+  #cesium-right-col {
+    width: 71%;
+  }
+}
+@media screen and (min-width: 1600px) {
+  #cesium-right-col {
+    width: 72%;
+  }
+}
+@media screen and (min-width: 1700px) {
+  #cesium-right-col {
+    width: 73%;
+  }
+}
+@media screen and (min-width: 1800px) {
+  #cesium-right-col {
+    width: 74%;
+  }
+}
+@media screen and (min-width: 1900px) {
+  #cesium-right-col {
+    width: 75%;
+  }
+}
+@media screen and (min-width: 2000px) {
+  #cesium-right-col {
+    width: 76%;
+  }
+}
+@media screen and (min-width: 2100px) {
+  #cesium-right-col {
+    width: 77%;
+  }
+}
+@media screen and (min-width: 2200px) {
+  #cesium-right-col {
+    width: 78%;
+  }
+}
+@media screen and (min-width: 2300px) {
+  #cesium-right-col {
+    width: 79%;
+  }
+}
+@media screen and (min-width: 2400px) {
+  #cesium-right-col {
+    width: 80%;
+  }
+}
+@media screen and (min-width: 2500px) {
+  #cesium-right-col {
+    width: 81%;
+  }
+}
+@media screen and (min-width: 2600px) {
+  #cesium-right-col {
+    width: 82%;
+  }
+}
+@media screen and (min-width: 2700px) {
+  #cesium-right-col {
+    width: 82%;
+  }
+}
+@media screen and (min-width: 2800px) {
+  #cesium-right-col {
+    width: 83%;
+  }
+}
+@media screen and (min-width: 2900px) {
+  #cesium-right-col {
+    width: 84%;
+  }
+}
+@media screen and (min-width: 3000px) {
+  #cesium-right-col {
+    width: 85%;
+  }
+}
