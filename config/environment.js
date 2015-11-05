@@ -41,6 +41,11 @@ module.exports = function(environment) {
 
   }
 
+  if (environment === 'dev_server') {
+     ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; // default setting
+     ENV.baseURL = 'ffdm';
+  }
+
   if (environment === 'test') {
     // Testem prefers this...
     ENV.baseURL = '/';
@@ -54,7 +59,7 @@ module.exports = function(environment) {
   }
 
   if (environment === 'production') {
-      ENV.APP.API_HOST = 'http://192.81.135.213:1337'; // default setting
+      ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; // default setting
   }
 
   return ENV;

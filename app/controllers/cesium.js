@@ -150,7 +150,13 @@ export default Ember.Controller.extend({
     }
   },
 
-  addBillboard: function(x,y, title, description) {
+/*  detectBillboardDescriptionType: function(img,video,description) {
+    var description;
+    if ( img == '0' ) {
+      descrition: 
+ 
+*/
+  addBillboard: function(x,y, title, url) {
     console.log("Adding Billboard...");
     var viewer = this.get('viewer');
     //Create the marker for the map
@@ -163,7 +169,8 @@ export default Ember.Controller.extend({
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
         pixelOffsetScaleByDistance: new Cesium.NearFarScalar(1.0e3, 1.0, 1.5e6, 0.0),
       },
-      description: '<img href='+description +'></img>',
+      //description: '<img href='+description +'></img>',
+        description: '<div class=addBillboardDescription>' + url + '</div>',
       //currently not being recognized
       viewFrom: Cesium.Cartesian3.fromDegrees(x,y,10000)
         

@@ -647,6 +647,14 @@ input[type=checkbox] {
 .year-desc-3 {
   padding-top: 5%;
 }
+
+// cesium infobox for outerra videos and gifs
+.outerraVideoIframe {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}
+
 // cesium buttons
 .btn-temp {
   height: 100%;
@@ -1641,72 +1649,97 @@ div.worst-case-label {
   margin-right: auto;
   background: url(images/stable_red_60.png) no-repeat 0 0;
 }
-div.figure {
+/*div.figure {
   width: 28vw;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 2%;
 }
+*/
 .global-temp-and-co2 {
   text-align: center;
-  width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-  content: url(images/global_temp_and_co2.png) no-repeat 0 0;
+  width: auto !important;
+  height: 30em;
+//  margin-left: 8%;
+//  margin-right: auto;
+  background: url(images/global_temp_and_co2.png) no-repeat 0 0;
+  background-size: 100% auto !important;
+  margin-left: 5%;
 }
 div.average_temp_global {
+  width: auto !important;
   margin-left: auto;
   margin-right: auto;
-  content: url(images/3_CS_average_annual_temp_global_V7_cropped.png) no-repeat 0 0;
+  background: url(images/3_CS_average_annual_temp_global_V7_cropped.png) no-repeat 0 0;
+  background-size: 90% auto !important;
+  margin-left: 14%;
+  height: 33em;
 }
 div.temp_projection {
-  width: 500px;
+  width: auto !important;
   margin-left: auto;
   margin-right: auto;
-  content: url(images/4_CS_global_temp_projections_V7.png) no-repeat 0 0;
+  background: url(images/4_CS_global_temp_projections_V7.png) no-repeat 0 0;
+  background-size: 100% auto !important;
+  height: 17em;
 }
 div.avg_precip {
-  width: 500px;
+  width: auto !important;
   margin-left: auto;
   margin-right: auto;
-  content: url(images/5_CS_global_precip_projections_V10.png) no-repeat 0 0;
+  background: url(images/5_CS_global_precip_projections_V10.png) no-repeat 0 0;
+  background-size: 100% auto !important;
+  height: 22em;
 }
 div.snow_water {
-  width: 500px;
+  width: auto !important;
   margin-left: auto;
   margin-right: auto;
-  content: url(images/7_SW_snow_water.png) no-repeat 0 0;
+  background: url(images/7_SW_snow_water.png) no-repeat 0 0;
+  background-size: 92% auto !important;
+  height: 29em;
 }
 div.precip-change {
-  width: 700px;
+  width: auto !important;
   margin-left: auto;
   margin-right: auto;
-  content: url(images/precip-change.jpg) no-repeat 0 0;
+  background: url(images/precip-change.jpg) no-repeat 0 0;
+  background-size: 100% auto !important;
+  height: 22em;
 }
 div.precip-change-legend {
-  width: auto;
+  width: auto !important;
   margin-left: auto;
   margin-right: auto;
-  content: url(images/precip-change-legend.jpg) no-repeat 0 0;
+  background: url(images/precip-change-legend.jpg) no-repeat 0 0;
+  background-size: 55% auto !important;
+  height: 3em;
+  margin-left: 29%;
 }
 div.forest-vulnerable {
-  content: url(images/8_Forests_climate_envelope_analysis_V3.png) no-repeat 0 0;
+  background: url(images/8_Forests_climate_envelope_analysis_V3.png) no-repeat 0 0;
+  background-size: 89% auto !important;
+  width: auto !important;
+  height: 33em;
+  margin-left: 10%;
+  margin-top: 22px;
 }
 /* Figures for the science summary page*/
 div.forest-cover {
-  content: url(images/combinedForestOnly.jpg) no-repeat 0 0;
-  width: 40vw;
-  margin-left: auto;
-  margin-right: auto;
+  background: url(images/combinedForestOnly.jpg) no-repeat 0 0;
+  width: auto !important;
+  background-size: 87% auto !important;
+  height: 33em;
+  margin-left: 10%;
 }
 div.atmo-current {
-  content: url(images/atmo-current.jpg) no-repeat 0 0;
+  background: url(images/atmo-current.jpg) no-repeat 0 0;
 }
 div.atmo-rcp26 {
-  content: url(images/atmo-rcp26.jpg) no-repeat 0 0;
+  background: url(images/atmo-rcp26.jpg) no-repeat 0 0;
 }
 div.atmo-rcp85 {
-  content: url(images/atmo-rcp85.jpg) no-repeat 0 0;
+  background: url(images/atmo-rcp85.jpg) no-repeat 0 0;
 }
 div.abies_range {
   width: 25vw;
@@ -1781,46 +1814,62 @@ div.butte-85 {
   content: url(images/butte-85.jpg);
 }
 div.subalpine26 {
-  width: 28vw;
-  content: url(images/subalpine26.jpg);
+  width: 44%;
+  background: url(images/subalpine26.jpg) no-repeat 0 0;
   float: left;
+  background-size: 100% auto !important;
+  height: 26em;
 }
 div.subalpine-legend {
-  width: 15vw;
-  content: url(images/subalpine_legend.jpg);
+  width: auto;
+  background: url(images/subalpine_legend.jpg) no-repeat 0 0;
+  background-size: 53% auto !important;
   margin-left: auto;
   margin-right: auto;
+  height: 16em;
 }
 div.subalpine85 {
-  width: 28vw;
-  content: url(images/subalpine85.jpg);
+  width: 45%;
+  height: 27em;
+  background: url(images/subalpine85.jpg) no-repeat 0 0;
   float: right;
+  background-size: 100% auto !important;
 }
 div.arid26 {
- width: 28vw;
-  content: url(images/arid26.jpg);
+ width: 44%;
+  background: url(images/arid26.jpg) no-repeat 0 0;
   float: left;
+  height: 24em;
+  background-size: 100% auto !important;
 }
 div.arid85 {
-  width: 28vw;
-  content: url(images/arid85.jpg);
+  width: 44%;
+  background: url(images/arid85.jpg) no-repeat 0 0;
   float: right;
+  height: 24em;
+  background-size: 100% auto !important;
 }
 div.arid-legend {
-  width: 15vw;
-  content: url(images/arid_legend.jpg);
+  width: auto;
+  background: url(images/arid_legend.jpg) no-repeat 0 0;
   margin-left: auto;
   margin-right: auto;
+  height: 16em;
+  background-size: 50% auto !important;
 }
 div.habitat {
-  width: 50vw; 
-  content: url(images/Habitat.jpg);
+  width: auto; 
+  background: url(images/Habitat.jpg) no-repeat 0 0;
+  background-size: 100% auto !important;
+  height: 24em;
 }
 div.habitat-legend {
-  width: 15vw;
-  content: url(images/habitat-legend.jpg);
-  margin-left: 50%;
+  width: auto;
+  background: url(images/habitat-legend.jpg) no-repeat 0 0;
+  margin-left: 34%;
   margin-right: auto;
+  height: 17em;
+  background-size: 78% auto !important;
 }
 div.lemmon-current {
   height: auto;
@@ -1843,18 +1892,21 @@ div.greggii-range {
   content: url(images/Acacia_greggii.jpg);
 }
 div.region {
-  width: 45vw;
-  height: auto;
-  content: url(images/Region.jpg);
+  width: auto;
+  height: 30em;
+  background: url(images/Region.jpg) no-repeat 0 0;
   margin-left: auto;
   margin-right: auto;
+  background-size: 100% auto !important;
 }
 div.region-legend {
-  width: 15vw;
+  width: auto;
   height: auto;
-  content: url(images/Region-legend.jpg);
-  margin-left: 50%;
+  background: url(images/Region-legend.jpg) no-repeat 0 0;
+  margin-left: 34%;
   margin-right: auto;
+  height: 15em;
+  background-size: 100% auto !important;
 }
 div.tesota-range { 
   width: 25vw;
@@ -1873,12 +1925,18 @@ div.osteo-range {
   content: url(images/Juniperus_osteosperma.jpg);
 }
 div.elev26 {
-  height: auto;
+  height: 12em;
   width: auto;
-  content: url(images/elev26.jpg);
+  background: url(images/elev26.jpg) no-repeat 0 0;
+  background-size: 79% auto !important;
+  margin-left: 19%;
 }
 div.elev85 {
-  content: url(images/elev85.jpg);
+  height: 12em;
+  width: auto;
+  background: url(images/elev85.jpg) no-repeat 0 0;
+  background-size: 79% auto !important;
+  margin-left: 19%;
 }
 div.aces {
   width:500px;

@@ -20,6 +20,14 @@ You will need the following things properly installed on your computer.
 * `npm install`
 * `bower install`
 
+## Building Cesium
+
+Build Cesium from within the ffdm-frontend/vendors/cesium directory:
+
+```
+$ ./Tools/apache-ant-1.8.2/bin/ant combine
+```
+
 ## Running / Development
 
 * `ember server`

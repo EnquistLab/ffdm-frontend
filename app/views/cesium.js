@@ -97,7 +97,8 @@ export default Ember.View.extend({
     cesiumController.setupLayers();
     var viewer = cesiumController.get('viewer');
     var camera = viewer.camera;
-    //cesiumController.loadPoints();
+
+    cesiumController.loadPoints();   // enable cesium markers
     /*camera.flyTo({ 
         destination: Cesium.Cartesian3.fromDegrees(-111.100, 36.998, 5000000.0)
     });*/
