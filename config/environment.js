@@ -8,12 +8,13 @@ module.exports = function(environment) {
     locationType: 'auto',
     contentSecurityPolicy: {
       'default-src': "'none'",
-      'script-src': "'self'",
+      'script-src': "'self' https://player.vimeo.com",
       'font-src': "'self' http://fonts.googleapis.com http://fonts.gstatic.com",
       'connect-src': "'self' http://localhost:1337 http://192.81.135.213:1337 http://scooby.iplantcollaborative.org:1337",
       'img-src': "'self'",
       'style-src': "'self' http://fonts.googleapis.com",
-      'frame-src': "'self'"
+      'frame-src': "'self' https://player.vimeo.com",
+      'media-src': "'self' https://player.vimeo.com"
     },
     EmberENV: {
       FEATURES: {
@@ -23,7 +24,7 @@ module.exports = function(environment) {
     },
 
     APP: {
-      API_HOST: 'http://192.81.135.213:1337' //default setting
+      API_HOST: 'http://scooby.iplantcollaborative.org/sails' //default setting
 
       // Here you can pass flags/options to your application instance
       // when it is created

@@ -117,8 +117,17 @@
 
         </div><!-- end year-group; year on top, controls on bottom -->
 
+
+            <!-- toggle outerra markers on and off -->
+            <div style="margin-left: 30%;" id="toggleOuterraMarkersContainer" class="row">
+              <button {{ action 'toggleOuterraMarkers' }} id="toggleOuterraMarkers" class="btn-danger" type="button">Toggle Markers</button>
+            </div>
+            <!-- end toggleOuterraMarkers -->
+
+
+
         <!-- year-group-- year and controls one row -->
-    
+
 <div id="year-group" class="form-group btn-group year-group-tablet">
           <p id="year-desc" class="map-step" class="year-desc-3">
            Step 4: Animate the future forest
@@ -166,6 +175,12 @@
                 <div class="oval-low">Low</div>
               </div>
             </div> <!-- suitability-circles -->
+            
+            <!-- toggle outerra markers on and off -->
+            <div id="toggleOuterraMarkersContainer" class="row">
+              <button {{ action 'toggleOuterraMarkers' }} id="toggleOuterraMarkers" class="btn-danger" type="button">Toggle Markers</button>
+            </div>
+            <!-- end toggleOuterraMarkers -->
 
           </div> <!-- map-legend-sub -->
         </div> <!-- map-legend for tablet -->
@@ -174,8 +189,10 @@
 	        <a href="https://www.aspennature.org/" target="_blank"><div class="cesium-aces"></div></a>
           <a href="http://bien.nceas.ucsb.edu/bien/" target="_blank"><div class="cesium-bien"></div></a>
 	        <div class="cesium-ua"></div>
+
 	      </div> <!-- cesium credits tablet -->
-        </div> <!-- /row -->
+        
+                </div> <!-- /row -->
 
       
 
@@ -198,9 +215,11 @@
                 <div class="oval-low">Low</div>
               </div>
             </div> <!-- suitability-circles -->
-
+            
           </div> <!-- map-legend-sub -->
         </div> <!-- map-legend -->
+
+
 	<div class="credits-container">
 	  <span>Powered by:</span>
 	  <a href="https://www.aspennature.org/" target="_blank"><div class="cesium-aces"></div></a>

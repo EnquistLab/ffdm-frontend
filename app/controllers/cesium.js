@@ -18,7 +18,6 @@ export default Ember.Controller.extend({
   // --- testing scene2d change     
   // sceneMode: null,
 
-
 /* --- testing scene2d change 
   sceneModeChanged: function() {
 
@@ -150,12 +149,6 @@ export default Ember.Controller.extend({
     }
   },
 
-/*  detectBillboardDescriptionType: function(img,video,description) {
-    var description;
-    if ( img == '0' ) {
-      descrition: 
- 
-*/
   addBillboard: function(x,y, title, url) {
     console.log("Adding Billboard...");
     var viewer = this.get('viewer');
@@ -202,7 +195,7 @@ export default Ember.Controller.extend({
         var title = points[x].get('title');
         var description = points[x].get('url');
         //Add the marker to the map
-        self.addBillboard(lon, lat, title, description);
+        //self.addBillboard(lon, lat, title, description);
       }
       }
 
@@ -463,6 +456,40 @@ export default Ember.Controller.extend({
         this.set('isAnimated', 1);
       }
     },
+    toggleOuterraMarkers: function() {
 
+      var viewer = this.get('viewer');
+      var markerArray = viewer.entities;
+      var markerArrayLength = markerArray._entities.length;
+      var logLength =  'markerArray.length = ' + markerArrayLength;
+
+      if ( markerArrayLength == 0 ) {
+        var outerraModel = this.get('outerrasController').get('model');
+        var self = this;
+        setTimeout(function() {
+          //console.log('Second try');
+          var content = outerraModel.get('content');
+          //console.log(content);
+          if (content.isLoaded) {
+            var points = content.get('content');
+            for (var x =0, len = points.length; x < len; x++) {
+              var lat = points[x].get('y');
+              var lon = points[x].get('x');
+              //console.log('lat: '+lat+', lon: '+lon);
+              var title = points[x].get('title');
+              var description = points[x].get('url');
+              self.addBillboard(lon, lat, title, description);
+            }
+          }
+          
+        }, 1000);
+        //console.log(logLength);
+      } else {
+        //console.log('outerraMarkers already active');
+        viewer.entities.removeAll();
+        //console.log(logLength);
+      };
+
+    },
   } 
 });

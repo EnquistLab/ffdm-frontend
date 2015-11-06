@@ -56,10 +56,15 @@ export default Ember.View.extend({
     
     //-- Set center of cesium view, with height
     //-- Replaced DEFAULT_VEW_RECTANGLE with below- allows for elevation zoom
-    viewer.camera.setView( {
+  /*  viewer.camera.setView( {
       position: Cesium.Cartesian3.fromDegrees(-110, 40, 2800000.0)
     });
-
+*/
+    var center = Cesium.Cartesian3.fromDegrees(-110,40);
+    var heading = Cesium.Math.toRadians(0);
+    var pitch = Cesium.Math.toRadians(-75.0);
+    var range = 2800000.0;
+    viewer.camera.lookAt(center, new Cesium.HeadingPitchRange(heading, pitch, range));
 
     // --- testing scene2d change
     //cesiumController.set('sceneMode', scene.mode);
@@ -90,6 +95,7 @@ export default Ember.View.extend({
      
     this.initCB();
   },
+  
 
   initCB: function() {
     console.log('initCB has been called by CesiumView');
