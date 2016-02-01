@@ -311,13 +311,11 @@ define([
      * @param {Number} options.width The distance between the edges of the corridor outline.
      * @param {Ellipsoid} [options.ellipsoid=Ellipsoid.WGS84] The ellipsoid to be used as a reference.
      * @param {Number} [options.granularity=CesiumMath.RADIANS_PER_DEGREE] The distance, in radians, between each latitude and longitude. Determines the number of positions in the buffer.
-     * @param {Number} [options.height=0] The distance between the ellipsoid surface and the positions.
-     * @param {Number} [options.extrudedHeight] The distance between the ellipsoid surface and the extrusion.
+     * @param {Number} [options.height=0] The distance in meters between the positions and the ellipsoid surface.
+     * @param {Number} [options.extrudedHeight] The distance in meters between the extruded face and the ellipsoid surface.
      * @param {CornerType} [options.cornerType=CornerType.ROUNDED] Determines the style of the corners.
      *
      * @see CorridorOutlineGeometry.createGeometry
-     *
-     * @demo {@link http://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=Corridor%20Outline.html|Cesium Sandcastle Corridor Outline Demo}
      *
      * @example
      * var corridor = new Cesium.CorridorOutlineGeometry({
@@ -325,7 +323,7 @@ define([
      *   width : 100000
      * });
      */
-    var CorridorOutlineGeometry = function(options) {
+    function CorridorOutlineGeometry(options) {
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
         var positions = options.positions;
         var width = options.width;
@@ -353,13 +351,12 @@ define([
          * @type {Number}
          */
         this.packedLength = 1 + positions.length * Cartesian3.packedLength + Ellipsoid.packedLength + 5;
-    };
+    }
 
     /**
      * Stores the provided instance into the provided array.
-     * @function
      *
-     * @param {Object} value The value to pack.
+     * @param {CorridorOutlineGeometry} value The value to pack.
      * @param {Number[]} array The array to pack into.
      * @param {Number} [startingIndex=0] The index into the array at which to start packing the elements.
      */
@@ -410,6 +407,7 @@ define([
      * @param {Number[]} array The packed array.
      * @param {Number} [startingIndex=0] The starting index of the element to be unpacked.
      * @param {CorridorOutlineGeometry} [result] The object into which to store the result.
+     * @returns {CorridorOutlineGeometry} The modified result parameter or a new CorridorOutlineGeometry instance if one was not provided.
      */
     CorridorOutlineGeometry.unpack = function(array, startingIndex, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -470,9 +468,6 @@ define([
         var extrude = (height !== extrudedHeight);
 
         var cleanPositions = PolylinePipeline.removeDuplicates(positions);
-        if (!defined(cleanPositions)) {
-            cleanPositions = positions;
-        }
 
         if (cleanPositions.length < 2) {
             return undefined;

@@ -116,7 +116,7 @@ define([
         var minHeight = Math.min(extrudedHeight, surfaceHeight);
         var maxHeight = Math.max(extrudedHeight, surfaceHeight);
         var geo = constructRectangle(options);
-        if (CesiumMath.equalsEpsilon(minHeight, maxHeight, 0.1)) {
+        if (CesiumMath.equalsEpsilon(minHeight, maxHeight, CesiumMath.EPSILON10)) {
             return geo;
         }
         var height = options.height;
@@ -171,9 +171,9 @@ define([
      * @param {Rectangle} options.rectangle A cartographic rectangle with north, south, east and west properties in radians.
      * @param {Ellipsoid} [options.ellipsoid=Ellipsoid.WGS84] The ellipsoid on which the rectangle lies.
      * @param {Number} [options.granularity=CesiumMath.RADIANS_PER_DEGREE] The distance, in radians, between each latitude and longitude. Determines the number of positions in the buffer.
-     * @param {Number} [options.height=0.0] The height from the surface of the ellipsoid.
+     * @param {Number} [options.height=0.0] The distance in meters between the rectangle and the ellipsoid surface.
      * @param {Number} [options.rotation=0.0] The rotation of the rectangle, in radians. A positive rotation is counter-clockwise.
-     * @param {Number} [options.extrudedHeight] Height of extruded surface.
+     * @param {Number} [options.extrudedHeight] The distance in meters between the rectangle's extruded face and the ellipsoid surface.
      *
      * @exception {DeveloperError} <code>options.rectangle.north</code> must be in the interval [<code>-Pi/2</code>, <code>Pi/2</code>].
      * @exception {DeveloperError} <code>options.rectangle.south</code> must be in the interval [<code>-Pi/2</code>, <code>Pi/2</code>].
@@ -183,8 +183,6 @@ define([
      *
      * @see RectangleOutlineGeometry#createGeometry
      *
-     * @demo {@link http://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=Rectangle%20Outline.html|Cesium Sandcastle Rectangle Outline Demo}
-     *
      * @example
      * var rectangle = new Cesium.RectangleOutlineGeometry({
      *   ellipsoid : Cesium.Ellipsoid.WGS84,
@@ -193,7 +191,7 @@ define([
      * });
      * var geometry = Cesium.RectangleOutlineGeometry.createGeometry(rectangle);
      */
-    var RectangleOutlineGeometry = function(options) {
+    function RectangleOutlineGeometry(options) {
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
 
         var rectangle = options.rectangle;
@@ -201,7 +199,7 @@ define([
         var ellipsoid = defaultValue(options.ellipsoid, Ellipsoid.WGS84);
         var surfaceHeight = defaultValue(options.height, 0.0);
         var rotation = defaultValue(options.rotation, 0.0);
-        var extrudedHeight = defaultValue(options.extrudedHeight, surfaceHeight);
+        var extrudedHeight = options.extrudedHeight;
 
         //>>includeStart('debug', pragmas.debug);
         if (!defined(rectangle)) {
@@ -220,18 +218,18 @@ define([
         this._rotation = rotation;
         this._extrudedHeight = extrudedHeight;
         this._workerName = 'createRectangleOutlineGeometry';
-    };
+    }
 
     /**
      * The number of elements used to pack the object into an array.
      * @type {Number}
      */
-    RectangleOutlineGeometry.packedLength = Rectangle.packedLength + Ellipsoid.packedLength + 4;
+    RectangleOutlineGeometry.packedLength = Rectangle.packedLength + Ellipsoid.packedLength + 5;
 
     /**
      * Stores the provided instance into the provided array.
      *
-     * @param {BoundingSphere} value The value to pack.
+     * @param {RectangleOutlineGeometry} value The value to pack.
      * @param {Number[]} array The array to pack into.
      * @param {Number} [startingIndex=0] The index into the array at which to start packing the elements.
      */
@@ -257,7 +255,8 @@ define([
         array[startingIndex++] = value._granularity;
         array[startingIndex++] = value._surfaceHeight;
         array[startingIndex++] = value._rotation;
-        array[startingIndex]   = value._extrudedHeight;
+        array[startingIndex++] = defined(value._extrudedHeight) ? 1.0 : 0.0;
+        array[startingIndex] = defaultValue(value._extrudedHeight, 0.0);
     };
 
     var scratchRectangle = new Rectangle();
@@ -276,7 +275,8 @@ define([
      *
      * @param {Number[]} array The packed array.
      * @param {Number} [startingIndex=0] The starting index of the element to be unpacked.
-     * @param {RectangleGeometry} [result] The object into which to store the result.
+     * @param {RectangleOutlineGeometry} [result] The object into which to store the result.
+     * @returns {RectangleOutlineGeometry} The modified result parameter or a new Quaternion instance if one was not provided.
      */
     RectangleOutlineGeometry.unpack = function(array, startingIndex, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -296,13 +296,14 @@ define([
         var granularity = array[startingIndex++];
         var height = array[startingIndex++];
         var rotation = array[startingIndex++];
+        var hasExtrudedHeight = array[startingIndex++];
         var extrudedHeight = array[startingIndex];
 
         if (!defined(result)) {
             scratchOptions.granularity = granularity;
             scratchOptions.height = height;
             scratchOptions.rotation = rotation;
-            scratchOptions.extrudedHeight = extrudedHeight;
+            scratchOptions.extrudedHeight = hasExtrudedHeight ? extrudedHeight : undefined;
             return new RectangleOutlineGeometry(scratchOptions);
         }
 
@@ -310,7 +311,7 @@ define([
         result._ellipsoid = Ellipsoid.clone(ellipsoid, result._ellipsoid);
         result._surfaceHeight = height;
         result._rotation = rotation;
-        result._extrudedHeight = extrudedHeight;
+        result._extrudedHeight = hasExtrudedHeight ? extrudedHeight : undefined;
 
         return result;
     };

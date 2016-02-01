@@ -6,7 +6,6 @@ defineSuite([
         LeapSecond,
         JulianDate) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('default constructor sets expected values', function() {
         var leapSecond = new LeapSecond();

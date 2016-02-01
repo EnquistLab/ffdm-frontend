@@ -8,7 +8,6 @@ defineSuite([
         VertexFormat,
         createPackableSpecs) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('constructor throws with no length', function() {
         expect(function() {

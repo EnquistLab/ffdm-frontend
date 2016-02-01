@@ -6,6 +6,7 @@ defineSuite([
         'Core/combine',
         'Core/defined',
         'Core/Ellipsoid',
+        'Core/FeatureDetection',
         'Core/GeographicProjection',
         'Core/IntersectionTests',
         'Core/KeyboardEventModifier',
@@ -26,6 +27,7 @@ defineSuite([
         combine,
         defined,
         Ellipsoid,
+        FeatureDetection,
         GeographicProjection,
         IntersectionTests,
         KeyboardEventModifier,
@@ -40,28 +42,27 @@ defineSuite([
         destroyCanvas,
         DomEventSimulator) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
-    var usePointerEvents = defined(window.PointerEvent);
+    var usePointerEvents = FeatureDetection.supportsPointerEvents();
     var scene;
     var canvas;
     var camera;
     var controller;
 
-    var MockScene = function(canvas, camera, ellipsoid) {
+    function MockScene(canvas, camera, ellipsoid) {
         this.canvas = canvas;
         this.camera = camera;
         this.globe = undefined;
         this.mapProjection = new GeographicProjection(ellipsoid);
-    };
+        this.terrainExaggeration = 1.0;
+    }
 
-    var MockGlobe = function(ellipsoid) {
+    function MockGlobe(ellipsoid) {
         this.ellipsoid = ellipsoid;
         this.getHeight = function(cartographic) {
             return 0.0;
         };
-    };
-
+    }
     beforeAll(function() {
         canvas = createCanvas(1024, 768);
     });
@@ -159,6 +160,11 @@ defineSuite([
         var ellipsoid = Ellipsoid.WGS84;
         scene.mapProjection = new GeographicProjection(ellipsoid);
 
+        scene.frameState = {
+            mode : scene.mode,
+            mapProjection : scene.mapProjection
+        };
+
         var maxRadii = ellipsoid.maximumRadius;
         var frustum = new OrthographicFrustum();
         frustum.right = maxRadii * Math.PI;
@@ -181,6 +187,11 @@ defineSuite([
         var ellipsoid = Ellipsoid.WGS84;
         scene.mapProjection = new GeographicProjection(ellipsoid);
 
+        scene.frameState = {
+            mode : scene.mode,
+            mapProjection : scene.mapProjection
+        };
+
         var maxRadii = ellipsoid.maximumRadius;
         camera.position = new Cartesian3(0.0, 0.0, maxRadii);
         camera.direction = Cartesian3.negate(Cartesian3.UNIT_Z, new Cartesian3());
@@ -193,6 +204,11 @@ defineSuite([
 
         var ellipsoid = Ellipsoid.WGS84;
         scene.mapProjection = new GeographicProjection(ellipsoid);
+
+        scene.frameState = {
+            mode : scene.mode,
+            mapProjection : scene.mapProjection
+        };
     }
 
     it('constructor throws without a scene', function() {
@@ -1003,7 +1019,7 @@ defineSuite([
         updateController();
 
         camera.setView({
-            position : Cartesian3.fromDegrees(-72.0, 40.0, 1.0)
+            destination : Cartesian3.fromDegrees(-72.0, 40.0, 1.0)
         });
 
         updateController();
@@ -1018,7 +1034,7 @@ defineSuite([
         updateController();
 
         camera.setView({
-            position : Cartesian3.fromDegrees(-72.0, 40.0, 1.0)
+            destination : Cartesian3.fromDegrees(-72.0, 40.0, 1.0)
         });
 
         updateController();
@@ -1034,7 +1050,7 @@ defineSuite([
         updateController();
 
         camera.setView({
-            position : Cartesian3.fromDegrees(-72.0, 40.0, 1.0)
+            destination : Cartesian3.fromDegrees(-72.0, 40.0, -10.0)
         });
 
         updateController();
@@ -1050,7 +1066,7 @@ defineSuite([
         updateController();
 
         camera.setView({
-            position : Cartesian3.fromDegrees(-72.0, 40.0, 1.0)
+            destination : Cartesian3.fromDegrees(-72.0, 40.0, -10.0)
         });
 
         updateController();
@@ -1081,7 +1097,7 @@ defineSuite([
 
         updateController();
 
-        expect(camera.positionWC.x).toBeGreaterThanOrEqualTo(controller.minimumZoomDistance);
+        expect(camera.positionWC.x).toEqualEpsilon(controller.minimumZoomDistance, CesiumMath.EPSILON8);
     });
 
     it('is destroyed', function() {

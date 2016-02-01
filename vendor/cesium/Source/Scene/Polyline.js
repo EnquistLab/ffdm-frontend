@@ -39,9 +39,8 @@ define([
      *
      * @see PolylineCollection
      *
-     * @demo {@link http://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=Polylines.html|Cesium Sandcastle Polyline Demo}
      */
-    var Polyline = function(options, polylineCollection) {
+    function Polyline(options, polylineCollection) {
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
 
         this._show = defaultValue(options.show, true);
@@ -62,9 +61,6 @@ define([
 
         this._positions = positions;
         this._actualPositions = PolylinePipeline.removeDuplicates(positions);
-        if (!defined(this._actualPositions)) {
-            this._actualPositions = positions;
-        }
 
         if (this._loop && this._actualPositions.length > 2) {
             if (this._actualPositions === this._positions) {
@@ -93,7 +89,7 @@ define([
         this._boundingVolume = BoundingSphere.fromPoints(this._actualPositions);
         this._boundingVolumeWC = BoundingSphere.transform(this._boundingVolume, this._modelMatrix);
         this._boundingVolume2D = new BoundingSphere(); // modified in PolylineCollection
-    };
+    }
 
     var SHOW_INDEX = Polyline.SHOW_INDEX = 0;
     var WIDTH_INDEX = Polyline.WIDTH_INDEX = 1;
@@ -160,9 +156,6 @@ define([
                 //>>includeEnd('debug');
 
                 var positions = PolylinePipeline.removeDuplicates(value);
-                if (!defined(positions)) {
-                    positions = value;
-                }
 
                 if (this._loop && positions.length > 2) {
                     if (positions === value) {

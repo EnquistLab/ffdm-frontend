@@ -29,7 +29,7 @@ define([
      * @param {Scene} scene The Scene to morph
      * @param {Number} [duration=2.0] The duration of scene morph animations, in seconds
      */
-    var SceneModePickerViewModel = function(scene, duration) {
+    function SceneModePickerViewModel(scene, duration) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(scene)) {
             throw new DeveloperError('scene is required.');
@@ -69,14 +69,13 @@ define([
          * @default '2D'
         */
         this.tooltip2D = '2D';
+
         /**
          * Gets or sets the 3D tooltip.  This property is observable.
          * @type {String}
          * @default '3D'
         */
-        // default
-        //this.tooltip3D = '3D';
-        this.tooltip3d = 'Select globe or flat map view';
+        this.tooltip3D = '3D';
 
         /**
          * Gets or sets the Columbus View tooltip.  This property is observable.
@@ -121,7 +120,7 @@ define([
 
         //Used by knockout
         this._sceneMode = SceneMode;
-    };
+    }
 
     defineProperties(SceneModePickerViewModel.prototype, {
         /**

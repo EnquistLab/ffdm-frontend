@@ -17,7 +17,7 @@ defineSuite([
         'Scene/ImageryLayer',
         'Scene/ImageryProvider',
         'Scene/ImageryState',
-        'Specs/waitsForPromise',
+        'Specs/pollToPromise',
         'ThirdParty/when'
     ], function(
         TileMapServiceImageryProvider,
@@ -37,10 +37,9 @@ defineSuite([
         ImageryLayer,
         ImageryProvider,
         ImageryState,
-        waitsForPromise,
+        pollToPromise,
         when) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     afterEach(function() {
         loadImage.createImage = loadImage.defaultCreateImage;
@@ -49,6 +48,53 @@ defineSuite([
 
     it('conforms to ImageryProvider interface', function() {
         expect(TileMapServiceImageryProvider).toConformToInterface(ImageryProvider);
+    });
+
+    it('resolves readyPromise', function() {
+        var provider = new TileMapServiceImageryProvider({
+            url : 'made/up/tms/server/'
+        });
+
+        return provider.readyPromise.then(function(result) {
+            expect(result).toBe(true);
+            expect(provider.ready).toBe(true);
+        });
+    });
+
+    it('rejects readyPromise on error', function() {
+        loadWithXhr.load = function(url, responseType, method, data, headers, deferred, overrideMimeType) {
+            // We can't resolve the promise immediately, because then the error would be raised
+            // before we could subscribe to it.  This a problem particular to tests.
+            setTimeout(function() {
+                var parser = new DOMParser();
+                var xmlString =
+                    '<TileMap version="1.0.0" tilemapservice="http://tms.osgeo.org/1.0.0">' +
+                    '   <Title/>' +
+                    '   <Abstract/>' +
+                    '   <SRS>EPSG:4326</SRS>' +
+                    '   <BoundingBox minx="-10.0" miny="-123.0" maxx="11.0" maxy="-110.0"/>' +
+                    '   <Origin x="-90.0" y="-180.0"/>' +
+                    '   <TileFormat width="256" height="256" mime-type="image/png" extension="png"/>' +
+                    '   <TileSets profile="foobar">' +
+                    '       <TileSet href="2" units-per-pixel="39135.75848201024200" order="2"/>' +
+                    '       <TileSet href="3" units-per-pixel="19567.87924100512100" order="3"/>' +
+                    '   </TileSets>' +
+                    '</TileMap>';
+                var xml = parser.parseFromString(xmlString, "text/xml");
+                deferred.resolve(xml);
+            }, 1);
+        };
+
+        var provider = new TileMapServiceImageryProvider({
+            url : 'made/up/tms/server'
+        });
+
+        return provider.readyPromise.then(function() {
+            fail('should not resolve');
+        }).otherwise(function (e) {
+            expect(provider.ready).toBe(false);
+            expect(e.message).toContain('unsupported profile');
+        });
     });
 
     it('requires the url to be specified', function() {
@@ -63,11 +109,9 @@ defineSuite([
             url : 'made/up/tms/server/'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(typeof provider.hasAlphaChannel).toBe('boolean');
         });
     });
@@ -77,19 +121,17 @@ defineSuite([
             url : 'made/up/tms/server/'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
-            spyOn(loadImage, 'createImage').andCallFake(function(url, crossOrigin, deferred) {
+        }).then(function() {
+            spyOn(loadImage, 'createImage').and.callFake(function(url, crossOrigin, deferred) {
                 expect(url).not.toContain('//');
 
                 // Just return any old image.
                 loadImage.defaultCreateImage('Data/Images/Red16x16.png', crossOrigin, deferred);
             });
 
-            waitsForPromise(provider.requestImage(0, 0, 0), function(image) {
+            return provider.requestImage(0, 0, 0).then(function(image) {
                 expect(loadImage.createImage).toHaveBeenCalled();
                 expect(image).toBeInstanceOf(Image);
             });
@@ -101,19 +143,39 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
-            spyOn(loadImage, 'createImage').andCallFake(function(url, crossOrigin, deferred) {
+        }).then(function() {
+            spyOn(loadImage, 'createImage').and.callFake(function(url, crossOrigin, deferred) {
                 expect(url).toContain('made/up/tms/server/');
 
                 // Just return any old image.
                 loadImage.defaultCreateImage('Data/Images/Red16x16.png', crossOrigin, deferred);
             });
 
-            waitsForPromise(provider.requestImage(0, 0, 0), function(image) {
+            return provider.requestImage(0, 0, 0).then(function(image) {
+                expect(loadImage.createImage).toHaveBeenCalled();
+                expect(image).toBeInstanceOf(Image);
+            });
+        });
+    });
+
+    it('supports a query string at the end of the URL', function() {
+        var provider = new TileMapServiceImageryProvider({
+            url : 'made/up/tms/server/?a=some&b=query'
+        });
+
+        return pollToPromise(function() {
+            return provider.ready;
+        }).then(function() {
+            spyOn(loadImage, 'createImage').and.callFake(function(url, crossOrigin, deferred) {
+                expect(url).not.toContain('//');
+
+                // Just return any old image.
+                loadImage.defaultCreateImage('Data/Images/Red16x16.png', crossOrigin, deferred);
+            });
+
+            return provider.requestImage(0, 0, 0).then(function(image) {
                 expect(loadImage.createImage).toHaveBeenCalled();
                 expect(image).toBeInstanceOf(Image);
             });
@@ -127,23 +189,21 @@ defineSuite([
 
         expect(provider.url).toEqual('made/up/tms/server/');
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.tileWidth).toEqual(256);
             expect(provider.tileHeight).toEqual(256);
-            expect(provider.maximumLevel).toEqual(18);
+            expect(provider.maximumLevel).toBeUndefined();
             expect(provider.tilingScheme).toBeInstanceOf(WebMercatorTilingScheme);
             expect(provider.rectangle).toEqual(new WebMercatorTilingScheme().rectangle);
 
-            spyOn(loadImage, 'createImage').andCallFake(function(url, crossOrigin, deferred) {
+            spyOn(loadImage, 'createImage').and.callFake(function(url, crossOrigin, deferred) {
                 // Just return any old image.
                 loadImage.defaultCreateImage('Data/Images/Red16x16.png', crossOrigin, deferred);
             });
 
-            waitsForPromise(provider.requestImage(0, 0, 0), function(image) {
+            return provider.requestImage(0, 0, 0).then(function(image) {
                 expect(loadImage.createImage).toHaveBeenCalled();
                 expect(image).toBeInstanceOf(Image);
             });
@@ -154,7 +214,11 @@ defineSuite([
         var provider = new TileMapServiceImageryProvider({
             url : 'made/up/tms/server'
         });
-        expect(provider.credit).toBeUndefined();
+        return pollToPromise(function() {
+          return provider.ready;
+        }).then(function() {
+          expect(provider.credit).toBeUndefined();
+        });
     });
 
     it('turns the supplied credit into a logo', function() {
@@ -162,24 +226,29 @@ defineSuite([
             url : 'made/up/gms/server',
             credit : 'Thanks to our awesome made up source of this imagery!'
         });
-        expect(providerWithCredit.credit).toBeDefined();
+        return pollToPromise(function() {
+          return providerWithCredit.ready;
+        }).then(function() {
+          expect(providerWithCredit.credit).toBeDefined();
+        });
     });
 
     it('routes resource request through a proxy if one is specified', function() {
+        /*jshint unused: false*/
         var proxy = new DefaultProxy('/proxy/');
         var requestMetadata = when.defer();
-        spyOn(loadWithXhr, 'load').andCallFake(function(url, responseType, method, data, headers, deferred, overrideMimeType) {
+        spyOn(loadWithXhr, 'load').and.callFake(function(url, responseType, method, data, headers, deferred, overrideMimeType) {
             requestMetadata.resolve(url);
             deferred.reject(); //since the TMS server doesn't exist (and doesn't need too) we can just reject here.
         });
 
         var provider = new TileMapServiceImageryProvider({
-            url : 'made/up/tms/server',
+            url : 'server.invalid',
             proxy : proxy
         });
 
-        waitsForPromise(requestMetadata, function(url) {
-            expect(url.indexOf(proxy.getURL('made/up/tms/server'))).toEqual(0);
+        return requestMetadata.promise.then(function(url) {
+            expect(url.indexOf(proxy.getURL('server.invalid'))).toEqual(0);
         });
     });
 
@@ -190,21 +259,19 @@ defineSuite([
             proxy : proxy
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.proxy).toEqual(proxy);
 
-            spyOn(loadImage, 'createImage').andCallFake(function(url, crossOrigin, deferred) {
+            spyOn(loadImage, 'createImage').and.callFake(function(url, crossOrigin, deferred) {
                 expect(url.indexOf(proxy.getURL('made/up/tms/server'))).toEqual(0);
 
                 // Just return any old image.
                 loadImage.defaultCreateImage('Data/Images/Red16x16.png', crossOrigin, deferred);
             });
 
-            waitsForPromise(provider.requestImage(0, 0, 0), function(image) {
+            return provider.requestImage(0, 0, 0).then(function(image) {
                 expect(loadImage.createImage).toHaveBeenCalled();
                 expect(image).toBeInstanceOf(Image);
             });
@@ -218,26 +285,24 @@ defineSuite([
             rectangle : rectangle
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.tileWidth).toEqual(256);
             expect(provider.tileHeight).toEqual(256);
-            expect(provider.maximumLevel).toEqual(18);
+            expect(provider.maximumLevel).toBeUndefined();
             expect(provider.tilingScheme).toBeInstanceOf(WebMercatorTilingScheme);
             expect(provider.rectangle).toEqual(rectangle);
             expect(provider.tileDiscardPolicy).toBeUndefined();
 
-            spyOn(loadImage, 'createImage').andCallFake(function(url, crossOrigin, deferred) {
+            spyOn(loadImage, 'createImage').and.callFake(function(url, crossOrigin, deferred) {
                 expect(url).toContain('/0/0/0');
 
                 // Just return any old image.
                 loadImage.defaultCreateImage('Data/Images/Red16x16.png', crossOrigin, deferred);
             });
 
-            waitsForPromise(provider.requestImage(0, 0, 0), function(image) {
+            return provider.requestImage(0, 0, 0).then(function(image) {
                 expect(loadImage.createImage).toHaveBeenCalled();
                 expect(image).toBeInstanceOf(Image);
             });
@@ -250,11 +315,9 @@ defineSuite([
             maximumLevel : 5
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.maximumLevel).toEqual(5);
         });
     });
@@ -287,25 +350,20 @@ defineSuite([
             }
         };
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        var imagery;
-        runs(function() {
-            imagery = new Imagery(layer, 0, 0, 0);
+        }).then(function() {
+            var imagery = new Imagery(layer, 0, 0, 0);
             imagery.addReference();
             layer._requestImagery(imagery);
-        });
 
-        waitsFor(function() {
-            return imagery.state === ImageryState.RECEIVED;
-        }, 'image to load');
-
-        runs(function() {
-            expect(imagery.image).toBeInstanceOf(Image);
-            expect(tries).toEqual(2);
-            imagery.releaseReference();
+            return pollToPromise(function() {
+                return imagery.state === ImageryState.RECEIVED;
+            }).then(function() {
+                expect(imagery.image).toBeInstanceOf(Image);
+                expect(tries).toEqual(2);
+                imagery.releaseReference();
+            });
         });
     });
 
@@ -332,11 +390,9 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.rectangle.west).toEqualEpsilon(CesiumMath.toRadians(-180.0), CesiumMath.EPSILON14);
             expect(provider.rectangle.west).toBeGreaterThanOrEqualTo(provider.tilingScheme.rectangle.west);
             expect(provider.rectangle.east).toEqualEpsilon(CesiumMath.toRadians(180.0), CesiumMath.EPSILON14);
@@ -372,11 +428,9 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.maximumLevel).toBe(8);
             expect(provider.minimumLevel).toBe(7);
         });
@@ -406,11 +460,9 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.maximumLevel).toBe(8);
             expect(provider.minimumLevel).toBe(0);
         });
@@ -440,11 +492,9 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.maximumLevel).toBe(8);
             expect(provider.minimumLevel).toBe(7);
         });
@@ -474,11 +524,9 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.tilingScheme).toBeInstanceOf(WebMercatorTilingScheme);
             expect(provider.tilingScheme.projection).toBeInstanceOf(WebMercatorProjection);
 
@@ -488,7 +536,7 @@ defineSuite([
 
             expect(provider.rectangle.west).toEqual(expectedSW.longitude);
             expect(provider.rectangle.south).toEqual(expectedSW.latitude);
-            expect(provider.rectangle.east).toEqual(expectedNE.longitude);
+            expect(provider.rectangle.east).toBeCloseTo(expectedNE.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.north).toEqual(expectedNE.latitude);
         });
     });
@@ -517,21 +565,18 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.tilingScheme).toBeInstanceOf(GeographicTilingScheme);
             expect(provider.tilingScheme.projection).toBeInstanceOf(GeographicProjection);
 
-            var projection = provider.tilingScheme.projection;
             var expectedSW = Cartographic.fromDegrees(-123.0, -10.0);
             var expectedNE = Cartographic.fromDegrees(-110.0, 11.0);
 
-            expect(provider.rectangle.west).toEqual(expectedSW.longitude);
+            expect(provider.rectangle.west).toBeCloseTo(expectedSW.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.south).toEqual(expectedSW.latitude);
-            expect(provider.rectangle.east).toEqual(expectedNE.longitude);
+            expect(provider.rectangle.east).toBeCloseTo(expectedNE.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.north).toEqual(expectedNE.latitude);
         });
     });
@@ -560,21 +605,18 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.tilingScheme).toBeInstanceOf(WebMercatorTilingScheme);
             expect(provider.tilingScheme.projection).toBeInstanceOf(WebMercatorProjection);
 
-            var projection = provider.tilingScheme.projection;
             var expectedSW = Cartographic.fromDegrees(-123.0, -10.0);
             var expectedNE = Cartographic.fromDegrees(-110.0, 11.0);
 
-            expect(provider.rectangle.west).toEqual(expectedSW.longitude);
+            expect(provider.rectangle.west).toBeCloseTo(expectedSW.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.south).toEqual(expectedSW.latitude);
-            expect(provider.rectangle.east).toEqual(expectedNE.longitude);
+            expect(provider.rectangle.east).toBeCloseTo(expectedNE.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.north).toEqual(expectedNE.latitude);
         });
     });
@@ -603,21 +645,18 @@ defineSuite([
             url : 'made/up/tms/server'
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return provider.ready;
-        }, 'imagery provider to become ready');
-
-        runs(function() {
+        }).then(function() {
             expect(provider.tilingScheme).toBeInstanceOf(GeographicTilingScheme);
             expect(provider.tilingScheme.projection).toBeInstanceOf(GeographicProjection);
 
-            var projection = provider.tilingScheme.projection;
             var expectedSW = Cartographic.fromDegrees(-123.0, -10.0);
             var expectedNE = Cartographic.fromDegrees(-110.0, 11.0);
 
-            expect(provider.rectangle.west).toEqual(expectedSW.longitude);
+            expect(provider.rectangle.west).toBeCloseTo(expectedSW.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.south).toEqual(expectedSW.latitude);
-            expect(provider.rectangle.east).toEqual(expectedNE.longitude);
+            expect(provider.rectangle.east).toBeCloseTo(expectedNE.longitude, CesiumMath.EPSILON14);
             expect(provider.rectangle.north).toEqual(expectedNE.latitude);
         });
     });
@@ -656,11 +695,9 @@ defineSuite([
             errorRaised = true;
         });
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return errorRaised;
-        }, 'error to be raised');
-
-        runs(function() {
+        }).then(function() {
             expect(errorRaised).toBe(true);
         });
     });

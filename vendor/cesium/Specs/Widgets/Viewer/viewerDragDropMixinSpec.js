@@ -3,16 +3,17 @@ defineSuite([
         'Widgets/Viewer/viewerDragDropMixin',
         'Core/defined',
         'Core/TimeInterval',
+        'Specs/createViewer',
         'Specs/DomEventSimulator',
-        'Widgets/Viewer/Viewer'
+        'Specs/pollToPromise'
     ], function(
         viewerDragDropMixin,
         defined,
         TimeInterval,
+        createViewer,
         DomEventSimulator,
-        Viewer) {
+        pollToPromise) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var container;
     var viewer;
@@ -39,7 +40,7 @@ defineSuite([
                 });
             }
         };
-        spyOn(window, 'FileReader').andReturn(fakeFileReader);
+        spyOn(window, 'FileReader').and.returnValue(fakeFileReader);
     });
 
     afterEach(function() {
@@ -51,7 +52,7 @@ defineSuite([
     });
 
     it('mixin sets default values', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
         expect(viewer.dropTarget).toBe(viewer.container);
         expect(viewer.dropEnabled).toEqual(true);
@@ -59,7 +60,7 @@ defineSuite([
     });
 
     it('clearOnDrop defaults to true when dataSourceBrowser is not used', function() {
-        viewer = new Viewer(container, {
+        viewer = createViewer(container, {
             dataSourceBrowser : false
         });
         viewer.extend(viewerDragDropMixin);
@@ -67,7 +68,7 @@ defineSuite([
     });
 
     it('mixin sets option values', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin, {
             dropTarget : document.body,
             clearOnDrop : false
@@ -78,7 +79,7 @@ defineSuite([
     });
 
     it('mixin works with dropTarget id string', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin, {
             dropTarget : 'container'
         });
@@ -119,16 +120,14 @@ defineSuite([
             }
         };
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
 
         DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return viewer.dataSources.length === 1;
-        });
-
-        runs(function() {
+        }).then(function() {
             var dataSource = viewer.dataSources.get(0);
             var interval = TimeInterval.fromIso8601({
                 iso8601 : czml1[0].clock.interval
@@ -156,16 +155,14 @@ defineSuite([
             }
         };
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
 
         DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return viewer.dataSources.length === 2;
-        });
-
-        runs(function() {
+        }).then(function() {
             var source1 = viewer.dataSources.get(0);
             var source2 = viewer.dataSources.get(1);
             expect(source1.entities.getById('test')).toBeDefined();
@@ -196,16 +193,14 @@ defineSuite([
             }
         };
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
 
         DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
 
-        waitsFor(function() {
+        return pollToPromise(function() {
             return viewer.dataSources.length === 2;
-        });
-
-        runs(function() {
+        }).then(function() {
             var source1 = viewer.dataSources.get(0);
             var source2 = viewer.dataSources.get(1);
             expect(source1.entities.getById('test')).toBeDefined();
@@ -219,42 +214,38 @@ defineSuite([
 
             viewer.clearOnDrop = false;
             DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
-        });
 
-        waitsFor(function() {
-            return viewer.dataSources.length === 4;
-        });
+            return pollToPromise(function() {
+                return viewer.dataSources.length === 4;
+            }).then(function() {
+                var source1 = viewer.dataSources.get(0);
+                var source2 = viewer.dataSources.get(1);
+                var source3 = viewer.dataSources.get(2);
+                var source4 = viewer.dataSources.get(3);
 
-        runs(function() {
-            var source1 = viewer.dataSources.get(0);
-            var source2 = viewer.dataSources.get(1);
-            var source3 = viewer.dataSources.get(2);
-            var source4 = viewer.dataSources.get(3);
+                expect(source1.entities.getById('test')).toBeDefined();
+                expect(source2.entities.getById('test2')).toBeDefined();
+                expect(source3.entities.getById('test')).toBeDefined();
+                expect(source4.entities.getById('test2')).toBeDefined();
 
-            expect(source1.entities.getById('test')).toBeDefined();
-            expect(source2.entities.getById('test2')).toBeDefined();
-            expect(source3.entities.getById('test')).toBeDefined();
-            expect(source4.entities.getById('test2')).toBeDefined();
+                viewer.clearOnDrop = true;
+                DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
 
-            viewer.clearOnDrop = true;
-            DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
-        });
-
-        waitsFor(function() {
-            return viewer.dataSources.length === 2;
-        });
-
-        runs(function() {
-            var source1 = viewer.dataSources.get(0);
-            var source2 = viewer.dataSources.get(1);
-            expect(source1.entities.getById('test')).toBeDefined();
-            expect(source2.entities.getById('test2')).toBeDefined();
-            //Interval of first file should be used.
-            var interval = TimeInterval.fromIso8601({
-                iso8601 : czml1[0].clock.interval
+                return pollToPromise(function() {
+                    return viewer.dataSources.length === 2;
+                }).then(function() {
+                    var source1 = viewer.dataSources.get(0);
+                    var source2 = viewer.dataSources.get(1);
+                    expect(source1.entities.getById('test')).toBeDefined();
+                    expect(source2.entities.getById('test2')).toBeDefined();
+                    //Interval of first file should be used.
+                    var interval = TimeInterval.fromIso8601({
+                        iso8601 : czml1[0].clock.interval
+                    });
+                    expect(source1.clock.startTime).toEqual(interval.start);
+                    expect(source1.clock.stopTime).toEqual(interval.stop);
+                });
             });
-            expect(source1.clock.startTime).toEqual(interval.start);
-            expect(source1.clock.stopTime).toEqual(interval.stop);
         });
     });
 
@@ -272,7 +263,7 @@ defineSuite([
             }
         };
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
 
         var spyListener = jasmine.createSpy('listener');
@@ -280,11 +271,9 @@ defineSuite([
         viewer.dropError.addEventListener(spyListener);
         DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
 
-        waitsFor(function() {
-            return spyListener.wasCalled;
-        });
-
-        runs(function() {
+        return pollToPromise(function() {
+            return spyListener.calls.any();
+        }).then(function() {
             expect(spyListener).toHaveBeenCalledWith(viewer, 'czml1.czml', jasmine.any(SyntaxError));
 
             viewer.dropError.removeEventListener(spyListener);
@@ -305,7 +294,7 @@ defineSuite([
             }
         };
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
 
         var spyListener = jasmine.createSpy('listener');
@@ -313,18 +302,16 @@ defineSuite([
         viewer.dropError.addEventListener(spyListener);
         DomEventSimulator.fireMockEvent(viewer._handleDrop, mockEvent);
 
-        waitsFor(function() {
-            return spyListener.wasCalled;
-        });
-
-        runs(function() {
+        return pollToPromise(function() {
+            return spyListener.calls.any();
+        }).then(function() {
             expect(spyListener).toHaveBeenCalledWith(viewer, mockEvent.dataTransfer.files[0].name, mockEvent.dataTransfer.files[0].errorMessage);
 
             viewer.dropError.removeEventListener(spyListener);
         });
     });
 
-    var MockContainer = function() {
+    function MockContainer() {
         var events = {};
         this.events = events;
 
@@ -341,12 +328,12 @@ defineSuite([
             expect(subscribed.bubble).toEqual(bubble);
             delete events[name];
         };
-    };
+    }
 
     it('enable/disable subscribes to provided dropTarget.', function() {
         var dropTarget = new MockContainer();
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin, {
             dropTarget : dropTarget
         });
@@ -373,7 +360,7 @@ defineSuite([
         var dropTarget1 = new MockContainer();
         var dropTarget2 = new MockContainer();
 
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin, {
             dropTarget : dropTarget1
         });
@@ -395,6 +382,16 @@ defineSuite([
         expect(dropTarget2.events.dragexit).toBeDefined();
     });
 
+    it('can set proxy.', function() {
+        var proxy = {};
+
+        viewer = createViewer(container);
+        viewer.extend(viewerDragDropMixin, {
+            proxy : proxy
+        });
+        expect(viewer.proxy).toBe(proxy);
+    });
+
     it('throws with undefined viewer', function() {
         expect(function() {
             viewerDragDropMixin(undefined);
@@ -402,7 +399,7 @@ defineSuite([
     });
 
     it('throws with non-existant string container', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         expect(function() {
             viewer.extend(viewerDragDropMixin, {
                 dropTarget : 'doesNotExist'
@@ -411,7 +408,7 @@ defineSuite([
     });
 
     it('throws if dropTarget property already added by another mixin.', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.dropTarget = true;
         expect(function() {
             viewer.extend(viewerDragDropMixin);
@@ -419,7 +416,7 @@ defineSuite([
     });
 
     it('throws if dropEnabled property already added by another mixin.', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.dropEnabled = true;
         expect(function() {
             viewer.extend(viewerDragDropMixin);
@@ -427,7 +424,7 @@ defineSuite([
     });
 
     it('throws if dropError property already added by another mixin.', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.dropError = true;
         expect(function() {
             viewer.extend(viewerDragDropMixin);
@@ -435,15 +432,23 @@ defineSuite([
     });
 
     it('throws if clearOnDrop property already added by another mixin.', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.clearOnDrop = true;
         expect(function() {
             viewer.extend(viewerDragDropMixin);
         }).toThrowDeveloperError();
     });
 
+    it('throws if flyToOnDrop property already added by another mixin.', function() {
+        viewer = createViewer(container);
+        viewer.flyToOnDrop = true;
+        expect(function() {
+            viewer.extend(viewerDragDropMixin);
+        }).toThrowDeveloperError();
+    });
+
     it('setting dropTarget to undefined throws exception', function() {
-        viewer = new Viewer(container);
+        viewer = createViewer(container);
         viewer.extend(viewerDragDropMixin);
         expect(function() {
             viewer.dropTarget = undefined;

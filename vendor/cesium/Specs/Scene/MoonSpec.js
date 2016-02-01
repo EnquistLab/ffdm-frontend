@@ -24,7 +24,6 @@ defineSuite([
         createFrameState,
         createScene) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
 
@@ -67,28 +66,27 @@ defineSuite([
         var camera = scene.camera;
         lookAtMoon(camera, date);
 
-        expect(scene.renderForSpecs()).toNotEqual([0, 0, 0, 0]);
+        expect(scene.renderForSpecs()).not.toEqual([0, 0, 0, 0]);
     });
 
     it('does not render when show is false', function() {
         var moon = new Moon();
         moon.show = false;
 
-        var frameState = createFrameState(createCamera({
+        var context = scene.context;
+        var frameState = createFrameState(context, createCamera({
             near : 1.0,
             far : 1.0e10
         }));
-        var context = scene.context;
         var us = context.uniformState;
-        us.update(context, frameState);
+        us.update(frameState);
 
         lookAtMoon(scene.camera, frameState.time);
 
-        us.update(context, frameState);
+        us.update(frameState);
 
-        var commandList = [];
-        moon.update(context, frameState, commandList);
-        expect(commandList.length).toEqual(0);
+        moon.update(frameState);
+        expect(frameState.commandList.length).toEqual(0);
 
         moon.destroy();
     });

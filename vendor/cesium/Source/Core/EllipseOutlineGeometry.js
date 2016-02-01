@@ -138,19 +138,17 @@ define([
      * @param {Number} options.semiMajorAxis The length of the ellipse's semi-major axis in meters.
      * @param {Number} options.semiMinorAxis The length of the ellipse's semi-minor axis in meters.
      * @param {Ellipsoid} [options.ellipsoid=Ellipsoid.WGS84] The ellipsoid the ellipse will be on.
-     * @param {Number} [options.height=0.0] The height above the ellipsoid.
-     * @param {Number} [options.extrudedHeight] The height of the extrusion.
-     * @param {Number} [options.rotation=0.0] The angle from north (clockwise) in radians.
+     * @param {Number} [options.height=0.0] The distance in meters between the ellipse and the ellipsoid surface.
+     * @param {Number} [options.extrudedHeight] The distance in meters between the ellipse's extruded face and the ellipsoid surface.
+     * @param {Number} [options.rotation=0.0] The angle from north (counter-clockwise) in radians.
      * @param {Number} [options.granularity=0.02] The angular distance between points on the ellipse in radians.
      * @param {Number} [options.numberOfVerticalLines=16] Number of lines to draw between the top and bottom surface of an extruded ellipse.
      *
      * @exception {DeveloperError} semiMajorAxis and semiMinorAxis must be greater than zero.
-     * @exception {DeveloperError} semiMajorAxis must be larger than the semiMajorAxis.
+     * @exception {DeveloperError} semiMajorAxis must be greater than or equal to the semiMinorAxis.
      * @exception {DeveloperError} granularity must be greater than zero.
      *
      * @see EllipseOutlineGeometry.createGeometry
-     *
-     * @demo {@link http://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=Ellipse%20Outline.html|Cesium Sandcastle Ellipse Outline Demo}
      *
      * @example
      * var ellipse = new Cesium.EllipseOutlineGeometry({
@@ -161,7 +159,7 @@ define([
      * });
      * var geometry = Cesium.EllipseOutlineGeometry.createGeometry(ellipse);
      */
-    var EllipseOutlineGeometry = function(options) {
+    function EllipseOutlineGeometry(options) {
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
 
         var center = options.center;
@@ -187,7 +185,7 @@ define([
             throw new DeveloperError('Semi-major and semi-minor axes must be greater than zero.');
         }
         if (semiMajorAxis < semiMinorAxis) {
-            throw new DeveloperError('semiMajorAxis must be larger than the semiMajorAxis.');
+            throw new DeveloperError('semiMajorAxis must be greater than or equal to the semiMinorAxis.');
         }
         if (granularity <= 0.0) {
             throw new DeveloperError('granularity must be greater than zero.');
@@ -201,23 +199,22 @@ define([
         this._rotation = defaultValue(options.rotation, 0.0);
         this._height = height;
         this._granularity = granularity;
-        this._extrudedHeight = defaultValue(extrudedHeight, 0.0);
+        this._extrudedHeight = extrudedHeight;
         this._extrude = extrude;
         this._numberOfVerticalLines = Math.max(defaultValue(options.numberOfVerticalLines, 16), 0);
         this._workerName = 'createEllipseOutlineGeometry';
-    };
+    }
 
     /**
      * The number of elements used to pack the object into an array.
      * @type {Number}
      */
-    EllipseOutlineGeometry.packedLength = Cartesian3.packedLength + Ellipsoid.packedLength + 8;
+    EllipseOutlineGeometry.packedLength = Cartesian3.packedLength + Ellipsoid.packedLength + 9;
 
     /**
      * Stores the provided instance into the provided array.
-     * @function
      *
-     * @param {Object} value The value to pack.
+     * @param {EllipseOutlineGeometry} value The value to pack.
      * @param {Number[]} array The array to pack into.
      * @param {Number} [startingIndex=0] The index into the array at which to start packing the elements.
      */
@@ -244,7 +241,8 @@ define([
         array[startingIndex++] = value._rotation;
         array[startingIndex++] = value._height;
         array[startingIndex++] = value._granularity;
-        array[startingIndex++] = value._extrudedHeight;
+        array[startingIndex++] = defined(value._extrudedHeight) ? 1.0 : 0.0;
+        array[startingIndex++] = defaultValue(value._extrudedHeight, 0.0);
         array[startingIndex++] = value._extrude ? 1.0 : 0.0;
         array[startingIndex]   = value._numberOfVerticalLines;
     };
@@ -269,6 +267,7 @@ define([
      * @param {Number[]} array The packed array.
      * @param {Number} [startingIndex=0] The starting index of the element to be unpacked.
      * @param {EllipseOutlineGeometry} [result] The object into which to store the result.
+     * @returns {EllipseOutlineGeometry} The modified result parameter or a new EllipseOutlineGeometry instance if one was not provided.
      */
     EllipseOutlineGeometry.unpack = function(array, startingIndex, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -290,13 +289,14 @@ define([
         var rotation = array[startingIndex++];
         var height = array[startingIndex++];
         var granularity = array[startingIndex++];
+        var hasExtrudedHeight = array[startingIndex++];
         var extrudedHeight = array[startingIndex++];
         var extrude = array[startingIndex++] === 1.0;
         var numberOfVerticalLines = array[startingIndex];
 
         if (!defined(result)) {
             scratchOptions.height = height;
-            scratchOptions.extrudedHeight = extrudedHeight;
+            scratchOptions.extrudedHeight = hasExtrudedHeight ? extrudedHeight : undefined;
             scratchOptions.granularity = granularity;
             scratchOptions.rotation = rotation;
             scratchOptions.semiMajorAxis = semiMajorAxis;
@@ -312,7 +312,7 @@ define([
         result._rotation = rotation;
         result._height = height;
         result._granularity = granularity;
-        result._extrudedHeight = extrudedHeight;
+        result._extrudedHeight = hasExtrudedHeight ? extrudedHeight : undefined;
         result._extrude = extrude;
         result._numberOfVerticalLines = numberOfVerticalLines;
 

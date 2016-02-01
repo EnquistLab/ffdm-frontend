@@ -6,7 +6,6 @@ defineSuite([
         TimeInterval,
         JulianDate) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     function returnTrue() {
         return true;

@@ -42,7 +42,6 @@ defineSuite([
         createDynamicProperty,
         createScene) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var time;
     var time2;
@@ -368,6 +367,26 @@ defineSuite([
         expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(outline.getValue(time2)));
     });
 
+    it('createFillGeometryInstance obeys Entity.show is false.', function() {
+        var entity = createBasicRectangle();
+        entity.show = false;
+        entity.rectangle.fill = true;
+        var updater = new RectangleGeometryUpdater(entity, scene);
+        var instance = updater.createFillGeometryInstance(new JulianDate());
+        var attributes = instance.attributes;
+        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
+    });
+
+    it('createOutlineGeometryInstance obeys Entity.show is false.', function() {
+        var entity = createBasicRectangle();
+        entity.show = false;
+        entity.rectangle.outline = true;
+        var updater = new RectangleGeometryUpdater(entity, scene);
+        var instance = updater.createFillGeometryInstance(new JulianDate());
+        var attributes = instance.attributes;
+        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
+    });
+
     it('dynamic updater sets properties', function() {
         var rectangle = new RectangleGraphics();
         rectangle.coordinates = createDynamicProperty(new Rectangle(0, 0, 1, 1));
@@ -399,6 +418,11 @@ defineSuite([
         expect(options.granularity).toEqual(rectangle.granularity.getValue());
         expect(options.stRotation).toEqual(rectangle.stRotation.getValue());
 
+        entity.show = false;
+        dynamicUpdater.update(JulianDate.now());
+        expect(primitives.length).toBe(0);
+        entity.show = true;
+
         //If a dynamic show returns false, the primitive should go away.
         rectangle.show.setValue(false);
         dynamicUpdater.update(time);
@@ -424,20 +448,20 @@ defineSuite([
         updater.geometryChanged.addEventListener(listener);
 
         entity.rectangle.height = new ConstantProperty(82);
-        expect(listener.callCount).toEqual(1);
+        expect(listener.calls.count()).toEqual(1);
 
         entity.availability = new TimeIntervalCollection();
-        expect(listener.callCount).toEqual(2);
+        expect(listener.calls.count()).toEqual(2);
 
         entity.rectangle.coordinates = undefined;
-        expect(listener.callCount).toEqual(3);
+        expect(listener.calls.count()).toEqual(3);
 
         //Since there's no valid geometry, changing another property should not raise the event.
         entity.rectangle.height = undefined;
 
         //Modifying an unrelated property should not have any effect.
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
-        expect(listener.callCount).toEqual(3);
+        expect(listener.calls.count()).toEqual(3);
     });
 
     it('createFillGeometryInstance throws if object is not filled', function() {
@@ -521,4 +545,4 @@ defineSuite([
     createDynamicGeometryBoundingSphereSpecs(RectangleGeometryUpdater, entity, entity.rectangle, function() {
         return scene;
     });
-});
+}, 'WebGL');

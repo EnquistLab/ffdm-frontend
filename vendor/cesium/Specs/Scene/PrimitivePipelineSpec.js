@@ -20,7 +20,6 @@ defineSuite([
         GeometryAttributes,
         PrimitiveType) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('can pack and unpack geometry', function() {
         var boxGeometry = BoxGeometry.createGeometry(BoxGeometry.fromDimensions({
@@ -43,7 +42,7 @@ defineSuite([
     it('can pack and unpack geometry without indices', function() {
         var attributes = new GeometryAttributes();
         attributes.position = new GeometryAttribute({
-            componentDatatype : ComponentDatatype.DOUBLE,
+            componentDatatype : ComponentDatatype.FLOAT,
             componentsPerAttribute : 3,
             values : new Float32Array([1, 2, 3, 4, 5, 6])
         });

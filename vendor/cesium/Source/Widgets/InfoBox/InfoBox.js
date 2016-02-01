@@ -1,6 +1,7 @@
 /*global define*/
 define([
         '../../Core/buildModuleUrl',
+        '../../Core/Color',
         '../../Core/defined',
         '../../Core/defineProperties',
         '../../Core/destroyObject',
@@ -11,6 +12,7 @@ define([
         './InfoBoxViewModel'
     ], function(
         buildModuleUrl,
+        Color,
         defined,
         defineProperties,
         destroyObject,
@@ -31,7 +33,7 @@ define([
      *
      * @exception {DeveloperError} Element with id "container" does not exist in the document.
      */
-    var InfoBox = function(container) {
+    function InfoBox(container) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(container)) {
             throw new DeveloperError('container is required.');
@@ -71,7 +73,7 @@ click: function () { closeClicked.raiseEvent(this); }');
 
         var frame = document.createElement('iframe');
         frame.className = 'cesium-infoBox-iframe';
-        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms'); //allow-pointer-lock allow-scripts allow-top-navigation
+        frame.setAttribute('sandbox', 'allow-same-origin allow-popups allow-forms'); //allow-pointer-lock allow-scripts allow-top-navigation
         frame.setAttribute('data-bind', 'style : { maxHeight : maxHeightOffset(40) }');
         frame.setAttribute('allowfullscreen', true);
         infoElement.appendChild(frame);
@@ -108,18 +110,37 @@ click: function () { closeClicked.raiseEvent(this); }');
             //1. It's an easy way to ensure order of operation so that we can adjust the height.
             //2. Knockout does not bind to elements inside of an iFrame, so we would have to apply a second binding
             //   model anyway.
-            that._descriptionSubscription = subscribeAndEvaluate(viewModel, '_descriptionSanitizedHtml', function(value) {
+            that._descriptionSubscription = subscribeAndEvaluate(viewModel, 'description', function(value) {
                 // Set the frame to small height, force vertical scroll bar to appear, and text to wrap accordingly.
                 frame.style.height = '5px';
                 frameContent.innerHTML = value;
+
+                //If the snippet is a single element, then use its background
+                //color for the body of the InfoBox. This makes the padding match
+                //the content and produces much nicer results.
+                var background = null;
+                var firstElementChild = frameContent.firstElementChild;
+                if (firstElementChild !== null && frameContent.childNodes.length === 1) {
+                    var style = window.getComputedStyle(firstElementChild);
+                    if (style !== null) {
+                        var backgroundColor = style['background-color'];
+                        var color = Color.fromCssColorString(backgroundColor);
+                        if (defined(color) && color.alpha !== 0) {
+                            background = style['background-color'];
+                        }
+                    }
+                }
+                infoElement.style['background-color'] = background;
+
                 // Measure and set the new custom height, based on text wrapped above.
-                frame.style.height = frameContent.getBoundingClientRect().height + 'px';
+                var height = frameContent.getBoundingClientRect().height;
+                frame.style.height =  height + 'px';
             });
         });
 
         //Chrome does not send the load event unless we explicitly set a src
         frame.setAttribute('src', 'about:blank');
-    };
+    }
 
     defineProperties(InfoBox.prototype, {
         /**
@@ -138,7 +159,7 @@ click: function () { closeClicked.raiseEvent(this); }');
          * Gets the view model.
          * @memberof InfoBox.prototype
          *
-         * @type {SelectionIndicatorViewModel}
+         * @type {InfoBoxViewModel}
          */
         viewModel : {
             get : function() {

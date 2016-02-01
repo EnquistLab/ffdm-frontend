@@ -5,16 +5,17 @@ defineSuite([
         'Core/Cartesian4',
         'Core/Math',
         'Core/Matrix3',
-        'Core/Quaternion'
+        'Core/Quaternion',
+        'Core/TranslationRotationScale'
     ], function(
         Matrix4,
         Cartesian3,
         Cartesian4,
         CesiumMath,
         Matrix3,
-        Quaternion) {
+        Quaternion,
+        TranslationRotationScale) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('default constructor creates values array with all zeros.', function() {
         var matrix = new Matrix4();
@@ -159,7 +160,7 @@ defineSuite([
     it('clone works without a result parameter', function() {
         var expected = new Matrix4(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0);
         var returnedResult = expected.clone();
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -168,14 +169,14 @@ defineSuite([
         var result = new Matrix4();
         var returnedResult = expected.clone(result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
     it('fromRotationTranslation works without a result parameter', function() {
         var expected = new Matrix4(1.0, 2.0, 3.0, 10.0, 4.0, 5.0, 6.0, 11.0, 7.0, 8.0, 9.0, 12.0, 0.0, 0.0, 0.0, 1.0);
         var returnedResult = Matrix4.fromRotationTranslation(new Matrix3(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), new Cartesian3(10.0, 11.0, 12.0));
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -184,14 +185,14 @@ defineSuite([
         var result = new Matrix4();
         var returnedResult = Matrix4.fromRotationTranslation(new Matrix3(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), new Cartesian3(10.0, 11.0, 12.0), result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
     it('fromTranslation works without a result parameter', function() {
         var expected = new Matrix4(1.0, 0.0, 0.0, 10.0, 0.0, 1.0, 0.0, 11.0, 0.0, 0.0, 1.0, 12.0, 0.0, 0.0, 0.0, 1.0);
         var returnedResult = Matrix4.fromTranslation(new Cartesian3(10.0, 11.0, 12.0));
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -205,7 +206,7 @@ defineSuite([
             new Cartesian3(1.0, 2.0, 3.0),                                            // translation
             Quaternion.fromAxisAngle(Cartesian3.UNIT_X, CesiumMath.toRadians(-90.0)), // rotation
             new Cartesian3(7.0, 8.0, 9.0));                                           // scale
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqualEpsilon(expected, CesiumMath.EPSILON14);
     });
 
@@ -222,7 +223,41 @@ defineSuite([
             new Cartesian3(7.0, 8.0, 9.0),                                            // scale
             result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toEqualEpsilon(expected, CesiumMath.EPSILON14);
+    });
+
+    it('fromTranslationRotationScale works without a result parameter', function() {
+        var expected = new Matrix4(
+            7.0,  0.0, 0.0, 1.0,
+            0.0,  0.0, 9.0, 2.0,
+            0.0, -8.0, 0.0, 3.0,
+            0.0,  0.0, 0.0, 1.0);
+
+        var trs = new TranslationRotationScale(new Cartesian3(1.0, 2.0, 3.0),
+            Quaternion.fromAxisAngle(Cartesian3.UNIT_X, CesiumMath.toRadians(-90.0)),
+            new Cartesian3(7.0, 8.0, 9.0));
+
+        var returnedResult = Matrix4.fromTranslationRotationScale(trs);
+        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toEqualEpsilon(expected, CesiumMath.EPSILON14);
+    });
+
+    it('fromTranslationRotationScale works with a result parameter', function() {
+        var expected = new Matrix4(
+            7.0,  0.0, 0.0, 1.0,
+            0.0,  0.0, 9.0, 2.0,
+            0.0, -8.0, 0.0, 3.0,
+            0.0,  0.0, 0.0, 1.0);
+
+        var trs = new TranslationRotationScale(new Cartesian3(1.0, 2.0, 3.0),
+            Quaternion.fromAxisAngle(Cartesian3.UNIT_X, CesiumMath.toRadians(-90.0)),
+            new Cartesian3(7.0, 8.0, 9.0));
+
+        var result = new Matrix4();
+        var returnedResult = Matrix4.fromTranslationRotationScale(trs, result);
+        expect(returnedResult).toBe(result);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqualEpsilon(expected, CesiumMath.EPSILON14);
     });
 
@@ -231,7 +266,7 @@ defineSuite([
         var result = new Matrix4();
         var returnedResult = Matrix4.fromTranslation(new Cartesian3(10.0, 11.0, 12.0), result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -242,7 +277,7 @@ defineSuite([
                 0.0, 0.0, 9.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
         var returnedResult = Matrix4.fromScale(new Cartesian3(7.0, 8.0, 9.0));
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -255,7 +290,7 @@ defineSuite([
         var result = new Matrix4();
         var returnedResult = Matrix4.fromScale(new Cartesian3(7.0, 8.0, 9.0), result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -355,7 +390,7 @@ defineSuite([
     it('toArray works without a result parameter', function() {
         var expected = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0];
         var returnedResult = Matrix4.toArray(Matrix4.fromColumnMajorArray(expected));
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -364,7 +399,7 @@ defineSuite([
         var result = [];
         var returnedResult = Matrix4.toArray(Matrix4.fromColumnMajorArray(expected), result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).toNotBe(expected);
+        expect(returnedResult).not.toBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -429,7 +464,18 @@ defineSuite([
         returnedResult = Matrix4.setColumn(matrix, 3, new Cartesian4(17.0, 18.0, 19.0, 20.0), result);
         expect(result).toBe(returnedResult);
         expect(result).toEqual(expected);
-});
+    });
+
+    it('setTranslation works', function() {
+        var matrix = new Matrix4(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0);
+        var translation = new Cartesian3(-1.0, -2.0, -3.0);
+        var result = new Matrix4();
+
+        var expected = new Matrix4(1.0, 2.0, 3.0, -1.0, 5.0, 6.0, 7.0, -2.0, 9.0, 10.0, 11.0, -3.0, 13.0, 14.0, 15.0, 16.0);
+        var returnedResult = Matrix4.setTranslation(matrix, translation, result);
+        expect(result).toBe(returnedResult);
+        expect(result).toEqual(expected);
+    });
 
     it('getRow works for each row', function() {
         var matrix = new Matrix4(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0);
@@ -649,6 +695,14 @@ defineSuite([
         var expected = Matrix4.multiply(m, Matrix4.fromScale(scale), new Matrix4());
         var result = new Matrix4();
         var returnedResult = Matrix4.multiplyByScale(m, scale, result);
+        expect(returnedResult).toBe(result);
+        expect(result).toEqual(expected);
+
+        m = new Matrix4(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0, 0, 1);
+        scale = new Cartesian3(2.0, 3.0, 4.0);
+        expected = Matrix4.multiply(m, Matrix4.fromScale(scale), new Matrix4());
+        result = new Matrix4();
+        returnedResult = Matrix4.multiplyByScale(m, scale, result);
         expect(returnedResult).toBe(result);
         expect(result).toEqual(expected);
     });
@@ -1273,9 +1327,28 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('getRow throws without matrix parameter', function() {
+    it('setColumn throws without matrix parameter', function() {
+        var cartesian = new Cartesian4();
         expect(function() {
-            Matrix4.getRow(undefined, 1);
+            Matrix4.setColumn(undefined, 2, cartesian);
+        }).toThrowDeveloperError();
+    });
+
+    it('setTranslation throws without matrix parameter', function() {
+        expect(function() {
+            Matrix4.setTranslation(undefined, new Cartesian3(), new Matrix4());
+        }).toThrowDeveloperError();
+    });
+
+    it('setTranslation throws without translation parameter', function() {
+        expect(function() {
+            Matrix4.setTranslation(new Matrix4(), undefined, new Matrix4());
+        }).toThrowDeveloperError();
+    });
+
+    it('setTranslation throws without result parameter', function() {
+        expect(function() {
+            Matrix4.setTranslation(new Matrix4(), new Cartesian3(), undefined);
         }).toThrowDeveloperError();
     });
 
@@ -1643,14 +1716,13 @@ defineSuite([
 
     it('computeInfinitePerspectiveOffCenter throws without near', function() {
         expect(function() {
-            var left = 0, right = 0, bottom = 0, top = 0, far = 0;
+            var left = 0, right = 0, bottom = 0, top = 0;
             Matrix4.computeInfinitePerspectiveOffCenter (left, right, bottom, top, 0);
         }).toThrowDeveloperError();
     });
 
     it('computeViewportTransformation works', function() {
         expect(function() {
-            var left = 0, right = 0, bottom = 0, top = 0, far = 0;
             Matrix4.computeViewportTransformation ({
                 x : 0,
                 y : 0,

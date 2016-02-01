@@ -46,7 +46,6 @@ defineSuite([
         createDynamicProperty,
         createScene) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var time = JulianDate.now();
     var scene;
@@ -345,6 +344,26 @@ defineSuite([
         expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(outline.getValue(time2)));
     });
 
+    it('createFillGeometryInstance obeys Entity.show is false.', function() {
+        var entity = createBasicEllipsoid();
+        entity.show = false;
+        entity.ellipsoid.fill = true;
+        var updater = new EllipsoidGeometryUpdater(entity, scene);
+        var instance = updater.createFillGeometryInstance(new JulianDate());
+        var attributes = instance.attributes;
+        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
+    });
+
+    it('createOutlineGeometryInstance obeys Entity.show is false.', function() {
+        var entity = createBasicEllipsoid();
+        entity.show = false;
+        entity.ellipsoid.outline = true;
+        var updater = new EllipsoidGeometryUpdater(entity, scene);
+        var instance = updater.createFillGeometryInstance(new JulianDate());
+        var attributes = instance.attributes;
+        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
+    });
+
     it('dynamic ellipsoid creates and updates', function() {
         var ellipsoid = new EllipsoidGraphics();
         ellipsoid.show = createDynamicProperty(true);
@@ -475,23 +494,23 @@ defineSuite([
         updater.geometryChanged.addEventListener(listener);
 
         entity.position = new ConstantPositionProperty(Cartesian3.UNIT_Z);
-        expect(listener.callCount).toEqual(1);
+        expect(listener.calls.count()).toEqual(1);
 
         entity.ellipsoid.radii = new ConstantProperty(new Cartesian3(1, 2, 3));
-        expect(listener.callCount).toEqual(2);
+        expect(listener.calls.count()).toEqual(2);
 
         entity.availability = new TimeIntervalCollection();
-        expect(listener.callCount).toEqual(3);
+        expect(listener.calls.count()).toEqual(3);
 
         entity.ellipsoid.radii = undefined;
-        expect(listener.callCount).toEqual(4);
+        expect(listener.calls.count()).toEqual(4);
 
         //Modifying an unrelated property should not have any effect.
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
-        expect(listener.callCount).toEqual(4);
+        expect(listener.calls.count()).toEqual(4);
 
         entity.ellipsoid.radii = new SampledProperty(Cartesian3);
-        expect(listener.callCount).toEqual(5);
+        expect(listener.calls.count()).toEqual(5);
     });
 
     it('createFillGeometryInstance throws if object is not filled', function() {
@@ -575,4 +594,4 @@ defineSuite([
     createDynamicGeometryBoundingSphereSpecs(EllipsoidGeometryUpdater, entity, entity.ellipsoid, function() {
         return scene;
     });
-});
+}, 'WebGL');

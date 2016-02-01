@@ -4,29 +4,36 @@ defineSuite([
         'Core/Cartesian3',
         'Core/Color',
         'Core/Ellipsoid',
+        'Core/GeometryInstance',
         'Core/Math',
+        'Core/PolygonGeometry',
         'Renderer/ClearCommand',
-        'Scene/Polygon',
+        'Scene/EllipsoidSurfaceAppearance',
         'Scene/PolylineCollection',
+        'Scene/Primitive',
         'Specs/createCamera',
         'Specs/createContext',
         'Specs/createFrameState',
+        'Specs/pollToPromise',
         'Specs/render'
     ], function(
         Material,
         Cartesian3,
         Color,
         Ellipsoid,
+        GeometryInstance,
         CesiumMath,
+        PolygonGeometry,
         ClearCommand,
-        Polygon,
+        EllipsoidSurfaceAppearance,
         PolylineCollection,
+        Primitive,
         createCamera,
         createContext,
         createFrameState,
+        pollToPromise,
         render) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
     var frameState;
@@ -37,7 +44,6 @@ defineSuite([
 
     beforeAll(function() {
         context = createContext();
-        frameState = createFrameState();
     });
 
     afterAll(function() {
@@ -45,22 +51,34 @@ defineSuite([
     });
 
     beforeEach(function() {
-        us = context.uniformState;
-        us.update(context, createFrameState(createCamera({
+        frameState = createFrameState(context, createCamera({
             offset : new Cartesian3(1.02, 0.0, 0.0)
-        })));
+        }));
+
+        us = context.uniformState;
+        us.update(frameState);
 
         var ellipsoid = Ellipsoid.UNIT_SPHERE;
-        polygon = new Polygon();
-        polygon.ellipsoid = ellipsoid;
-        polygon.granularity = CesiumMath.toRadians(20.0);
-        polygon.positions = Cartesian3.fromDegreesArray([
-            -50.0, -50.0,
-            50.0, -50.0,
-            50.0, 50.0,
-            -50.0, 50.0
-        ], ellipsoid);
-        polygon.asynchronous = false;
+
+        polygon = new Primitive({
+            geometryInstances: new GeometryInstance({
+                geometry: PolygonGeometry.fromPositions({
+                    positions: Cartesian3.fromDegreesArray([
+                        -50.0, -50.0,
+                        50.0, -50.0,
+                        50.0, 50.0,
+                        -50.0, 50.0
+                    ], ellipsoid),
+                    vertexFormat: EllipsoidSurfaceAppearance.VERTEX_FORMAT,
+                    ellipsoid: ellipsoid,
+                    granularity: CesiumMath.toRadians(20.0)
+                })
+            }),
+            appearance: new EllipsoidSurfaceAppearance({
+                aboveGround: false
+            }),
+            asynchronous: false
+        });
 
         polylines = new PolylineCollection();
         polyline = polylines.add({
@@ -79,12 +97,12 @@ defineSuite([
     });
 
     function renderMaterial(material) {
-        polygon.material = material;
+        polygon.appearance.material = material;
 
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(context, frameState, polygon);
+        render(frameState, polygon);
         return context.readPixels();
     }
 
@@ -94,7 +112,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(context, frameState, polylines);
+        render(frameState, polylines);
         return context.readPixels();
     }
 
@@ -318,6 +336,28 @@ defineSuite([
                 }
             }
         });
+        var pixel = renderMaterial(material);
+        expect(pixel).not.toEqual([0, 0, 0, 0]);
+    });
+
+    it('creates a material with an image canvas uniform', function() {
+        var canvas = document.createElement('canvas');
+        var context2D = canvas.getContext('2d');
+        context2D.width = 1;
+        context2D.height = 1;
+        context2D.fillStyle = 'rgb(0,0,255)';
+        context2D.fillRect(0, 0, 1, 1);
+
+        var material = new Material({
+            strict : true,
+            fabric : {
+                type : 'DiffuseMap',
+                uniforms : {
+                    image : canvas
+                }
+            }
+        });
+
         var pixel = renderMaterial(material);
         expect(pixel).not.toEqual([0, 0, 0, 0]);
     });
@@ -719,10 +759,15 @@ defineSuite([
     it('destroys material with texture', function() {
         var material = Material.fromType(Material.DiffuseMapType);
         material.uniforms.image = './Data/Images/Green.png';
-        var pixel = renderMaterial(material);
-        expect(pixel).not.toEqual([0, 0, 0, 0]);
-        material.destroy();
-        expect(material.isDestroyed()).toEqual(true);
+
+        pollToPromise(function() {
+            return material._loadedImages.length !== 0;
+        }).then(function() {
+            var pixel = renderMaterial(material);
+            expect(pixel).not.toEqual([0, 0, 0, 0]);
+            material.destroy();
+            expect(material.isDestroyed()).toEqual(true);
+        });
     });
 
     it('destroys sub-materials', function() {
@@ -748,12 +793,23 @@ defineSuite([
         });
         material.materials.diffuseMap.uniforms.image = './Data/Images/Green.png';
 
-        var pixel = renderMaterial(material);
-        expect(pixel).not.toEqual([0, 0, 0, 0]);
+        pollToPromise(function() {
+            return material.materials.diffuseMap._loadedImages.length !== 0;
+        }).then(function() {
+            var pixel = renderMaterial(material);
+            expect(pixel).not.toEqual([0, 0, 0, 0]);
 
-        var diffuseMap = material.materials.diffuseMap;
-        material.destroy();
-        expect(material.isDestroyed()).toEqual(true);
-        expect(diffuseMap.isDestroyed()).toEqual(true);
+            var diffuseMap = material.materials.diffuseMap;
+            material.destroy();
+            expect(material.isDestroyed()).toEqual(true);
+            expect(diffuseMap.isDestroyed()).toEqual(true);
+        });
     });
+
+    it('does not destroy default material', function() {
+        var material = Material.fromType(Material.DiffuseMapType);
+        renderMaterial(material);
+        material.destroy();
+    });
+
 }, 'WebGL');

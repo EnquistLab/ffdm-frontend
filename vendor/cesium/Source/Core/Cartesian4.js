@@ -27,7 +27,7 @@ define([
      * @see Cartesian3
      * @see Packable
      */
-    var Cartesian4 = function(x, y, z, w) {
+    function Cartesian4(x, y, z, w) {
         /**
          * The X component.
          * @type {Number}
@@ -55,7 +55,7 @@ define([
          * @default 0.0
          */
         this.w = defaultValue(w, 0.0);
-    };
+    }
 
     /**
      * Creates a Cartesian4 instance from x, y, z and w coordinates.
@@ -798,15 +798,16 @@ define([
 
     /**
      * Compares this Cartesian against the provided Cartesian componentwise and returns
-     * <code>true</code> if they are within the provided epsilon,
+     * <code>true</code> if they pass an absolute or relative tolerance test,
      * <code>false</code> otherwise.
      *
      * @param {Cartesian4} [right] The right hand side Cartesian.
-     * @param {Number} epsilon The epsilon to use for equality testing.
+     * @param {Number} relativeEpsilon The relative epsilon tolerance to use for equality testing.
+     * @param {Number} [absoluteEpsilon=relativeEpsilon] The absolute epsilon tolerance to use for equality testing.
      * @returns {Boolean} <code>true</code> if they are within the provided epsilon, <code>false</code> otherwise.
      */
-    Cartesian4.prototype.equalsEpsilon = function(right, epsilon) {
-        return Cartesian4.equalsEpsilon(this, right, epsilon);
+    Cartesian4.prototype.equalsEpsilon = function(right, relativeEpsilon, absoluteEpsilon) {
+        return Cartesian4.equalsEpsilon(this, right, relativeEpsilon, absoluteEpsilon);
     };
 
     /**

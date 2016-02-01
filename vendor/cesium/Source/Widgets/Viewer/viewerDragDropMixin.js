@@ -8,6 +8,7 @@ define([
         '../../Core/wrapFunction',
         '../../DataSources/CzmlDataSource',
         '../../DataSources/GeoJsonDataSource',
+        '../../DataSources/KmlDataSource',
         '../getElement'
     ], function(
         defaultValue,
@@ -18,6 +19,7 @@ define([
         wrapFunction,
         CzmlDataSource,
         GeoJsonDataSource,
+        KmlDataSource,
         getElement) {
     "use strict";
 
@@ -31,6 +33,8 @@ define([
      * @param {Object} [options] Object with the following properties:
      * @param {Element|String} [options.dropTarget=viewer.container] The DOM element which will serve as the drop target.
      * @param {Boolean} [options.clearOnDrop=true] When true, dropping files will clear all existing data sources first, when false, new data sources will be loaded after the existing ones.
+     * @param {Boolean} [options.flyToOnDrop=true] When true, dropping files will fly to the data source once it is loaded.
+     * @param {DefaultProxy} [options.proxy] The proxy to be used for KML network links.
      *
      * @exception {DeveloperError} Element with id <options.dropTarget> does not exist in the document.
      * @exception {DeveloperError} dropTarget is already defined by another mixin.
@@ -46,7 +50,7 @@ define([
      *     window.alert('Error processing ' + source + ':' + error);
      * });
      */
-    var viewerDragDropMixin = function(viewer, options) {
+    function viewerDragDropMixin(viewer, options) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(viewer)) {
             throw new DeveloperError('viewer is required.');
@@ -63,15 +67,20 @@ define([
         if (viewer.hasOwnProperty('clearOnDrop')) {
             throw new DeveloperError('clearOnDrop is already defined by another mixin.');
         }
+        if (viewer.hasOwnProperty('flyToOnDrop')) {
+            throw new DeveloperError('flyToOnDrop is already defined by another mixin.');
+        }
         //>>includeEnd('debug');
 
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
 
         //Local variables to be closed over by defineProperties.
         var dropEnabled = true;
+        var flyToOnDrop = true;
         var dropError = new Event();
         var clearOnDrop = defaultValue(options.clearOnDrop, true);
         var dropTarget = defaultValue(options.dropTarget, viewer.container);
+        var proxy = options.proxy;
 
         dropTarget = getElement(dropTarget);
 
@@ -143,6 +152,34 @@ define([
                 set : function(value) {
                     clearOnDrop = value;
                 }
+            },
+
+            /**
+             * Gets or sets a value indicating if the camera should fly to the data source after it is loaded.
+             * @memberof viewerDragDropMixin.prototype
+             * @type {Boolean}
+             */
+            flyToOnDrop : {
+                get : function() {
+                    return flyToOnDrop;
+                },
+                set : function(value) {
+                    flyToOnDrop = value;
+                }
+            },
+
+            /**
+             * Gets or sets the proxy to be used for KML.
+             * @memberof viewerDragDropMixin.prototype
+             * @type {DefaultProxy}
+             */
+            proxy : {
+                get : function() {
+                    return proxy;
+                },
+                set : function(value) {
+                    proxy = value;
+                }
             }
         });
 
@@ -159,7 +196,7 @@ define([
             for (var i = 0; i < length; i++) {
                 var file = files[i];
                 var reader = new FileReader();
-                reader.onload = createOnLoadCallback(viewer, file);
+                reader.onload = createOnLoadCallback(viewer, file, proxy);
                 reader.onerror = createDropErrorCallback(viewer, file);
                 reader.readAsText(file);
             }
@@ -175,7 +212,7 @@ define([
 
         //Specs need access to handleDrop
         viewer._handleDrop = handleDrop;
-    };
+    }
 
     function stop(event) {
         event.stopPropagation();
@@ -199,30 +236,36 @@ define([
         dropTarget.addEventListener('dragexit', stop, false);
     }
 
-    function createOnLoadCallback(viewer, file) {
+    function createOnLoadCallback(viewer, file, proxy) {
         return function(evt) {
             var fileName = file.name;
             try {
-                var dataSource;
                 var loadPromise;
 
                 if (/\.czml$/i.test(fileName)) {
-                    dataSource = new CzmlDataSource(fileName);
-                    dataSource.load(JSON.parse(evt.target.result), fileName);
-                } else if (/\.geojson$/i.test(fileName) || /\.json$/i.test(fileName) || /\.topojson$/i.test(fileName)) {
-                    dataSource = new GeoJsonDataSource(fileName);
-                    loadPromise = dataSource.load(JSON.parse(evt.target.result), {
+                    loadPromise = CzmlDataSource.load(JSON.parse(evt.target.result), {
                         sourceUri : fileName
+                    });
+                } else if (/\.geojson$/i.test(fileName) || /\.json$/i.test(fileName) || /\.topojson$/i.test(fileName)) {
+                    loadPromise = GeoJsonDataSource.load(JSON.parse(evt.target.result), {
+                        sourceUri : fileName
+                    });
+                } else if (/\.(kml|kmz)$/i.test(fileName)) {
+                    loadPromise = KmlDataSource.load(file, {
+                        sourceUri : fileName,
+                        proxy : proxy
                     });
                 } else {
                     viewer.dropError.raiseEvent(viewer, fileName, 'Unrecognized file: ' + fileName);
                     return;
                 }
 
-                viewer.dataSources.add(dataSource);
-
                 if (defined(loadPromise)) {
-                    loadPromise.otherwise(function(error) {
+                    viewer.dataSources.add(loadPromise).then(function(dataSource) {
+                        if (viewer.flyToOnDrop) {
+                            viewer.flyTo(dataSource);
+                        }
+                    }).otherwise(function(error) {
                         viewer.dropError.raiseEvent(viewer, fileName, error);
                     });
                 }

@@ -25,6 +25,7 @@ define([
         createCommand) {
     "use strict";
 
+    var pitchScratch = new Cartesian3();
     function viewHome(scene, duration) {
         var mode = scene.mode;
 
@@ -32,12 +33,8 @@ define([
             scene.completeMorph();
         }
 
-        var direction;
-        var right;
-        var up;
-
         if (mode === SceneMode.SCENE2D) {
-            // Added for Western United States view
+           // Added for Western United States view
             var position = new Cartesian3.fromDegrees(-110, 40, 3500000.0);
             scene.camera.flyTo({
                 destination : position,
@@ -49,17 +46,13 @@ define([
         } else if (mode === SceneMode.SCENE3D) {
             // Added for Western United States view
             var position = new Cartesian3.fromDegrees(-110, 40, 2800000.0);
+
             var destination = scene.camera.getRectangleCameraCoordinates(Camera.DEFAULT_VIEW_RECTANGLE);
 
             var mag = Cartesian3.magnitude(destination);
             mag += mag * Camera.DEFAULT_VIEW_FACTOR;
             Cartesian3.normalize(destination, destination);
             Cartesian3.multiplyByScalar(destination, mag, destination);
-
-            direction = Cartesian3.normalize(destination, new Cartesian3());
-            Cartesian3.negate(direction, direction);
-            right = Cartesian3.cross(direction, Cartesian3.UNIT_Z, new Cartesian3());
-            up = Cartesian3.cross(right, direction, new Cartesian3());
 
             scene.camera.flyTo({
                 destination : position,
@@ -73,25 +66,26 @@ define([
                 endTransform : Matrix4.IDENTITY
             });
         } else if (mode === SceneMode.COLUMBUS_VIEW) {
-            var maxRadii = scene.globe.ellipsoid.maximumRadius;
+             var maxRadii = scene.globe.ellipsoid.maximumRadius;
             // Added for Western United States view
             //var position = new Cartesian3.fromDegrees( -110, 40 , 2500000.0);
             // Removed for Western United States view
             var position = new Cartesian3(0.0, -1.0, 1.0);
             position = Cartesian3.multiplyByScalar(Cartesian3.normalize(position, position), 5.0 * maxRadii, position);
-            direction = new Cartesian3();
-            direction = Cartesian3.normalize(Cartesian3.subtract(Cartesian3.ZERO, position, direction), direction);
-            right = Cartesian3.cross(direction, Cartesian3.UNIT_Z, new Cartesian3());
-            up = Cartesian3.cross(right, direction, new Cartesian3());
-
             scene.camera.flyTo({
                 destination : position,
                 duration : duration,
+                //orientation : {
+                //    heading : 0.0,
+                //    pitch : -Math.acos(Cartesian3.normalize(position, pitchScratch).z),
+                //    roll : 0.0
+                //},
                 // Removed for Western United Stated view
                 orientation : {
                     direction : direction,
                     up : up
                 },
+
                 endTransform : Matrix4.IDENTITY,
                 convert : false
             });
@@ -104,16 +98,14 @@ define([
      * @constructor
      *
      * @param {Scene} scene The scene instance to use.
-     * @param {Number} [duration=1.5] The duration of the camera flight in seconds.
+     * @param {Number} [duration] The duration of the camera flight in seconds.
      */
-    var HomeButtonViewModel = function(scene, duration) {
+    function HomeButtonViewModel(scene, duration) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(scene)) {
             throw new DeveloperError('scene is required.');
         }
         //>>includeEnd('debug');
-
-        duration = defaultValue(duration, 1.5);
 
         this._scene = scene;
         this._duration = duration;
@@ -128,12 +120,10 @@ define([
          *
          * @type {String}
          */
-        // default
-        //this.tooltip = 'View Home';
-        this.tooltip = 'Reset Zoom';
+        this.tooltip = 'View Home';
 
         knockout.track(this, ['tooltip']);
-    };
+    }
 
     defineProperties(HomeButtonViewModel.prototype, {
         /**
@@ -163,9 +153,10 @@ define([
         /**
          * Gets or sets the the duration of the camera flight in seconds.
          * A value of zero causes the camera to instantly switch to home view.
+         * The duration will be computed based on the distance when undefined.
          * @memberof HomeButtonViewModel.prototype
          *
-         * @type {Number}
+         * @type {Number|undefined}
          */
         duration : {
             get : function() {
@@ -173,7 +164,7 @@ define([
             },
             set : function(value) {
                 //>>includeStart('debug', pragmas.debug);
-                if (value < 0) {
+                if (defined(value) && value < 0) {
                     throw new DeveloperError('value must be positive.');
                 }
                 //>>includeEnd('debug');

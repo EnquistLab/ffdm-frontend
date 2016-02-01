@@ -4,6 +4,7 @@ define([
         '../../Core/defineProperties',
         '../../Core/destroyObject',
         '../../Core/DeveloperError',
+        '../../Core/FeatureDetection',
         '../../ThirdParty/knockout',
         '../getElement',
         './SceneModePickerViewModel'
@@ -12,6 +13,7 @@ define([
         defineProperties,
         destroyObject,
         DeveloperError,
+        FeatureDetection,
         knockout,
         getElement,
         SceneModePickerViewModel) {
@@ -28,7 +30,7 @@ define([
     var columbusViewPath = 'm 14.723969,17.675598 -0.340489,0.817175 -11.1680536,26.183638 -0.817175,1.872692 2.076986,0 54.7506996,0 2.07698,0 -0.81717,-1.872692 -11.16805,-26.183638 -0.34049,-0.817175 -0.91933,0 -32.414586,0 -0.919322,0 z m 1.838643,2.723916 6.196908,0 -2.928209,10.418977 -7.729111,0 4.460412,-10.418977 z m 9.02297,0 4.903049,0 0,10.418977 -7.831258,0 2.928209,-10.418977 z m 7.626964,0 5.584031,0 2.62176,10.418977 -8.205791,0 0,-10.418977 z m 8.410081,0 5.51593,0 4.46042,10.418977 -7.38863,0 -2.58772,-10.418977 z m -30.678091,13.142892 8.103649,0 -2.89416,10.282782 -9.6018026,0 4.3923136,-10.282782 z m 10.929711,0 8.614384,0 0,10.282782 -11.508544,0 2.89416,-10.282782 z m 11.338299,0 8.852721,0 2.58772,10.282782 -11.440441,0 0,-10.282782 z m 11.678781,0 7.86531,0 4.39231,10.282782 -9.6699,0 -2.58772,-10.282782 z';
 
     /**
-     * <img src="images/sceneModePicker.png" style="float: left; margin: 3px; border: none; border-radius: 5px;" />
+     * <img src="images/sceneModePicker.png" style="float: left; margin-right: 10px;" width="44" height="116" />
      * <p>The SceneModePicker is a single button widget for switching between scene modes;
      * shown to the left in its expanded state. Programatic switching of scene modes will
      * be automatically reflected in the widget as long as the specified Scene
@@ -50,7 +52,7 @@ define([
      *
      * var sceneModePicker = new Cesium.SceneModePicker('sceneModePickerContainer', scene);
      */
-    var SceneModePicker = function(container, scene, duration) {
+    function SceneModePicker(container, scene, duration) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(container)) {
             throw new DeveloperError('container is required.');
@@ -69,7 +71,6 @@ define([
         viewModel._columbusViewPath = columbusViewPath;
 
         var wrapper = document.createElement('span');
-        wrapper.title = 'Change the map projection';
         wrapper.className = 'cesium-sceneModePicker-wrapper cesium-toolbar-button';
         container.appendChild(wrapper);
 
@@ -116,7 +117,9 @@ cesiumSvgPath: { path: _flatMapPath, width: 64, height: 64 }');
 
         var morphToCVButton = document.createElement('button');
         morphToCVButton.type = 'button';
-        morphToCVButton.className = 'cesium-button cesium-toolbar-button cesium-sceneModePicker-dropDown-icon hide-columbus-view';
+        //morphToCVButton.className = 'cesium-button cesium-toolbar-button cesium-sceneModePicker-dropDown-icon hide-columbus-view';
+        morphToCVButton.className = 'hide-columbus-view';
+
         morphToCVButton.setAttribute('data-bind', '\
 css: { "cesium-sceneModePicker-visible" : (dropDownVisible && (sceneMode !== _sceneMode.COLUMBUS_VIEW)) || (!dropDownVisible && (sceneMode === _sceneMode.COLUMBUS_VIEW)),\
        "cesium-sceneModePicker-none" : sceneMode === _sceneMode.COLUMBUS_VIEW,\
@@ -125,7 +128,6 @@ attr: { title: tooltipColumbusView },\
 click: morphToColumbusView,\
 cesiumSvgPath: { path: _columbusViewPath, width: 64, height: 64 }');
         wrapper.appendChild(morphToCVButton);
-        
 
         knockout.applyBindings(viewModel, wrapper);
 
@@ -138,10 +140,13 @@ cesiumSvgPath: { path: _columbusViewPath, width: 64, height: 64 }');
                 viewModel.dropDownVisible = false;
             }
         };
-
-        document.addEventListener('mousedown', this._closeDropDown, true);
-        document.addEventListener('touchstart', this._closeDropDown, true);
-    };
+        if (FeatureDetection.supportsPointerEvents()) {
+            document.addEventListener('pointerdown', this._closeDropDown, true);
+        } else {
+            document.addEventListener('mousedown', this._closeDropDown, true);
+            document.addEventListener('touchstart', this._closeDropDown, true);
+        }
+    }
 
     defineProperties(SceneModePicker.prototype, {
         /**
@@ -183,8 +188,12 @@ cesiumSvgPath: { path: _columbusViewPath, width: 64, height: 64 }');
     SceneModePicker.prototype.destroy = function() {
         this._viewModel.destroy();
 
-        document.removeEventListener('mousedown', this._closeDropDown, true);
-        document.removeEventListener('touchstart', this._closeDropDown, true);
+        if (FeatureDetection.supportsPointerEvents()) {
+            document.removeEventListener('pointerdown', this._closeDropDown, true);
+        } else {
+            document.removeEventListener('mousedown', this._closeDropDown, true);
+            document.removeEventListener('touchstart', this._closeDropDown, true);
+        }
 
         knockout.cleanNode(this._wrapper);
         this._container.removeChild(this._wrapper);

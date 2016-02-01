@@ -10,11 +10,11 @@ define([
         '../Core/defaultValue',
         '../Core/defined',
         '../Core/defineProperties',
-        '../Core/deprecationWarning',
         '../Core/DeveloperError',
         '../Core/Ellipsoid',
         '../Core/Event',
         '../Core/ExtrapolationType',
+        '../Core/getAbsoluteUri',
         '../Core/getFilenameFromUri',
         '../Core/HermitePolynomialApproximation',
         '../Core/isArray',
@@ -52,6 +52,7 @@ define([
         './ImageMaterialProperty',
         './LabelGraphics',
         './ModelGraphics',
+        './NodeTransformationProperty',
         './PathGraphics',
         './PointGraphics',
         './PolygonGraphics',
@@ -59,8 +60,10 @@ define([
         './PolylineGraphics',
         './PolylineOutlineMaterialProperty',
         './PositionPropertyArray',
+        './PropertyBag',
         './RectangleGraphics',
         './ReferenceProperty',
+        './Rotation',
         './SampledPositionProperty',
         './SampledProperty',
         './StripeMaterialProperty',
@@ -79,11 +82,11 @@ define([
         defaultValue,
         defined,
         defineProperties,
-        deprecationWarning,
         DeveloperError,
         Ellipsoid,
         Event,
         ExtrapolationType,
+        getAbsoluteUri,
         getFilenameFromUri,
         HermitePolynomialApproximation,
         isArray,
@@ -121,6 +124,7 @@ define([
         ImageMaterialProperty,
         LabelGraphics,
         ModelGraphics,
+        NodeTransformationProperty,
         PathGraphics,
         PointGraphics,
         PolygonGraphics,
@@ -128,8 +132,10 @@ define([
         PolylineGraphics,
         PolylineOutlineMaterialProperty,
         PositionPropertyArray,
+        PropertyBag,
         RectangleGraphics,
         ReferenceProperty,
+        Rotation,
         SampledPositionProperty,
         SampledProperty,
         StripeMaterialProperty,
@@ -180,22 +186,10 @@ define([
         return rgbaf;
     }
 
-    function unwrapImageInterval(czmlInterval, sourceUri) {
-        var result = defaultValue(czmlInterval.image, czmlInterval);
-        if (defined(sourceUri)) {
-            var baseUri = new Uri(document.location.href);
-            sourceUri = new Uri(sourceUri);
-            result = new Uri(result).resolve(sourceUri.resolve(baseUri)).toString();
-        }
-        return result;
-    }
-
     function unwrapUriInterval(czmlInterval, sourceUri) {
         var result = defaultValue(czmlInterval.uri, czmlInterval);
         if (defined(sourceUri)) {
-            var baseUri = new Uri(document.location.href);
-            sourceUri = new Uri(sourceUri);
-            result = new Uri(result).resolve(sourceUri.resolve(baseUri)).toString();
+            result = getAbsoluteUri(result, getAbsoluteUri(sourceUri));
         }
         return result;
     }
@@ -311,6 +305,34 @@ define([
         return result;
     }
 
+    function normalizePackedQuaternionArray(array, startingIndex) {
+        var x = array[startingIndex];
+        var y = array[startingIndex + 1];
+        var z = array[startingIndex + 2];
+        var w = array[startingIndex + 3];
+
+        var inverseMagnitude = 1.0 / Math.sqrt(x * x + y * y + z * z + w * w);
+        array[startingIndex] = x * inverseMagnitude;
+        array[startingIndex + 1] = y * inverseMagnitude;
+        array[startingIndex + 2] = z * inverseMagnitude;
+        array[startingIndex + 3] = w * inverseMagnitude;
+    }
+
+    function unwrapQuaternionInterval(czmlInterval) {
+        var unitQuaternion = czmlInterval.unitQuaternion;
+        if (defined(unitQuaternion)) {
+            if (unitQuaternion.length === 4) {
+                normalizePackedQuaternionArray(unitQuaternion, 0);
+                return unitQuaternion;
+            }
+
+            for (var i = 1; i < unitQuaternion.length; i += 5) {
+                normalizePackedQuaternionArray(unitQuaternion, i);
+            }
+        }
+        return unitQuaternion;
+    }
+
     function unwrapInterval(type, czmlInterval, sourceUri) {
         /*jshint sub:true*/
         switch (type) {
@@ -332,6 +354,8 @@ define([
             return JulianDate.fromIso8601(defaultValue(czmlInterval.date, czmlInterval));
         case LabelStyle:
             return LabelStyle[defaultValue(czmlInterval.labelStyle, czmlInterval)];
+        case Rotation:
+            return defaultValue(czmlInterval.number, czmlInterval);
         case Number:
             return defaultValue(czmlInterval.number, czmlInterval);
         case String:
@@ -339,7 +363,7 @@ define([
         case Array:
             return czmlInterval.array;
         case Quaternion:
-            return czmlInterval.unitQuaternion;
+            return unwrapQuaternionInterval(czmlInterval);
         case Rectangle:
             return unwrapRectangleInterval(czmlInterval);
         case Uri:
@@ -414,12 +438,15 @@ define([
             isSampled = !defined(packetData.array) && (typeof unwrappedInterval !== 'string') && unwrappedIntervalLength > packedLength;
         }
 
+        //Rotation is a special case because it represents a native type (Number)
+        //and therefore does not need to be unpacked when loaded as a constant value.
+        var needsUnpacking = typeof type.unpack === 'function' && type !== Rotation;
 
         //Any time a constant value is assigned, it completely blows away anything else.
         if (!isSampled && !hasInterval) {
             if (isReference) {
                 object[propertyName] = makeReference(entityCollection, packetData.reference);
-            } else if (defined(type.unpack)) {
+            } else if (needsUnpacking) {
                 object[propertyName] = new ConstantProperty(type.unpack(unwrappedInterval, 0));
             } else {
                 object[propertyName] = new ConstantProperty(unwrappedInterval);
@@ -457,7 +484,7 @@ define([
             combinedInterval = combinedInterval.clone();
             if (isReference) {
                 combinedInterval.data = makeReference(entityCollection, packetData.reference);
-            } else if (defined(type.unpack)) {
+            } else if (needsUnpacking) {
                 combinedInterval.data = type.unpack(unwrappedInterval, 0);
             } else {
                 combinedInterval.data = unwrappedInterval;
@@ -573,7 +600,10 @@ define([
         var hasInterval = defined(combinedInterval) && !combinedInterval.equals(Iso8601.MAXIMUM_INTERVAL);
 
         if (!isReference) {
-            referenceFrame = defaultValue(ReferenceFrame[packetData.referenceFrame], undefined);
+            if (defined(packetData.referenceFrame)) {
+                referenceFrame = ReferenceFrame[packetData.referenceFrame];
+            }
+            referenceFrame = defaultValue(referenceFrame, ReferenceFrame.FIXED);
             unwrappedInterval = unwrapCartesianInterval(packetData);
             unwrappedIntervalLength = defaultValue(unwrappedInterval.length, 1);
             isSampled = unwrappedIntervalLength > packedLength;
@@ -772,6 +802,7 @@ define([
             materialData = packetData.image;
             processPacketData(Image, existingMaterial, 'image', materialData.image, undefined, sourceUri, entityCollection);
             processPacketData(Cartesian2, existingMaterial, 'repeat', materialData.repeat, undefined, sourceUri, entityCollection);
+            processPacketData(Number, existingMaterial, 'alpha', materialData.alpha, undefined, sourceUri, entityCollection);
         } else if (defined(packetData.stripe)) {
             if (!(existingMaterial instanceof StripeMaterialProperty)) {
                 existingMaterial = new StripeMaterialProperty();
@@ -978,10 +1009,11 @@ define([
         processPacketData(Image, billboard, 'image', billboardData.image, interval, sourceUri, entityCollection);
         processPacketData(Cartesian2, billboard, 'pixelOffset', billboardData.pixelOffset, interval, sourceUri, entityCollection);
         processPacketData(Number, billboard, 'scale', billboardData.scale, interval, sourceUri, entityCollection);
-        processPacketData(Number, billboard, 'rotation', billboardData.rotation, interval, sourceUri, entityCollection);
+        processPacketData(Rotation, billboard, 'rotation', billboardData.rotation, interval, sourceUri, entityCollection);
         processPacketData(Cartesian3, billboard, 'alignedAxis', billboardData.alignedAxis, interval, sourceUri, entityCollection);
         processPacketData(Boolean, billboard, 'show', billboardData.show, interval, sourceUri, entityCollection);
         processPacketData(VerticalOrigin, billboard, 'verticalOrigin', billboardData.verticalOrigin, interval, sourceUri, entityCollection);
+        processPacketData(Boolean, billboard, 'sizeInMeters', billboardData.sizeInMeters, interval, sourceUri, entityCollection);
     }
 
     function processDocument(packet, dataSource) {
@@ -1048,13 +1080,13 @@ define([
         }
 
         processPacketData(Boolean, ellipse, 'show', ellipseData.show, interval, sourceUri, entityCollection);
-        processPacketData(Number, ellipse, 'rotation', ellipseData.rotation, interval, sourceUri, entityCollection);
+        processPacketData(Rotation, ellipse, 'rotation', ellipseData.rotation, interval, sourceUri, entityCollection);
         processPacketData(Number, ellipse, 'semiMajorAxis', ellipseData.semiMajorAxis, interval, sourceUri, entityCollection);
         processPacketData(Number, ellipse, 'semiMinorAxis', ellipseData.semiMinorAxis, interval, sourceUri, entityCollection);
         processPacketData(Number, ellipse, 'height', ellipseData.height, interval, sourceUri, entityCollection);
         processPacketData(Number, ellipse, 'extrudedHeight', ellipseData.extrudedHeight, interval, sourceUri, entityCollection);
         processPacketData(Number, ellipse, 'granularity', ellipseData.granularity, interval, sourceUri, entityCollection);
-        processPacketData(Number, ellipse, 'stRotation', ellipseData.stRotation, interval, sourceUri, entityCollection);
+        processPacketData(Rotation, ellipse, 'stRotation', ellipseData.stRotation, interval, sourceUri, entityCollection);
         processMaterialPacketData(ellipse, 'material', ellipseData.material, interval, sourceUri, entityCollection);
         processPacketData(Boolean, ellipse, 'fill', ellipseData.fill, interval, sourceUri, entityCollection);
         processPacketData(Boolean, ellipse, 'outline', ellipseData.outline, interval, sourceUri, entityCollection);
@@ -1143,7 +1175,67 @@ define([
         processPacketData(Boolean, model, 'show', modelData.show, interval, sourceUri, entityCollection);
         processPacketData(Number, model, 'scale', modelData.scale, interval, sourceUri, entityCollection);
         processPacketData(Number, model, 'minimumPixelSize', modelData.minimumPixelSize, interval, sourceUri, entityCollection);
+        processPacketData(Boolean, model, 'incrementallyLoadTextures', modelData.incrementallyLoadTextures, interval, sourceUri, entityCollection);
         processPacketData(Uri, model, 'uri', modelData.gltf, interval, sourceUri, entityCollection);
+        processPacketData(Boolean, model, 'runAnimations', modelData.runAnimations, interval, sourceUri, entityCollection);
+
+        var nodeTransformationsData = modelData.nodeTransformations;
+        if (defined(nodeTransformationsData)) {
+            if (isArray(nodeTransformationsData)) {
+                for (var i = 0, len = nodeTransformationsData.length; i < len; i++) {
+                    processNodeTransformations(model, nodeTransformationsData[i], interval, sourceUri, entityCollection);
+                }
+            } else {
+                processNodeTransformations(model, nodeTransformationsData, interval, sourceUri, entityCollection);
+            }
+        }
+    }
+
+    function processNodeTransformations(model, nodeTransformationsData, constrainedInterval, sourceUri, entityCollection) {
+        var combinedInterval;
+        var packetInterval = nodeTransformationsData.interval;
+        if (defined(packetInterval)) {
+            iso8601Scratch.iso8601 = packetInterval;
+            combinedInterval = TimeInterval.fromIso8601(iso8601Scratch);
+            if (defined(constrainedInterval)) {
+                combinedInterval = TimeInterval.intersect(combinedInterval, constrainedInterval, scratchTimeInterval);
+            }
+        } else if (defined(constrainedInterval)) {
+            combinedInterval = constrainedInterval;
+        }
+
+        var nodeTransformations = model.nodeTransformations;
+        var nodeNames = Object.keys(nodeTransformationsData);
+        for (var i = 0, len = nodeNames.length; i < len; ++i) {
+            var nodeName = nodeNames[i];
+
+            if (nodeName === 'interval') {
+                continue;
+            }
+
+            var nodeTransformationData = nodeTransformationsData[nodeName];
+
+            if (!defined(nodeTransformationData)) {
+                continue;
+            }
+
+            if (!defined(nodeTransformations)) {
+                model.nodeTransformations = nodeTransformations = new PropertyBag();
+            }
+
+            if (!nodeTransformations.hasProperty(nodeName)) {
+                nodeTransformations.addProperty(nodeName);
+            }
+
+            var nodeTransformation = nodeTransformations[nodeName];
+            if (!defined(nodeTransformation)) {
+                nodeTransformations[nodeName] = nodeTransformation = new NodeTransformationProperty();
+            }
+
+            processPacketData(Cartesian3, nodeTransformation, 'translation', nodeTransformationData.translation, combinedInterval, sourceUri, entityCollection);
+            processPacketData(Quaternion, nodeTransformation, 'rotation', nodeTransformationData.rotation, combinedInterval, sourceUri, entityCollection);
+            processPacketData(Cartesian3, nodeTransformation, 'scale', nodeTransformationData.scale, combinedInterval, sourceUri, entityCollection);
+        }
     }
 
     function processPath(entity, packet, entityCollection, sourceUri) {
@@ -1220,7 +1312,7 @@ define([
         processPacketData(Number, polygon, 'height', polygonData.height, interval, sourceUri, entityCollection);
         processPacketData(Number, polygon, 'extrudedHeight', polygonData.extrudedHeight, interval, sourceUri, entityCollection);
         processPacketData(Number, polygon, 'granularity', polygonData.granularity, interval, sourceUri, entityCollection);
-        processPacketData(Number, polygon, 'stRotation', polygonData.stRotation, interval, sourceUri, entityCollection);
+        processPacketData(Rotation, polygon, 'stRotation', polygonData.stRotation, interval, sourceUri, entityCollection);
         processPacketData(Boolean, polygon, 'fill', polygonData.fill, interval, sourceUri, entityCollection);
         processPacketData(Boolean, polygon, 'outline', polygonData.outline, interval, sourceUri, entityCollection);
         processPacketData(Color, polygon, 'outlineColor', polygonData.outlineColor, interval, sourceUri, entityCollection);
@@ -1253,8 +1345,8 @@ define([
         processPacketData(Number, rectangle, 'height', rectangleData.height, interval, sourceUri, entityCollection);
         processPacketData(Number, rectangle, 'extrudedHeight', rectangleData.extrudedHeight, interval, sourceUri, entityCollection);
         processPacketData(Number, rectangle, 'granularity', rectangleData.granularity, interval, sourceUri, entityCollection);
-        processPacketData(Number, rectangle, 'rotation', rectangleData.rotation, interval, sourceUri, entityCollection);
-        processPacketData(Number, rectangle, 'stRotation', rectangleData.stRotation, interval, sourceUri, entityCollection);
+        processPacketData(Rotation, rectangle, 'rotation', rectangleData.rotation, interval, sourceUri, entityCollection);
+        processPacketData(Rotation, rectangle, 'stRotation', rectangleData.stRotation, interval, sourceUri, entityCollection);
         processPacketData(Boolean, rectangle, 'fill', rectangleData.fill, interval, sourceUri, entityCollection);
         processPacketData(Boolean, rectangle, 'outline', rectangleData.outline, interval, sourceUri, entityCollection);
         processPacketData(Color, rectangle, 'outlineColor', rectangleData.outlineColor, interval, sourceUri, entityCollection);
@@ -1438,6 +1530,7 @@ define([
         }).otherwise(function(error) {
             DataSource.setLoading(dataSource, false);
             dataSource._error.raiseEvent(dataSource, error);
+            console.log(error);
             return when.reject(error);
         });
     }
@@ -1473,10 +1566,10 @@ define([
         return dataSource;
     }
 
-    var DocumentPacket = function() {
+    function DocumentPacket() {
         this.name = undefined;
         this.clock = undefined;
-    };
+    }
 
     /**
      * A {@link DataSource} which processes {@link https://github.com/AnalyticalGraphicsInc/cesium/wiki/CZML-Guide|CZML}.
@@ -1487,7 +1580,7 @@ define([
      *
      * @demo {@link http://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=CZML.html|Cesium Sandcastle CZML Demo}
      */
-    var CzmlDataSource = function(name) {
+    function CzmlDataSource(name) {
         this._name = name;
         this._changed = new Event();
         this._error = new Event();
@@ -1496,8 +1589,8 @@ define([
         this._clock = undefined;
         this._documentPacket = new DocumentPacket();
         this._version = undefined;
-        this._entityCollection = new EntityCollection();
-    };
+        this._entityCollection = new EntityCollection(this);
+    }
 
     /**
      * Creates a Promise to a new instance loaded with the provided CZML data.
@@ -1505,7 +1598,7 @@ define([
      * @param {String|Object} data A url or CZML object to be processed.
      * @param {Object} [options] An object with the following properties:
      * @param {String} [options.sourceUri] Overrides the url to use for resolving relative links.
-     * @returns {Promise} A promise that resolves to the new instance once the data is processed.
+     * @returns {Promise.<CzmlDataSource>} A promise that resolves to the new instance once the data is processed.
      */
     CzmlDataSource.load = function(czml, options) {
         return new CzmlDataSource().load(czml, options);
@@ -1613,47 +1706,25 @@ define([
     /**
      * Processes the provided url or CZML object without clearing any existing data.
      *
-     * @param {String|Object} data A url or CZML object to be processed.
+     * @param {String|Object} czml A url or CZML object to be processed.
      * @param {Object} [options] An object with the following properties:
      * @param {String} [options.sourceUri] Overrides the url to use for resolving relative links.
-     * @returns {Promise} A promise that resolves to this instances once the data is processed.
+     * @returns {Promise.<CzmlDataSource>} A promise that resolves to this instances once the data is processed.
      */
     CzmlDataSource.prototype.process = function(czml, options) {
-        if (typeof options === 'string') {
-            options = {
-                sourceUri : options
-            };
-            deprecationWarning('CzmlDataSource.process.options', 'Passing a sourceUri string as the second paraameter to CzmlDataSource.process has been deprecated. Pass an options object instead.');
-        }
         return load(this, czml, options, false);
     };
 
     /**
      * Loads the provided url or CZML object, replacing any existing data.
      *
-     * @param {String|Object} data A url or CZML object to be processed.
+     * @param {String|Object} czml A url or CZML object to be processed.
      * @param {Object} [options] An object with the following properties:
      * @param {String} [options.sourceUri] Overrides the url to use for resolving relative links.
-     * @returns {Promise} A promise that resolves to this instances once the data is processed.
+     * @returns {Promise.<CzmlDataSource>} A promise that resolves to this instances once the data is processed.
      */
     CzmlDataSource.prototype.load = function(czml, options) {
-        if (typeof options === 'string') {
-            options = {
-                sourceUri : options
-            };
-            deprecationWarning('CzmlDataSource.process.load', 'Passing a sourceUri string as the second paraameter to CzmlDataSource.load has been deprecated. Pass an options object instead.');
-        }
         return load(this, czml, options, true);
-    };
-
-    CzmlDataSource.prototype.processUrl = function(url) {
-        deprecationWarning('CzmlDataSource.prototype.processUrl', 'CzmlDataSource.processUrl has been deprecated.  Use CzmlDataSource.process instead.');
-        return this.process(url);
-    };
-
-    CzmlDataSource.prototype.loadUrl = function(url) {
-        deprecationWarning('CzmlDataSource.prototype.loadUrl', 'CzmlDataSource.loadUrl has been deprecated.  Use CzmlDataSource.load instead.');
-        return this.load(url);
     };
 
     /**

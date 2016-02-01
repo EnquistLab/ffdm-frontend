@@ -14,7 +14,6 @@ defineSuite([
         ConstantPositionProperty,
         SampledPositionProperty) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var time = JulianDate.now();
 

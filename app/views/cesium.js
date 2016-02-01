@@ -33,10 +33,19 @@ export default Ember.View.extend({
     
     //-- Set cesium view extend with rectangle
     //-- Can be substituted with view.camera.setView() for allowing zoom level (elevation)
+    // testing testing -- uncomment the following three lines for default view
+    //            comment out if testing outerra markers
     //var extent =  new Cesium.Rectangle.fromDegrees(-125.0, 20.0, -80.0, 55); 
     //Cesium.Camera.DEFAULT_VIEW_RECTANGLE = extent;
     //Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
 
+    //var west = 122.0;
+    //var south = 33.0;
+    //var east = 130.0;
+    //var north = 47.0;
+    //var rectangle = Cesium.Rectangle.fromDegrees(west, south, east, north);
+    //Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+    //Cesium.Camera.DEFAULT_VIEW_RECTANGLE = rectangle;
 
     var viewer = new Cesium.Viewer('cesiumContainer', {
       
@@ -48,7 +57,7 @@ export default Ember.View.extend({
       timeline: false
     });
     viewer.clock.onTick.addEventListener(function(clock) {
-      var camera = viewer.camera;
+    var camera = viewer.camera;
     });
     var scene = viewer.scene;
     var globe = scene.globe;
@@ -56,17 +65,27 @@ export default Ember.View.extend({
     
     //-- Set center of cesium view, with height
     //-- Replaced DEFAULT_VEW_RECTANGLE with below- allows for elevation zoom
-  /*  viewer.camera.setView( {
-      position: Cesium.Cartesian3.fromDegrees(-110, 40, 2800000.0)
-    });
-*/
-    var center = Cesium.Cartesian3.fromDegrees(-110,40);
+    // testing testing -- default view
+
+    //viewer.camera.setView( {
+    //  position: Cesium.Cartesian3.fromDegrees(-110, 40, 2800000.0)
+    //});
+
+    //var center = Cesium.Cartesian3.fromDegrees(-110,40);
     var heading = Cesium.Math.toRadians(0);
     var pitch = Cesium.Math.toRadians(-75.0);
     var range = 2800000.0;
-    viewer.camera.lookAt(center, new Cesium.HeadingPitchRange(heading, pitch, range));
+    
+    // testing testing -- this adds tilt to the globe,
+    //                    outerra markers glitch when at a certain tilt
+    //viewer.camera.lookAt(center, new Cesium.HeadingPitchRange(heading, pitch, range));
+    
+    var center = Cesium.Cartesian3.fromDegrees(-110.0, 40.0);
+    var cameraPos = new Cesium.Cartesian3(0.0, -1790.0, 2800000.0);
+    viewer.camera.lookAt(center, cameraPos);
+    viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
-    // --- testing scene2d change
+    // testing testing -- scene2d change
     //cesiumController.set('sceneMode', scene.mode);
 
     viewer.homeButton.viewModel.tooltip = 'Reset zoom';
@@ -74,6 +93,32 @@ export default Ember.View.extend({
     //set the imagery layers for controller
     imageryLayers = globe.imageryLayers; 
     cesiumController.set('imageryLayers', imageryLayers);
+
+
+viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo){
+//Zoom to custom extent
+var west = Cesium.Math.toRadians(-21.0);
+var south = Cesium.Math.toRadians(36.0);
+var east = Cesium.Math.toRadians(35.0);
+var north = Cesium.Math.toRadians(68.0);
+
+    var center = Cesium.Cartesian3.fromDegrees(-110.0, 40.0);
+    var cameraPos = new Cesium.Cartesian3(0.0, -1790.0, 2800000.0);
+    var loc = viewer.camera.lookAt(center, cameraPos);
+    viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+
+        var extent = new Cesium.Extent(west, south, east, north);
+
+        var flight = Cesium.CameraFlightPath.createAnimationExtent(scene, {
+            destination : loc 
+        });
+        scene.getAnimations().add(flight);
+
+
+//Tell the home button not to do anything.
+commandInfo.cancel = true;
+});
+
 
     /*
     Create an event handler for onclick events

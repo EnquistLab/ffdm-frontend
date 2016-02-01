@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">  <!-- Use Chrome Frame in IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
     <meta name="description" content="Fly to a specified location or view a geographic rectangle.">
     <meta name="cesium-sandcastle-labels" content="Showcases">
     <title>Cesium Demo</title>
     <script type="text/javascript" src="../Sandcastle-header.js"></script>
-    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.9/require.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.20/require.js"></script>
     <script type="text/javascript">
     require.config({
         baseUrl : '../../../Source',
@@ -19,11 +19,16 @@
 <body class="sandcastle-loading" data-sandcastle-bucket="bucket-requirejs.html">
 <style>
     @import url(../templates/bucket.css);
+    
+    #viewChanged {
+        display: none;
+        background-color: red;
+        color: white;
+    }
 </style>
 <div id="cesiumContainer" class="fullSize"></div>
 <div id="loadingOverlay"><h1>Loading...</h1></div>
-<div id="toolbar"></div>
-<script id="cesium_sandcastle_script">
+<div id="toolbar"><div id="viewChanged">View Changed</div></div><script id="cesium_sandcastle_script">
 function startup(Cesium) {
     "use strict";
 //Sandcastle_Begin
@@ -73,7 +78,9 @@ function viewRectangle() {
     var north = 42.0;
 
     var rectangle = Cesium.Rectangle.fromDegrees(west, south, east, north);
-    viewer.camera.viewRectangle(rectangle);
+    viewer.camera.setView({
+        destination: rectangle
+    });
 
     // Show the rectangle.  Not required; just for show.
     viewer.entities.add({
@@ -134,9 +141,11 @@ function setHeadingPitchRoll() {
     var camera = viewer.camera;
     camera.setView({
         position : Cesium.Cartesian3.fromDegrees(-75.5847, 40.0397, 1000.0),
-        heading : -Cesium.Math.PI_OVER_TWO,
-        pitch : -Cesium.Math.PI_OVER_FOUR,
-        roll : 0.0
+        orientation: {
+            heading : -Cesium.Math.PI_OVER_TWO,
+            pitch : -Cesium.Math.PI_OVER_FOUR,
+            roll : 0.0
+        }
     });
 }
 
@@ -148,12 +157,8 @@ function icrf(scene, time) {
     var icrfToFixed = Cesium.Transforms.computeIcrfToFixedMatrix(time);
     if (Cesium.defined(icrfToFixed)) {
         var camera = viewer.camera;
-        
-        var offset = Cesium.Matrix4.multiplyByPoint(camera.transform, camera.position, new Cesium.Cartesian3());
+        var offset = Cesium.Cartesian3.clone(camera.position);
         var transform = Cesium.Matrix4.fromRotationTranslation(icrfToFixed);
-        var inverseTransform = Cesium.Matrix4.inverseTransformation(transform, new Cesium.Matrix4());
-        Cesium.Matrix4.multiplyByPoint(inverseTransform, offset, offset);
-        
         camera.lookAtTransform(transform, offset);
     }
 }
@@ -171,8 +176,52 @@ function viewInICRF() {
     scene.globe.enableLighting = true;
 }
 
+var viewChanged = document.getElementById('viewChanged');
+
+var removeStart;
+var removeEnd;
+
+function cameraEvents() {
+    Sandcastle.declare(cameraEvents);
+    
+    var camera = viewer.camera;
+    removeStart = camera.moveStart.addEventListener(function() {
+        viewChanged.style.display = 'block';
+    });
+    removeEnd = camera.moveEnd.addEventListener(function() {
+        viewChanged.style.display = 'none';
+    });
+}
+
+function flyInACity() {
+    Sandcastle.declare(flyInACity);
+    
+    var camera = scene.camera;
+    camera.flyTo({
+        destination : Cesium.Cartesian3.fromDegrees(-73.98580932617188, 40.74843406689482, 363.34038727246224),
+        complete : function() {
+            setTimeout(function() {
+                camera.flyTo({
+                    destination : Cesium.Cartesian3.fromDegrees(-73.98585975679403, 40.75759944127251, 186.50838555841779),
+                    orientation : {
+                        heading : Cesium.Math.toRadians(200.0),
+                        pitch : Cesium.Math.toRadians(-50.0)
+                    },
+                    easingFunction : Cesium.EasingFunction.LINEAR_NONE
+                });
+            }, 3000);
+        }
+    });
+}
+
 Sandcastle.addToolbarMenu([{
     text : 'Camera Options'
+}, {
+    text : 'Fly in a city',
+    onselect : function() {
+        flyInACity();
+        Sandcastle.highlight(flyInACity);
+    }
 }, {
     text : 'Fly to San Diego',
     onselect : function() {
@@ -221,6 +270,12 @@ Sandcastle.addToolbarMenu([{
         viewInICRF();
         Sandcastle.highlight(viewInICRF);
     }
+}, {
+    text : 'Move events',
+    onselect : function() {
+        cameraEvents();
+        Sandcastle.highlight(cameraEvents);
+    }
 }]);
 
 Sandcastle.reset = function() {
@@ -228,6 +283,16 @@ Sandcastle.reset = function() {
     scene.primitives.removeAll();
     scene.tweens.removeAll();
 
+    if (Cesium.defined(removeStart)) {
+        removeStart();
+        removeEnd();
+
+        viewChanged.style.display = 'none';
+        
+        removeStart = undefined;
+        removeEnd = undefined;
+    }
+    
     viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 
     clock.multiplier = 1.0;

@@ -6,6 +6,7 @@ define([
         '../../Core/defineProperties',
         '../../Core/destroyObject',
         '../../Core/DeveloperError',
+        '../../Core/FeatureDetection',
         '../../ThirdParty/knockout',
         '../getElement',
         './NavigationHelpButtonViewModel'
@@ -16,6 +17,7 @@ define([
         defineProperties,
         destroyObject,
         DeveloperError,
+        FeatureDetection,
         knockout,
         getElement,
         NavigationHelpButtonViewModel) {
@@ -42,7 +44,7 @@ define([
      *     container : 'navigationHelpButtonContainer'
      * });
      */
-    var NavigationHelpButton = function(options) {
+    function NavigationHelpButton(options) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(options) || !defined(options.container)) {
             throw new DeveloperError('options.container is required.');
@@ -77,6 +79,7 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
         wrapper.appendChild(instructionContainer);
 
         var mouseButton = document.createElement('button');
+        mouseButton.type = 'button';
         mouseButton.className = 'cesium-navigation-button cesium-navigation-button-left';
         mouseButton.setAttribute('data-bind', 'click: showClick, css: {"cesium-navigation-button-selected": !_touch, "cesium-navigation-button-unselected": _touch}');
         var mouseIcon = document.createElement('img');
@@ -88,6 +91,7 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
         mouseButton.appendChild(document.createTextNode('Mouse'));
 
         var touchButton = document.createElement('button');
+        touchButton.type = 'button';
         touchButton.className = 'cesium-navigation-button cesium-navigation-button-right';
         touchButton.setAttribute('data-bind', 'click: showTouch, css: {"cesium-navigation-button-selected": _touch, "cesium-navigation-button-unselected": !_touch}');
         var touchIcon = document.createElement('img');
@@ -96,11 +100,10 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
         touchIcon.style.width = '25px';
         touchIcon.style.height = '25px';
         touchButton.appendChild(touchIcon);
-        touchButton.appendChild(document.createTextNode('Trackpad'));
+        touchButton.appendChild(document.createTextNode('Touch'));
 
         instructionContainer.appendChild(mouseButton);
         instructionContainer.appendChild(touchButton);
-
 
         var clickInstructions = document.createElement('div');
         clickInstructions.className = 'cesium-click-navigation-help cesium-navigation-help-instructions';
@@ -127,7 +130,7 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
                     <td>\
                         <div class="cesium-navigation-help-rotate">Rotate view</div>\
                         <div class="cesium-navigation-help-details">Middle click + drag, or</div>\
-                        <div class="cesium-navigation-help-details">CTRL + Left click + drag</div>\
+                        <div class="cesium-navigation-help-details">CTRL + Left/Right click + drag</div>\
                     </td>\
                 </tr>\
             </table>';
@@ -149,19 +152,17 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
                 <tr>\
                     <td><img src="' + buildModuleUrl('Widgets/Images/NavigationHelp/TouchZoom.svg') + '" width="70" height="48" /></td>\
                     <td>\
-                        <div class="cesium-navigation-help-zoom">Rotate View</div>\
-                        <div class="cesium-navigation-help-details">CTRL + One finger drag</div>\
+                        <div class="cesium-navigation-help-zoom">Zoom view</div>\
+                        <div class="cesium-navigation-help-details">Two finger pinch</div>\
                     </td>\
                 </tr>\
                 <tr>\
                     <td><img src="' + buildModuleUrl('Widgets/Images/NavigationHelp/TouchTilt.svg') + '" width="70" height="48" /></td>\
                     <td>\
-                        <div class="cesium-navigation-help-rotate">Zoom view</div>\
+                        <div class="cesium-navigation-help-rotate">Tilt view</div>\
                         <div class="cesium-navigation-help-details">Two finger drag, same direction</div>\
                     </td>\
                 </tr>\
-            </table>';
-            /*
                 <tr>\
                     <td><img src="' + buildModuleUrl('Widgets/Images/NavigationHelp/TouchRotate.svg') + '" width="70" height="48" /></td>\
                     <td>\
@@ -169,7 +170,7 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
                         <div class="cesium-navigation-help-details">Two finger drag, opposite direction</div>\
                     </td>\
                 </tr>\
-            </table>';*/
+            </table>';
 
         instructionContainer.appendChild(touchInstructions);
 
@@ -185,9 +186,13 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
             }
         };
 
-        document.addEventListener('mousedown', this._closeInstructions, true);
-        document.addEventListener('touchstart', this._closeInstructions, true);
-    };
+        if (FeatureDetection.supportsPointerEvents()) {
+            document.addEventListener('pointerdown', this._closeInstructions, true);
+        } else {
+            document.addEventListener('mousedown', this._closeInstructions, true);
+            document.addEventListener('touchstart', this._closeInstructions, true);
+        }
+    }
 
     defineProperties(NavigationHelpButton.prototype, {
         /**
@@ -227,8 +232,12 @@ cesiumSvgPath: { path: _svgPath, width: 32, height: 32 }');
      * removing the widget from layout.
      */
     NavigationHelpButton.prototype.destroy = function() {
-        document.removeEventListener('mousedown', this._closeInstructions, true);
-        document.removeEventListener('touchstart', this._closeInstructions, true);
+        if (FeatureDetection.supportsPointerEvents()) {
+            document.removeEventListener('pointerdown', this._closeInstructions, true);
+        } else {
+            document.removeEventListener('mousedown', this._closeInstructions, true);
+            document.removeEventListener('touchstart', this._closeInstructions, true);
+        }
 
         knockout.cleanNode(this._wrapper);
         this._container.removeChild(this._wrapper);

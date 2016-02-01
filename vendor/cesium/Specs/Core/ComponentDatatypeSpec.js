@@ -4,7 +4,6 @@ defineSuite([
     ], function(
         ComponentDatatype) {
     "use strict";
-    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('fromTypedArray works', function() {
         expect(ComponentDatatype.fromTypedArray(new Int8Array())).toBe(ComponentDatatype.BYTE);
