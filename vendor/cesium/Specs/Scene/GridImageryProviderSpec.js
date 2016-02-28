@@ -1,64 +1,43 @@
 /*global defineSuite*/
 defineSuite([
         'Scene/GridImageryProvider',
-        'Core/Ellipsoid',
         'Core/GeographicTilingScheme',
         'Core/WebMercatorTilingScheme',
         'Scene/ImageryProvider',
-        'Specs/pollToPromise',
-        'ThirdParty/when'
+        'Specs/waitsForPromise'
     ], function(
         GridImageryProvider,
-        Ellipsoid,
         GeographicTilingScheme,
         WebMercatorTilingScheme,
         ImageryProvider,
-        pollToPromise,
-        when) {
+        waitsForPromise) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('conforms to ImageryProvider interface', function() {
         expect(GridImageryProvider).toConformToInterface(ImageryProvider);
     });
 
-    it('resolves readyPromise', function() {
-        var provider = new GridImageryProvider();
-
-        return provider.readyPromise.then(function (result) {
-            expect(result).toBe(true);
-            expect(provider.ready).toBe(true);
-        });
-    });
-
     it('returns valid value for hasAlphaChannel', function() {
         var provider = new GridImageryProvider();
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
+        }, 'imagery provider to become ready');
+
+        runs(function() {
             expect(typeof provider.hasAlphaChannel).toBe('boolean');
-        });
-    });
-
-    it('can use a custom ellipsoid', function() {
-        var ellipsoid = new Ellipsoid(1, 2, 3);
-        var provider = new GridImageryProvider({
-            ellipsoid : ellipsoid
-        });
-
-        return pollToPromise(function() {
-            return provider.ready;
-        }).then(function() {
-            expect(provider.tilingScheme.ellipsoid).toEqual(ellipsoid);
         });
     });
 
     it('can provide a root tile', function() {
         var provider = new GridImageryProvider();
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
+        }, 'imagery provider to become ready');
+
+        runs(function() {
             expect(provider.tileWidth).toEqual(256);
             expect(provider.tileHeight).toEqual(256);
             expect(provider.maximumLevel).toBeUndefined();
@@ -66,7 +45,7 @@ defineSuite([
             expect(provider.tileDiscardPolicy).toBeUndefined();
             expect(provider.rectangle).toEqual(new GeographicTilingScheme().rectangle);
 
-            return when(provider.requestImage(0, 0, 0), function(image) {
+            waitsForPromise(provider.requestImage(0, 0, 0), function(image) {
                 expect(image).toBeDefined();
             });
         });
@@ -78,9 +57,11 @@ defineSuite([
             tilingScheme : tilingScheme
         });
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
+        }, 'imagery provider to become ready');
+
+        runs(function() {
             expect(provider.tilingScheme).toBe(tilingScheme);
         });
     });
@@ -91,9 +72,11 @@ defineSuite([
             tileHeight : 456
         });
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
+        }, 'imagery provider to become ready');
+
+        runs(function() {
             expect(provider.tileWidth).toEqual(123);
             expect(provider.tileHeight).toEqual(456);
         });

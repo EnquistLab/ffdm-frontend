@@ -8,6 +8,7 @@ defineSuite([
         Cartesian3,
         CesiumMath) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     //Mock object to make sure methods take non-sphericals.
     function NotSpherical(clock, cone, magnitude) {
@@ -69,7 +70,7 @@ defineSuite([
     it('Normalizing with no result parameter creates new instance and sets magntitude to 1.0', function() {
         var v = new Spherical(0, 2, 3);
         var w = Spherical.normalize(v);
-        expect(w).not.toEqual(v);
+        expect(w).toNotEqual(v);
         expect(w.clock).toEqual(0);
         expect(w.cone).toEqual(2);
         expect(w.magnitude).toEqual(1);
@@ -79,7 +80,7 @@ defineSuite([
         var v = new Spherical(0, 2, 3);
         var w = new NotSpherical();
         var q = Spherical.normalize(v, w);
-        expect(w).not.toEqual(v);
+        expect(w).toNotEqual(v);
         expect(w === q).toEqual(true);
         expect(w.clock).toEqual(0);
         expect(w.cone).toEqual(2);

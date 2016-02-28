@@ -6,6 +6,7 @@ defineSuite([
         CreditDisplay,
         Credit) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var container;
 
@@ -29,22 +30,22 @@ defineSuite([
 
     it('credit display addCredit throws when credit is undefined', function() {
         expect(function() {
-            var creditDisplay = new CreditDisplay(container);
+            var creditDisplay = new CreditDisplay();
             creditDisplay.addCredit();
         }).toThrowDeveloperError();
     });
 
     it('credit display addDefaultCredit throws when credit is undefined', function() {
         expect(function() {
-            var creditDisplay = new CreditDisplay(container);
+            var creditDisplay = new CreditDisplay();
             creditDisplay.addDefaultCredit();
         }).toThrowDeveloperError();
     });
 
     it('credit display removeDefaultCredit throws when credit is undefined', function() {
         expect(function() {
-            var creditDisplay = new CreditDisplay(container);
-            creditDisplay.removeDefaultCredit();
+            var creditDisplay = new CreditDisplay();
+            creditDisplay.removeDevaultCredit();
         }).toThrowDeveloperError();
     });
 

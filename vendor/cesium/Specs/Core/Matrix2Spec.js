@@ -8,6 +8,7 @@ defineSuite([
         Cartesian2,
         CesiumMath) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('default constructor creates values array with all zeros.', function() {
         var matrix = new Matrix2();
@@ -126,7 +127,7 @@ defineSuite([
                 7.0, 0.0,
                 0.0, 8.0);
         var returnedResult = Matrix2.fromScale(new Cartesian2(7.0, 8.0));
-        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toNotBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -145,7 +146,7 @@ defineSuite([
                 2.0, 0.0,
                 0.0, 2.0);
         var returnedResult = Matrix2.fromUniformScale(2.0);
-        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toNotBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -181,7 +182,7 @@ defineSuite([
     it('clone works without a result parameter', function() {
         var expected = new Matrix2(1.0, 2.0, 3.0, 4.0);
         var returnedResult = expected.clone();
-        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toNotBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -190,14 +191,14 @@ defineSuite([
         var result = new Matrix2();
         var returnedResult = expected.clone(result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toNotBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
     it('toArray works without a result parameter', function() {
         var expected = [1.0, 2.0, 3.0, 4.0];
         var returnedResult = Matrix2.toArray(Matrix2.fromColumnMajorArray(expected));
-        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toNotBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -206,7 +207,7 @@ defineSuite([
         var result = [];
         var returnedResult = Matrix2.toArray(Matrix2.fromColumnMajorArray(expected), result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).not.toBe(expected);
+        expect(returnedResult).toNotBe(expected);
         expect(returnedResult).toEqual(expected);
     });
 
@@ -364,25 +365,6 @@ defineSuite([
         var returnedResult = Matrix2.subtract(left, right, left);
         expect(returnedResult).toBe(left);
         expect(left).toEqual(expected);
-    });
-
-    it('multiplyByScale works', function() {
-        var m = new Matrix2(2, 3, 6, 7);
-        var scale = new Cartesian2(2.0, 3.0);
-        var expected = Matrix2.multiply(m, Matrix2.fromScale(scale), new Matrix2());
-        var result = new Matrix2();
-        var returnedResult = Matrix2.multiplyByScale(m, scale, result);
-        expect(returnedResult).toBe(result);
-        expect(result).toEqual(expected);
-    });
-
-    it('multiplyByScale works with "this" result parameter', function() {
-        var m = new Matrix2(1, 2, 5, 6);
-        var scale = new Cartesian2(1.0, 2.0);
-        var expected = Matrix2.multiply(m, Matrix2.fromScale(scale), new Matrix2());
-        var returnedResult = Matrix2.multiplyByScale(m, scale, m);
-        expect(returnedResult).toBe(m);
-        expect(m).toEqual(expected);
     });
 
     it('multiplyByVector works', function() {
@@ -674,19 +656,6 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('multiplyByScale throws with no matrix parameter', function() {
-        expect(function() {
-            Matrix2.multiplyByScale(undefined, new Cartesian2());
-        }).toThrowDeveloperError();
-    });
-
-    it('multiplyByScale throws with no scale parameter', function() {
-        var m = new Matrix2();
-        expect(function() {
-            Matrix2.multiplyByScale(m, undefined);
-        }).toThrowDeveloperError();
-    });
-
     it('multiplyByVector throws with no matrix parameter', function() {
         var cartesian = new Cartesian2();
         expect(function() {
@@ -765,12 +734,6 @@ defineSuite([
     it('multiply throws without result parameter', function() {
         expect(function() {
             Matrix2.multiply(new Matrix2(), new Matrix2());
-        }).toThrowDeveloperError();
-    });
-
-    it('multiplyByScale throws without result parameter', function() {
-        expect(function() {
-            Matrix2.multiplyByScale(new Matrix2(), new Cartesian2());
         }).toThrowDeveloperError();
     });
 

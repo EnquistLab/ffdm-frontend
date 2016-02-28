@@ -6,6 +6,7 @@ defineSuite([
         loadBlob,
         RequestErrorEvent) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var fakeXHR;
 
@@ -32,7 +33,7 @@ defineSuite([
             }
         };
 
-        spyOn(window, 'XMLHttpRequest').and.returnValue(fakeXHR);
+        spyOn(window, 'XMLHttpRequest').andReturn(fakeXHR);
     });
 
     it('throws with no url', function() {
@@ -58,7 +59,7 @@ defineSuite([
         });
 
         expect(fakeXHR.open).toHaveBeenCalledWith('GET', testUrl, true);
-        expect(fakeXHR.setRequestHeader.calls.count()).toEqual(2);
+        expect(fakeXHR.setRequestHeader.callCount).toEqual(2);
         expect(fakeXHR.setRequestHeader).toHaveBeenCalledWith('Accept', 'application/json');
         expect(fakeXHR.setRequestHeader).toHaveBeenCalledWith('Cache-Control', 'no-cache');
         expect(fakeXHR.send).toHaveBeenCalled();

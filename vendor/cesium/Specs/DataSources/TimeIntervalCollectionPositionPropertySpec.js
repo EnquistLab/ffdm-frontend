@@ -16,6 +16,7 @@ defineSuite([
         TimeIntervalCollection,
         PositionProperty) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('default constructor has expected values', function() {
         var property = new TimeIntervalCollectionPositionProperty();
@@ -224,13 +225,13 @@ defineSuite([
 
         property.intervals.addInterval(interval);
         expect(listener).toHaveBeenCalledWith(property);
-        listener.calls.reset();
+        listener.reset();
 
         property.intervals.removeInterval(interval);
         expect(listener).toHaveBeenCalledWith(property);
 
         property.intervals.addInterval(interval);
-        listener.calls.reset();
+        listener.reset();
         property.intervals.removeAll();
         expect(listener).toHaveBeenCalledWith(property);
     });

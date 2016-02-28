@@ -1,6 +1,5 @@
 language: node_js
 node_js:
-  - "0.12"
-sudo: false
+  - "0.10"
 script:
-  - travis_wait npm run jsHint && npm run release
+  - ant jsHint release -DnodePath=node

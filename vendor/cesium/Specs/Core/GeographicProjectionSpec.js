@@ -12,6 +12,7 @@ defineSuite([
         Ellipsoid,
         CesiumMath) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('construct0', function() {
         var projection = new GeographicProjection();

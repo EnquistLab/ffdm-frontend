@@ -6,6 +6,7 @@ defineSuite([
         QuadraticRealPolynomial,
         CesiumMath) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('discriminant throws without a', function() {
         expect(function() {

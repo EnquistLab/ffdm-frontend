@@ -8,6 +8,7 @@ defineSuite([
         Cartesian3,
         createPackableSpecs) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('constructor throws if stackPartitions less than 1', function() {
         expect(function() {

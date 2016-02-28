@@ -1,4 +1,4 @@
-@import url('../../ThirdParty/dojo-release-1.10.4/dijit/themes/claro/claro.css');
+@import url('../../ThirdParty/dojo-release-1.9.3/dijit/themes/claro/claro.css');
 
 html, body {
     height: 100%;
@@ -202,7 +202,6 @@ a.linkButton:focus, a.linkButton:hover {
     font-weight: bold;
     background-color: #F42;
     border-radius: 3px;
-    border: none;
 }
 
 .CodeMirror pre.errorLine {
@@ -216,7 +215,6 @@ a.linkButton:focus, a.linkButton:hover {
     font-weight: bold;
     background-color: #FE2;
     border-radius: 3px;
-    border: none;
 }
 
 .CodeMirror pre.hintLine {
@@ -230,7 +228,6 @@ a.linkButton:focus, a.linkButton:hover {
     font-weight: bold;
     background-color: #2E2;
     border-radius: 3px;
-    border: none;
 }
 
 .CodeMirror pre.highlightLine {
@@ -244,7 +241,6 @@ a.linkButton:focus, a.linkButton:hover {
     font-weight: bold;
     background-color: #CEF;
     border-radius: 3px;
-    border: none;
 }
 
 .CodeMirror pre.searchLine {

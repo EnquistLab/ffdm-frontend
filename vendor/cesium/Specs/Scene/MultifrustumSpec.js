@@ -9,23 +9,17 @@ defineSuite([
         'Core/defined',
         'Core/destroyObject',
         'Core/GeometryPipeline',
-        'Core/loadImage',
         'Core/Math',
         'Core/Matrix4',
         'Renderer/BufferUsage',
         'Renderer/DrawCommand',
-        'Renderer/RenderState',
-        'Renderer/Sampler',
-        'Renderer/ShaderProgram',
         'Renderer/TextureMagnificationFilter',
         'Renderer/TextureMinificationFilter',
-        'Renderer/VertexArray',
         'Scene/BillboardCollection',
         'Scene/BlendingState',
         'Scene/Pass',
         'Scene/TextureAtlas',
-        'Specs/createScene',
-        'ThirdParty/when'
+        'Specs/createScene'
     ], 'Scene/Multifrustum', function(
         BoundingSphere,
         BoxGeometry,
@@ -36,24 +30,19 @@ defineSuite([
         defined,
         destroyObject,
         GeometryPipeline,
-        loadImage,
         CesiumMath,
         Matrix4,
         BufferUsage,
         DrawCommand,
-        RenderState,
-        Sampler,
-        ShaderProgram,
         TextureMagnificationFilter,
         TextureMinificationFilter,
-        VertexArray,
         BillboardCollection,
         BlendingState,
         Pass,
         TextureAtlas,
-        createScene,
-        when) {
+        createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     var context;
@@ -63,19 +52,6 @@ defineSuite([
     var greenImage;
     var blueImage;
     var whiteImage;
-
-    beforeAll(function() {
-        return when.join(
-            loadImage('./Data/Images/Green.png').then(function(image) {
-                greenImage = image;
-            }),
-            loadImage('./Data/Images/Blue.png').then(function(image) {
-                blueImage = image;
-            }),
-            loadImage('./Data/Images/White.png').then(function(image) {
-                whiteImage = image;
-            }));
-    });
 
     beforeEach(function() {
         scene = createScene();
@@ -92,6 +68,19 @@ defineSuite([
         camera.frustum.far = 1000000000.0;
         camera.frustum.fov = CesiumMath.toRadians(60.0);
         camera.frustum.aspectRatio = 1.0;
+
+        greenImage = new Image();
+        greenImage.src = './Data/Images/Green.png';
+
+        blueImage = new Image();
+        blueImage.src = './Data/Images/Blue.png';
+
+        whiteImage = new Image();
+        whiteImage.src = './Data/Images/White.png';
+
+        waitsFor(function() {
+            return greenImage.complete && blueImage.complete && whiteImage.complete;
+        }, 'Load .png file(s) for billboard collection test.', 3000);
     });
 
     afterEach(function() {
@@ -111,7 +100,7 @@ defineSuite([
         });
 
         // ANGLE Workaround
-        atlas.texture.sampler = new Sampler({
+        atlas.texture.sampler = context.createSampler({
             minificationFilter : TextureMinificationFilter.NEAREST,
             magnificationFilter : TextureMagnificationFilter.NEAREST
         });
@@ -192,27 +181,16 @@ defineSuite([
         scene.renderForSpecs();
 
         expect(DrawCommand.prototype.execute).toHaveBeenCalled();
-
-        var calls = DrawCommand.prototype.execute.calls.all();
-        var billboardCall;
-        for (var i = 0; i < calls.length; ++i) {
-            if (calls[i].object.owner instanceof BillboardCollection) {
-                billboardCall = calls[i];
-                break;
-            }
-        }
-
-        expect(billboardCall).toBeDefined();
-        expect(billboardCall.args.length).toEqual(4);
-        expect(billboardCall.args[3]).toBeDefined();
-        expect(billboardCall.args[3].fragmentShaderSource.sources[1]).toContain('czm_Debug_main');
+        expect(DrawCommand.prototype.execute.mostRecentCall.args.length).toEqual(4);
+        expect(DrawCommand.prototype.execute.mostRecentCall.args[3]).toBeDefined();
+        expect(DrawCommand.prototype.execute.mostRecentCall.args[3].fragmentShaderSource.sources[1]).toContain('czm_Debug_main');
     });
 
     function createPrimitive(bounded, closestFrustum) {
         bounded = defaultValue(bounded, true);
         closestFrustum = defaultValue(closestFrustum, false);
 
-        function Primitive() {
+        var Primitive = function() {
             this._va = undefined;
             this._sp = undefined;
             this._rs = undefined;
@@ -229,8 +207,9 @@ defineSuite([
                     return that._modelMatrix;
                 }
             };
-        }
-        Primitive.prototype.update = function(frameState) {
+        };
+
+        Primitive.prototype.update = function(context, frameState, commandList) {
             if (!defined(this._sp)) {
                 var vs = '';
                 vs += 'attribute vec4 position;';
@@ -247,33 +226,26 @@ defineSuite([
                 fs += '}';
 
                 var dimensions = new Cartesian3(500000.0, 500000.0, 500000.0);
-                var maximum = Cartesian3.multiplyByScalar(dimensions, 0.5, new Cartesian3());
-                var minimum = Cartesian3.negate(maximum, new Cartesian3());
+                var maximumCorner = Cartesian3.multiplyByScalar(dimensions, 0.5, new Cartesian3());
+                var minimumCorner = Cartesian3.negate(maximumCorner, new Cartesian3());
                 var geometry = BoxGeometry.createGeometry(new BoxGeometry({
-                    minimum : minimum,
-                    maximum : maximum
+                    minimumCorner: minimumCorner,
+                    maximumCorner: maximumCorner
                 }));
                 var attributeLocations = GeometryPipeline.createAttributeLocations(geometry);
-                this._va = VertexArray.fromGeometry({
-                    context : frameState.context,
-                    geometry : geometry,
-                    attributeLocations : attributeLocations,
-                    bufferUsage : BufferUsage.STATIC_DRAW
+                this._va = context.createVertexArrayFromGeometry({
+                    geometry: geometry,
+                    attributeLocations: attributeLocations,
+                    bufferUsage: BufferUsage.STATIC_DRAW
                 });
 
-                this._sp = ShaderProgram.fromCache({
-                    context : frameState.context,
-                    vertexShaderSource : vs,
-                    fragmentShaderSource : fs,
-                    attributeLocations : attributeLocations
-                });
-
-                this._rs = RenderState.fromCache({
+                this._sp = context.createShaderProgram(vs, fs, attributeLocations);
+                this._rs = context.createRenderState({
                     blending : BlendingState.ALPHA_BLEND
                 });
             }
 
-            frameState.commandList.push(new DrawCommand({
+            commandList.push(new DrawCommand({
                 renderState : this._rs,
                 shaderProgram : this._sp,
                 vertexArray : this._va,

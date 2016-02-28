@@ -4,6 +4,7 @@ defineSuite([
     ], function(
         FeatureDetection) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     //generally, these tests just make sure the function runs, the test can't expect a value of true or false
     it('detects fullscreen support', function() {
@@ -36,6 +37,7 @@ defineSuite([
             var chromeVersion = FeatureDetection.chromeVersion();
             checkVersionArray(chromeVersion);
 
+            /*global console*/
             console.log('detected Chrome ' + chromeVersion.join('.'));
         }
     });
@@ -48,6 +50,7 @@ defineSuite([
             var safariVersion = FeatureDetection.safariVersion();
             checkVersionArray(safariVersion);
 
+            /*global console*/
             console.log('detected Safari ' + safariVersion.join('.'));
         }
     });
@@ -61,6 +64,7 @@ defineSuite([
             checkVersionArray(webkitVersion);
             expect(typeof webkitVersion.isNightly).toEqual('boolean');
 
+            /*global console*/
             console.log('detected Webkit ' + webkitVersion.join('.') + (webkitVersion.isNightly ? ' (Nightly)' : ''));
         }
     });
@@ -73,6 +77,7 @@ defineSuite([
             var internetExplorerVersion = FeatureDetection.internetExplorerVersion();
             checkVersionArray(internetExplorerVersion);
 
+            /*global console*/
             console.log('detected Internet Explorer ' + internetExplorerVersion.join('.'));
         }
     });
@@ -86,17 +91,8 @@ defineSuite([
 
             checkVersionArray(firefoxVersion);
 
+            /*global console*/
             console.log('detected Firefox ' + firefoxVersion.join('.'));
-        }
-    });
-
-    it('detects imageRendering support', function() {
-        var supportsImageRenderingPixelated = FeatureDetection.supportsImageRenderingPixelated();
-        expect(typeof supportsImageRenderingPixelated).toEqual('boolean');
-        if (supportsImageRenderingPixelated) {
-            expect(FeatureDetection.imageRenderingValue()).toBeDefined();
-        } else {
-            expect(FeatureDetection.imageRenderingValue()).not.toBeDefined();
         }
     });
 });

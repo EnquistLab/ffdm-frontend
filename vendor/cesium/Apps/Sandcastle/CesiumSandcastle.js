@@ -1,14 +1,14 @@
-/*global require,Blob,JSHINT*/
+/*global require,Blob,CodeMirror,JSHINT*/
 /*global gallery_demos*/// defined by gallery/gallery-index.js, created by build
 /*global sandcastleJsHintOptions*/// defined by jsHintOptions.js, created by build
 require({
     baseUrl : '../../Source',
     packages : [{
         name : 'dojo',
-        location : '../ThirdParty/dojo-release-1.10.4/dojo'
+        location : '../ThirdParty/dojo-release-1.9.3/dojo'
     }, {
         name : 'dijit',
-        location : '../ThirdParty/dojo-release-1.10.4/dijit'
+        location : '../ThirdParty/dojo-release-1.9.3/dijit'
     }, {
         name : 'Sandcastle',
         location : '../Apps/Sandcastle'
@@ -20,7 +20,6 @@ require({
         location : '../ThirdParty/codemirror-4.6'
     }]
 }, [
-        'CodeMirror/lib/codemirror',
         'dijit/layout/ContentPane',
         'dijit/popup',
         'dijit/registry',
@@ -34,11 +33,10 @@ require({
         'dojo/mouse',
         'dojo/on',
         'dojo/parser',
-        'dojo/promise/all',
         'dojo/query',
-        'dojo/when',
         'Sandcastle/LinkButton',
         'Source/Cesium',
+        'CodeMirror/lib/codemirror',
         'CodeMirror/addon/hint/show-hint',
         'CodeMirror/addon/hint/javascript-hint',
         'CodeMirror/mode/javascript/javascript',
@@ -61,7 +59,6 @@ require({
         'dijit/ToolbarSeparator',
         'dojo/domReady!'
     ], function(
-        CodeMirror,
         ContentPane,
         popup,
         registry,
@@ -75,11 +72,10 @@ require({
         mouse,
         on,
         parser,
-        all,
         query,
-        when,
         LinkButton,
-        Cesium) {
+        Cesium,
+        CodeMirror) {
     "use strict";
 
     //In order for CodeMirror auto-complete to work, Cesium needs to be defined as a global.
@@ -156,9 +152,6 @@ require({
     var searchRegExp;
     var hintTimer;
     var currentTab = '';
-    var newDemo;
-    var demoHtml = '';
-    var demoJs = '';
 
     var galleryErrorMsg = document.createElement('span');
     galleryErrorMsg.className = 'galleryError';
@@ -247,7 +240,7 @@ require({
                 var member = local.docTypes[lowerText][i];
                 var ele = document.createElement('a');
                 ele.target = '_blank';
-                ele.textContent = member.replace('.html', '').replace('module-', '').replace('#.', '.').replace('#', '.');
+                ele.textContent = member.replace('.html', '').replace('module-', '').replace('#', '.');
                 ele.href = '../../Build/Documentation/' + member;
                 ele.onclick = onDocClick;
                 docMessage.appendChild(ele);
@@ -268,16 +261,7 @@ require({
     function makeLineLabel(msg, className) {
         var element = document.createElement('abbr');
         element.className = className;
-        switch (className) {
-        case 'hintMarker':
-            element.innerHTML = '&#9650;';
-            break;
-        case 'errorMarker':
-            element.innerHTML = '&times;';
-            break;
-        default:
-            element.innerHTML = '&#9654;';
-        }
+        element.innerHTML = '&nbsp;';
         element.title = msg;
         return element;
     }
@@ -495,14 +479,6 @@ require({
         }
     });
 
-    window.onbeforeunload = function (e) {
-        var htmlText = (htmlEditor.getValue()).replace(/\s/g, '');
-        var jsText = (jsEditor.getValue()).replace(/\s/g, '');
-        if (demoHtml !== htmlText || demoJs !== jsText) {
-            return 'Be sure to save a copy of any important edits before leaving this page.';
-        }
-    };
-
     registry.byId('codeContainer').watch('selectedChildWidget', function(name, oldPane, newPane) {
         if (newPane.id === 'jsContainer') {
             jsEditor.focus();
@@ -672,46 +648,46 @@ require({
         registry.byId('description').set('value', decodeHTML(demo.description).replace(/\\n/g, '\n'));
         registry.byId('label').set('value', decodeHTML(demo.label).replace(/\\n/g, '\n'));
 
-        return requestDemo(demo.name).then(function(value) {
+        //requestDemo is synchronous
+        requestDemo(demo.name).then(function(value) {
             demo.code = value;
-
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(demo.code, 'text/html');
-
-            var script = doc.querySelector('script[id="cesium_sandcastle_script"]');
-            if (!script) {
-                appendConsole('consoleError', 'Error reading source file: ' + demo.name, true);
-                return;
-            }
-
-            var scriptMatch = scriptCodeRegex.exec(script.textContent);
-            if (!scriptMatch) {
-                appendConsole('consoleError', 'Error reading source file: ' + demo.name, true);
-                return;
-            }
-
-            var scriptCode = scriptMatch[1];
-            demoJs = scriptCode.replace(/\s/g, '');
-            jsEditor.setValue(scriptCode);
-            jsEditor.clearHistory();
-
-            var htmlText = '';
-            var childIndex = 0;
-            var childNode = doc.body.childNodes[childIndex];
-            while (childIndex < doc.body.childNodes.length && childNode !== script) {
-                htmlText += childNode.nodeType === 1 ? childNode.outerHTML : childNode.nodeValue;
-                childNode = doc.body.childNodes[++childIndex];
-            }
-            htmlText = htmlText.replace(/^\s+/, '');
-            demoHtml = htmlText.replace(/\s/g, '');
-            htmlEditor.setValue(htmlText);
-            htmlEditor.clearHistory();
-
-            if (typeof demo.bucket === 'string') {
-                loadBucket(demo.bucket);
-            }
-            CodeMirror.commands.runCesium(jsEditor);
         });
+
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(demo.code, 'text/html');
+
+        var script = doc.querySelector('script[id="cesium_sandcastle_script"]');
+        if (!script) {
+            appendConsole('consoleError', 'Error reading source file: ' + demo.name, true);
+            return;
+        }
+
+        var scriptMatch = scriptCodeRegex.exec(script.textContent);
+        if (!scriptMatch) {
+            appendConsole('consoleError', 'Error reading source file: ' + demo.name, true);
+            return;
+        }
+
+        var scriptCode = scriptMatch[1];
+        jsEditor.setValue(scriptCode);
+        jsEditor.clearHistory();
+
+        var htmlText = '';
+        var childIndex = 0;
+        var childNode = doc.body.childNodes[childIndex];
+        while (childIndex < doc.body.childNodes.length && childNode !== script) {
+            htmlText += childNode.nodeType === 1 ? childNode.outerHTML : childNode.nodeValue;
+            childNode = doc.body.childNodes[++childIndex];
+        }
+        htmlText = htmlText.replace(/^\s+/, '');
+
+        htmlEditor.setValue(htmlText);
+        htmlEditor.clearHistory();
+
+        if (typeof demo.bucket === 'string') {
+            loadBucket(demo.bucket);
+        }
+        CodeMirror.commands.runCesium(jsEditor);
     }
 
     window.addEventListener('popstate', function(e) {
@@ -834,29 +810,6 @@ require({
         }
     }
 
-    registry.byId('buttonNew').on('click', function() {
-        var htmlText = (htmlEditor.getValue()).replace(/\s/g, '');
-        var jsText = (jsEditor.getValue()).replace(/\s/g, '');
-        var confirmChange = true;
-        if (demoHtml !== htmlText || demoJs !== jsText) {
-            confirmChange = window.confirm('You have unsaved changes. Are you sure you want to navigate away from this demo?');
-        }
-        if (confirmChange) {
-            loadFromGallery(newDemo).then(function() {
-                var demoSrc = newDemo.name + '.html';
-                var queries = window.location.search.substring(1).split('&');
-                for (var i = 0; i < queries.length; i++) {
-                    var key = queries[i].split('=')[0];
-                    if (key === "src") {
-                        if (demoSrc !== queries[i].split('=')[1].replace('%20', ' ')) {
-                            window.history.pushState(newDemo, newDemo.name, '?src=' + demoSrc + '&label=' + currentTab);
-                        }
-                    }
-                }
-                document.title = newDemo.name + ' - Cesium Sandcastle';
-            });
-        }
-    });
     // Clicking the 'Run' button simply reloads the iframe.
     registry.byId('buttonRun').on('click', function() {
         CodeMirror.commands.runCesium(jsEditor);
@@ -896,13 +849,6 @@ require({
 
     registry.byId('buttonNewWindow').on('click', function() {
         var baseHref = window.location.href;
-
-        //Handle case where demo is in a sub-directory.
-        var searchLen = window.location.search.length;
-        if (searchLen > 0) {
-            baseHref = baseHref.substring(0, baseHref.length - searchLen);
-        }
-
         var pos = baseHref.lastIndexOf('/');
         baseHref = baseHref.substring(0, pos) + '/gallery/';
 
@@ -956,6 +902,7 @@ require({
         return xhr.get({
             url : 'gallery/' + name + '.html',
             handleAs : 'text',
+            sync : true,
             error : function(error) {
                 appendConsole('consoleError', error, true);
                 galleryError = true;
@@ -966,7 +913,7 @@ require({
     function loadDemoFromFile(index) {
         var demo = gallery_demos[index];
 
-        return requestDemo(demo.name).then(function(value) {
+        requestDemo(demo.name).then(function(value) {
             // Store the file contents for later searching.
             demo.code = value;
 
@@ -987,10 +934,9 @@ require({
             // Select the demo to load upon opening based on the query parameter.
             if (defined(queryObject.src)) {
                 if (demo.name === queryObject.src.replace('.html', '')) {
-                    loadFromGallery(demo).then(function() {
-                        window.history.replaceState(demo, demo.name, '?src=' + demo.name + '.html&label=' + queryObject.label);
-                        document.title = demo.name + ' - Cesium Sandcastle';
-                    });
+                    loadFromGallery(demo);
+                    window.history.replaceState(demo, demo.name, '?src=' + demo.name + '.html&label=' + queryObject.label);
+                    document.title = demo.name + ' - Cesium Sandcastle';
                 }
             }
 
@@ -1002,21 +948,18 @@ require({
             });
 
             addFileToTab(index);
-            return demo;
         });
     }
 
-    var loading = true;
     function setSubtab(tabName) {
-        currentTab = defined(tabName) && !loading ? tabName : queryObject.label;
-        queryObject.label = tabName;
-        loading = false;
+        currentTab = defined(queryObject.label) ? queryObject.label : tabName;
+        queryObject.label = undefined;
     }
 
     function addFileToGallery(index) {
         var searchDemos = dom.byId('searchDemos');
         createGalleryButton(index, searchDemos, 'searchDemo');
-        return loadDemoFromFile(index);
+        loadDemoFromFile(index);
     }
 
     function onShowCallback() {
@@ -1061,28 +1004,16 @@ require({
         demoLink.href = 'gallery/' + encodeURIComponent(demo.name) + '.html';
         tab.appendChild(demoLink);
 
-        if (demo.name === "Hello World") {
-            newDemo = demo;
-        }
         demoLink.onclick = function(e) {
             if (mouse.isMiddle(e)) {
                 window.open('gallery/' + demo.name + '.html');
             } else {
-                var htmlText = (htmlEditor.getValue()).replace(/\s/g, '');
-                var jsText = (jsEditor.getValue()).replace(/\s/g, '');
-                var confirmChange = true;
-                if (demoHtml !== htmlText || demoJs !== jsText) {
-                    confirmChange = window.confirm('You have unsaved changes. Are you sure you want to navigate away from this demo?');
+                loadFromGallery(demo);
+                var demoSrc = demo.name + '.html';
+                if (demoSrc !== window.location.search.substring(1)) {
+                    window.history.pushState(demo, demo.name, '?src=' + demoSrc + '&label=' + currentTab);
                 }
-                if (confirmChange) {
-                    loadFromGallery(demo).then(function() {
-                        var demoSrc = demo.name + '.html';
-                        if (demoSrc !== window.location.search.substring(1)) {
-                            window.history.pushState(demo, demo.name, '?src=' + demoSrc + '&label=' + currentTab);
-                        }
-                        document.title = demo.name + ' - Cesium Sandcastle';
-                    });
-                }
+                document.title = demo.name + ' - Cesium Sandcastle';
             }
             e.preventDefault();
         };
@@ -1101,7 +1032,6 @@ require({
         });
     }
 
-    var promise;
     if (!defined(gallery_demos)) {
         galleryErrorMsg.textContent = 'No demos found, please run the build script.';
         galleryErrorMsg.style.display = 'inline-block';
@@ -1129,53 +1059,43 @@ require({
 
         var queryInGalleryIndex = false;
         var queryName = queryObject.src.replace('.html', '');
-        var promises = [];
         for (i = 0; i < len; ++i) {
-            promises.push(addFileToGallery(i));
+            addFileToGallery(i);
+            if (gallery_demos[i].name === queryName) {
+                queryInGalleryIndex = true;
+            }
         }
 
-        promise = all(promises).then(function(results) {
-            var resultsLength = results.length;
-            for (i = 0; i < resultsLength; ++i) {
-                if (results[i].name === queryName) {
-                    queryInGalleryIndex = true;
-                }
+        label = 'All';
+        cp = new ContentPane({
+            content : '<div id="allContainer" class="demosContainer"><div class="demos" id="allDemos"></div></div>',
+            title : label,
+            onShow : function() {
+                setSubtab(this.title);
             }
+        }).placeAt('innerPanel');
+        subtabs[label] = cp;
+        registerScroll(dom.byId('allContainer'));
 
-            label = 'All';
-            cp = new ContentPane({
-                content : '<div id="allContainer" class="demosContainer"><div class="demos" id="allDemos"></div></div>',
-                title : label,
-                onShow : function() {
-                    setSubtab(this.title);
-                }
-            }).placeAt('innerPanel');
-            subtabs[label] = cp;
-            registerScroll(dom.byId('allContainer'));
-
-            var demos = dom.byId('allDemos');
-            for (i = 0; i < len; ++i) {
-                if (!/Development/i.test(gallery_demos[i].label)) {
-                    createGalleryButton(i, demos, 'all');
-                }
+        var demos = dom.byId('allDemos');
+        for (i = 0; i < len; ++i) {
+            if (!/Development/i.test(gallery_demos[i].label)) {
+                createGalleryButton(i, demos, 'all');
             }
+        }
 
-            if (!queryInGalleryIndex) {
-                gallery_demos.push({
-                                       name : queryName,
-                                       description : ''
-                                   });
-                return addFileToGallery(gallery_demos.length - 1);
-            }
-        });
+        if (!queryInGalleryIndex) {
+            gallery_demos.push({
+                name : queryName,
+                description : ''
+            });
+            addFileToGallery(gallery_demos.length - 1);
+        }
     }
 
-    var searchContainer;
-    when(promise).then(function() {
-        dom.byId('searchDemos').appendChild(galleryErrorMsg);
-        searchContainer = registry.byId('searchContainer');
+    dom.byId('searchDemos').appendChild(galleryErrorMsg);
+    var searchContainer = registry.byId('searchContainer');
 
-        hideSearchContainer();
-        registry.byId('innerPanel').selectChild(subtabs[currentTab]);
-    });
+    hideSearchContainer();
+    registry.byId('innerPanel').selectChild(subtabs[currentTab]);
 });

@@ -30,6 +30,7 @@ defineSuite([
         createFrameState,
         render) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
     var frameState;
@@ -37,14 +38,11 @@ defineSuite([
 
     beforeAll(function() {
         context = createContext();
-    });
+        frameState = createFrameState();
 
-    beforeEach(function() {
-        frameState = createFrameState(context);
-
-        frameState.camera.setView({ destination : rectangle });
+        frameState.camera.viewRectangle(rectangle);
         var us = context.uniformState;
-        us.update(frameState);
+        us.update(context, frameState);
     });
 
     afterAll(function() {
@@ -195,7 +193,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -219,7 +217,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -243,7 +241,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -266,7 +264,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -293,7 +291,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -320,7 +318,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -347,7 +345,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();
@@ -374,7 +372,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         primitive = primitive && primitive.destroy();

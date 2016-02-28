@@ -2,14 +2,11 @@
 defineSuite([
         'Scene/ImageryLayer',
         'Core/EllipsoidTerrainProvider',
+        'Core/jsonp',
         'Core/loadImage',
-        'Core/loadJsonp',
         'Core/loadWithXhr',
         'Core/Rectangle',
-        'Renderer/ComputeEngine',
-        'Scene/ArcGisMapServerImageryProvider',
         'Scene/BingMapsImageryProvider',
-        'Scene/Globe',
         'Scene/GlobeSurfaceTile',
         'Scene/Imagery',
         'Scene/ImageryLayerCollection',
@@ -17,22 +14,17 @@ defineSuite([
         'Scene/NeverTileDiscardPolicy',
         'Scene/QuadtreeTile',
         'Scene/SingleTileImageryProvider',
-        'Scene/createTileMapServiceImageryProvider',
+        'Scene/TileMapServiceImageryProvider',
         'Scene/WebMapServiceImageryProvider',
-        'Specs/createContext',
-        'Specs/createFrameState',
-        'Specs/pollToPromise'
+        'Specs/createContext'
     ], function(
         ImageryLayer,
         EllipsoidTerrainProvider,
+        jsonp,
         loadImage,
-        loadJsonp,
         loadWithXhr,
         Rectangle,
-        ComputeEngine,
-        ArcGisMapServerImageryProvider,
         BingMapsImageryProvider,
-        Globe,
         GlobeSurfaceTile,
         Imagery,
         ImageryLayerCollection,
@@ -40,30 +32,24 @@ defineSuite([
         NeverTileDiscardPolicy,
         QuadtreeTile,
         SingleTileImageryProvider,
-        createTileMapServiceImageryProvider,
+        TileMapServiceImageryProvider,
         WebMapServiceImageryProvider,
-        createContext,
-        createFrameState,
-        pollToPromise) {
+        createContext) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
-    var frameState;
-    var computeEngine;
 
     beforeAll(function() {
         context = createContext();
-        frameState = createFrameState(context);
-        computeEngine = new ComputeEngine(context);
     });
 
     afterAll(function() {
         context.destroyForSpecs();
-        computeEngine.destroy();
     });
 
     afterEach(function() {
-        loadJsonp.loadAndExecuteScript = loadJsonp.defaultLoadAndExecuteScript;
+        jsonp.loadAndExecuteScript = jsonp.defaultLoadAndExecuteScript;
         loadImage.createImage = loadImage.defaultCreateImage;
         loadWithXhr.load = loadWithXhr.defaultLoad;
     });
@@ -99,26 +85,31 @@ defineSuite([
 
         var layer = new ImageryLayer(provider);
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
+        }, 'imagery provider to become ready');
+
+        var imagery;
+        runs(function() {
             discardPolicy.shouldDiscard = true;
-            var imagery = new Imagery(layer, 0, 0, 0);
+            imagery = new Imagery(layer, 0, 0, 0);
             imagery.addReference();
             layer._requestImagery(imagery);
+        });
 
-            return pollToPromise(function() {
-                return imagery.state === ImageryState.RECEIVED;
-            }).then(function() {
-                layer._createTexture(context, imagery);
-                expect(imagery.state).toEqual(ImageryState.INVALID);
-                imagery.releaseReference();
-            });
+        waitsFor(function() {
+            return imagery.state === ImageryState.RECEIVED;
+        }, 'image to load');
+
+        runs(function() {
+            layer._createTexture(context, imagery);
+            expect(imagery.state).toEqual(ImageryState.INVALID);
+            imagery.releaseReference();
         });
     });
 
     it('reprojects web mercator images', function() {
-        loadJsonp.loadAndExecuteScript = function(url, functionName) {
+        jsonp.loadAndExecuteScript = function(url, functionName) {
             window[functionName]({
                 "authenticationResultCode" : "ValidCredentials",
                 "brandLogoUri" : "http:\/\/dev.virtualearth.net\/Branding\/logo_powered_by.png",
@@ -159,33 +150,42 @@ defineSuite([
 
         var layer = new ImageryLayer(provider);
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
-            var imagery = new Imagery(layer, 0, 0, 0);
+        }, 'imagery provider to become ready');
+
+        var imagery;
+        runs(function() {
+            imagery = new Imagery(layer, 0, 0, 0);
             imagery.addReference();
             layer._requestImagery(imagery);
+        });
 
-            return pollToPromise(function() {
-                return imagery.state === ImageryState.RECEIVED;
-            }).then(function() {
-                layer._createTexture(context, imagery);
+        waitsFor(function() {
+            return imagery.state === ImageryState.RECEIVED;
+        }, 'image to load');
 
-                return pollToPromise(function() {
-                    return imagery.state === ImageryState.TEXTURE_LOADED;
-                }).then(function() {
-                    var textureBeforeReprojection = imagery.texture;
-                    layer._reprojectTexture(frameState, imagery);
-                    frameState.commandList[0].execute(computeEngine);
+        runs(function() {
+            layer._createTexture(context, imagery);
+        });
 
-                    return pollToPromise(function() {
-                        return imagery.state === ImageryState.READY;
-                    }).then(function() {
-                        expect(textureBeforeReprojection).not.toEqual(imagery.texture);
-                        imagery.releaseReference();
-                    });
-                });
-            });
+        waitsFor(function() {
+            return imagery.state === ImageryState.TEXTURE_LOADED;
+        }, 'texture to load');
+
+        var textureBeforeReprojection;
+        runs(function() {
+            textureBeforeReprojection = imagery.texture;
+            layer._reprojectTexture(context, imagery);
+        });
+
+        waitsFor(function() {
+            return imagery.state === ImageryState.READY;
+        }, 'texture to be ready');
+
+        runs(function() {
+            expect(textureBeforeReprojection).not.toEqual(imagery.texture);
+            imagery.releaseReference();
         });
     });
 
@@ -204,59 +204,9 @@ defineSuite([
         expect(layer.isDestroyed()).toEqual(true);
     });
 
-    it('returns HTTP status code information in TileProviderError', function() {
-        // Web browsers unfortunately provide very little information about what went wrong when an Image fails
-        // to load.  But when an imagery provider is configured to use a TileDiscardPolicy, Cesium downloads the image
-        // using XHR and then creates a blob URL to pass to an actual Image.  This allows access to much more detailed
-        // information, including the status code.
-
-        var provider = new ArcGisMapServerImageryProvider({
-            url : 'File/That/Does/Not/Exist',
-            usePreCachedTilesIfAvailable : false,
-            tileDiscardPolicy : new NeverTileDiscardPolicy()
-        });
-
-        var errorRaised = false;
-        provider.errorEvent.addEventListener(function(tileProviderError) {
-            expect(tileProviderError).toBeDefined();
-            expect(tileProviderError.error).toBeDefined();
-            expect(tileProviderError.error.statusCode).toBe(404);
-            errorRaised = true;
-        });
-
-        var imageryLayer = new ImageryLayer(provider);
-
-        return pollToPromise(function() {
-            return provider.ready;
-        }).then(function() {
-            imageryLayer._requestImagery(new Imagery(imageryLayer, 0, 0, 0));
-
-            return pollToPromise(function() {
-                return errorRaised;
-            });
-        });
-    });
-
-    it('getViewableRectangle works', function() {
-        var providerRectangle = Rectangle.fromDegrees(8.2, 61.09, 8.5, 61.7);
-        var provider = new SingleTileImageryProvider({
-            url : 'Data/Images/Green4x4.png',
-            rectangle : providerRectangle
-        });
-
-        var layerRectangle = Rectangle.fromDegrees(7.2, 60.9, 9.0, 61.7);
-        var layer = new ImageryLayer(provider, {
-            rectangle : layerRectangle
-        });
-
-        return layer.getViewableRectangle().then(function(rectangle) {
-            expect(rectangle).toEqual(Rectangle.intersection(providerRectangle, layerRectangle));
-        });
-    });
-
     describe('createTileImagerySkeletons', function() {
         it('handles a base layer that does not cover the entire globe', function() {
-            var provider = createTileMapServiceImageryProvider({
+            var provider = new TileMapServiceImageryProvider({
                 url : 'Data/TMS/SmallArea'
             });
 
@@ -264,9 +214,11 @@ defineSuite([
             var layer = layers.addImageryProvider(provider);
             var terrainProvider = new EllipsoidTerrainProvider();
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                 return provider.ready && terrainProvider.ready;
-            }).then(function() {
+            }, 'imagery provider to become ready');
+
+            runs(function() {
                 var tiles = QuadtreeTile.createLevelZeroTiles(terrainProvider.tilingScheme);
                 tiles[0].data = new GlobeSurfaceTile();
                 tiles[1].data = new GlobeSurfaceTile();
@@ -295,63 +247,12 @@ defineSuite([
             });
         });
 
-        it('does not get confused when base layer imagery overlaps in one direction but not the other', function() {
-            // This is a pretty specific test targeted at https://github.com/AnalyticalGraphicsInc/cesium/issues/2815
-            // It arranges for tileImageryBoundsScratch to be a rectangle that is invalid in the WebMercator projection.
-            // Then, it triggers issue #2815 where that stale data is used in a later call.  Prior to the fix this
-            // triggers an exception (use of an undefined reference).
-
-            var wholeWorldProvider = new SingleTileImageryProvider({
-                url : 'Data/Images/Blue.png'
-            });
-
-            var provider = createTileMapServiceImageryProvider({
-                url : 'Data/TMS/SmallArea'
-            });
-
-            var layers = new ImageryLayerCollection();
-            var wholeWorldLayer = layers.addImageryProvider(wholeWorldProvider);
-            var terrainProvider = new EllipsoidTerrainProvider();
-
-            return pollToPromise(function() {
-                return wholeWorldProvider.ready && provider.ready && terrainProvider.ready;
-            }).then(function() {
-                var tiles = QuadtreeTile.createLevelZeroTiles(terrainProvider.tilingScheme);
-                tiles[0].data = new GlobeSurfaceTile();
-                tiles[1].data = new GlobeSurfaceTile();
-
-                wholeWorldLayer._createTileImagerySkeletons(tiles[0], terrainProvider);
-                wholeWorldLayer._createTileImagerySkeletons(tiles[1], terrainProvider);
-
-                layers.removeAll();
-                var layer = layers.addImageryProvider(provider);
-
-                // Use separate tiles for the small area provider.
-                tiles = QuadtreeTile.createLevelZeroTiles(terrainProvider.tilingScheme);
-                tiles[0].data = new GlobeSurfaceTile();
-                tiles[1].data = new GlobeSurfaceTile();
-
-                // The stale data was used in this call prior to the fix.
-                layer._createTileImagerySkeletons(tiles[1], terrainProvider);
-
-                // Same assertions as above as in 'handles a base layer that does not cover the entire globe'
-                // as a sanity check.  Really we're just testing that the call above doesn't throw.
-                expect(tiles[1].data.imagery.length).toBe(2);
-                expect(tiles[1].data.imagery[0].textureCoordinateRectangle.x).toBe(0.0);
-                expect(tiles[1].data.imagery[0].textureCoordinateRectangle.w).toBe(1.0);
-                expect(tiles[1].data.imagery[0].textureCoordinateRectangle.z).toBe(1.0);
-                expect(tiles[1].data.imagery[1].textureCoordinateRectangle.x).toBe(0.0);
-                expect(tiles[1].data.imagery[1].textureCoordinateRectangle.y).toBe(0.0);
-                expect(tiles[1].data.imagery[1].textureCoordinateRectangle.z).toBe(1.0);
-            });
-        });
-
         it('handles a non-base layer that does not cover the entire globe', function() {
             var baseProvider = new SingleTileImageryProvider({
                 url : 'Data/Images/Green4x4.png'
             });
 
-            var provider = createTileMapServiceImageryProvider({
+            var provider = new TileMapServiceImageryProvider({
                 url : 'Data/TMS/SmallArea'
             });
 
@@ -360,9 +261,11 @@ defineSuite([
             var layer = layers.addImageryProvider(provider);
             var terrainProvider = new EllipsoidTerrainProvider();
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                 return provider.ready && terrainProvider.ready;
-            }).then(function() {
+            }, 'imagery provider to become ready');
+
+            runs(function() {
                 var tiles = QuadtreeTile.createLevelZeroTiles(terrainProvider.tilingScheme);
                 tiles[0].data = new GlobeSurfaceTile();
                 tiles[1].data = new GlobeSurfaceTile();
@@ -409,9 +312,11 @@ defineSuite([
 
             var terrainProvider = new EllipsoidTerrainProvider();
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                 return provider.ready && terrainProvider.ready;
-            }).then(function() {
+            }, 'imagery provider to become ready');
+
+            runs(function() {
                 var level0 = QuadtreeTile.createLevelZeroTiles(terrainProvider.tilingScheme);
                 var level1 = level0[0].children;
                 var level2 = level1[0].children;
@@ -463,9 +368,11 @@ defineSuite([
 
             var terrainProvider = new EllipsoidTerrainProvider();
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                 return provider.ready && terrainProvider.ready;
-            }).then(function() {
+            }, 'imagery provider to become ready');
+
+            runs(function() {
                 var tiles = QuadtreeTile.createLevelZeroTiles(terrainProvider.tilingScheme);
                 tiles[0].data = new GlobeSurfaceTile();
                 tiles[1].data = new GlobeSurfaceTile();

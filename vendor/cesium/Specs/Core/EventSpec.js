@@ -4,6 +4,7 @@ defineSuite([
     ], function(
         Event) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var event;
     var spyListener;
@@ -20,7 +21,7 @@ defineSuite([
 
         expect(spyListener).toHaveBeenCalledWith(someValue);
 
-        spyListener.calls.reset();
+        spyListener.reset();
 
         event.removeEventListener(spyListener);
         event.raiseEvent(someValue);
@@ -36,9 +37,9 @@ defineSuite([
         event.raiseEvent(someValue);
 
         expect(spyListener).toHaveBeenCalledWith(someValue);
-        expect(spyListener.calls.first().object).toBe(scope);
+        expect(spyListener.calls[0].object).toBe(scope);
 
-        spyListener.calls.reset();
+        spyListener.reset();
 
         event.removeEventListener(spyListener, scope);
         event.raiseEvent(someValue);
@@ -149,7 +150,7 @@ defineSuite([
         event.raiseEvent(someValue);
 
         expect(spyListener).toHaveBeenCalledWith(someValue);
-        spyListener.calls.reset();
+        spyListener.reset();
 
         remove();
         event.raiseEvent(someValue);
@@ -165,7 +166,7 @@ defineSuite([
         event.raiseEvent(someValue);
 
         expect(spyListener).toHaveBeenCalledWith(someValue);
-        spyListener.calls.reset();
+        spyListener.reset();
 
         remove();
         event.raiseEvent(someValue);

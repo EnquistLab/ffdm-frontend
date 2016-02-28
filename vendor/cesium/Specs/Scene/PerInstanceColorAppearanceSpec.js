@@ -24,16 +24,17 @@ defineSuite([
         createFrameState,
         render) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
     var frameState;
-    var rectangle;
     var primitive;
 
     beforeAll(function() {
         context = createContext();
+        frameState = createFrameState();
 
-        rectangle = Rectangle.fromDegrees(-10.0, -10.0, 10.0, 10.0);
+        var rectangle = Rectangle.fromDegrees(-10.0, -10.0, 10.0, 10.0);
         primitive = new Primitive({
             geometryInstances : new GeometryInstance({
                 geometry : new RectangleGeometry({
@@ -46,18 +47,15 @@ defineSuite([
             }),
             asynchronous : false
         });
+
+        frameState.camera.viewRectangle(rectangle);
+        var us = context.uniformState;
+        us.update(context, frameState);
     });
 
     afterAll(function() {
         primitive = primitive && primitive.destroy();
         context.destroyForSpecs();
-    });
-
-    beforeEach(function() {
-        frameState = createFrameState(context);
-        frameState.camera.setView({ destination : rectangle });
-        var us = context.uniformState;
-        us.update(frameState);
     });
 
     it('constructor', function() {
@@ -80,7 +78,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
     });
 
@@ -94,7 +92,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, primitive);
+        render(context, frameState, primitive);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
     });
 

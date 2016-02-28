@@ -12,6 +12,7 @@ defineSuite([
         CesiumMath,
         Transforms) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('wrapLongitude', function() {
         var positions = Cartesian3.fromDegreesArray([
@@ -21,11 +22,6 @@ defineSuite([
         var segments = PolylinePipeline.wrapLongitude(positions);
         expect(segments.lengths.length).toEqual(1);
         expect(segments.lengths[0]).toEqual(2);
-    });
-
-    it('wrapLongitude works with empty array', function() {
-        var segments = PolylinePipeline.wrapLongitude([]);
-        expect(segments.lengths.length).toEqual(0);
     });
 
     it('wrapLongitude breaks polyline into segments', function() {
@@ -51,16 +47,10 @@ defineSuite([
         expect(segments.lengths[1]).toEqual(2);
     });
 
-    it('removeDuplicates returns positions if none removed', function() {
+    it('removeDuplicates returns false', function() {
         var positions = [Cartesian3.ZERO];
         var noDuplicates = PolylinePipeline.removeDuplicates(positions);
-        expect(noDuplicates).toBe(positions);
-    });
-
-    it('removeDuplicates returns positions if none removed', function() {
-        var positions = [Cartesian3.ZERO, Cartesian3.UNIT_X, Cartesian3.UNIT_Y, Cartesian3.UNIT_Z];
-        var noDuplicates = PolylinePipeline.removeDuplicates(positions);
-        expect(noDuplicates).toBe(positions);
+        expect(noDuplicates).not.toBeDefined();
     });
 
     it('removeDuplicates to remove duplicates', function() {
@@ -80,17 +70,11 @@ defineSuite([
         expect(noDuplicates).toEqual(expectedPositions);
     });
 
-    it('removeDuplicates works with empty array', function() {
-        var positions = [];
-        var noDuplicates = PolylinePipeline.removeDuplicates(positions);
-        expect(noDuplicates).toEqual(positions);
-    });
-
-    it('removeDuplicates to remove positions within absolute epsilon 10', function() {
+    it('removeDuplicates to remove positions within absolute epsilon 7', function() {
         var positions = [
             new Cartesian3(1.0, 1.0, 1.0),
             new Cartesian3(1.0, 2.0, 3.0),
-            new Cartesian3(1.0, 2.0, 3.0 + CesiumMath.EPSILON10)];
+            new Cartesian3(1.0, 2.0, 3.0 + CesiumMath.EPSILON7)];
         var expectedPositions = [
             new Cartesian3(1.0, 1.0, 1.0),
             new Cartesian3(1.0, 2.0, 3.0)];
@@ -98,28 +82,14 @@ defineSuite([
         expect(noDuplicates).toEqual(expectedPositions);
     });
 
-    it('removeDuplicates to remove positions within relative epsilon 10', function() {
+    it('removeDuplicates to remove positions within relative epsilon 7', function() {
         var positions = [
             new Cartesian3(0.0, 0.0, 1000000.0),
             new Cartesian3(0.0, 0.0, 3000000.0),
-            new Cartesian3(0.0, 0.0, 3000000.0002)];
+            new Cartesian3(0.0, 0.0, 3000000.2)];
         var expectedPositions = [
             new Cartesian3(0.0, 0.0, 1000000.0),
             new Cartesian3(0.0, 0.0, 3000000.0)];
-        var noDuplicates = PolylinePipeline.removeDuplicates(positions);
-        expect(noDuplicates).toEqual(expectedPositions);
-    });
-
-    it('removeDuplicates keeps positions that add up past relative epsilon 10', function() {
-        var eightyPercentOfEpsilon = 0.8 * CesiumMath.EPSILON10;
-        var positions = [
-            new Cartesian3(0.0, 0.0, 1.0),
-            new Cartesian3(0.0, 0.0, 1.0 + eightyPercentOfEpsilon),
-            new Cartesian3(0.0, 0.0, 1.0 + (2 * eightyPercentOfEpsilon)),
-            new Cartesian3(0.0, 0.0, 1.0 + (3 * eightyPercentOfEpsilon))];
-        var expectedPositions = [
-            new Cartesian3(0.0, 0.0, 1.0),
-            new Cartesian3(0.0, 0.0, 1.0 + (2 * eightyPercentOfEpsilon))];
         var noDuplicates = PolylinePipeline.removeDuplicates(positions);
         expect(noDuplicates).toEqual(expectedPositions);
     });
@@ -156,23 +126,4 @@ defineSuite([
         expect(Cartesian3.equalsEpsilon(p2, p2n, CesiumMath.EPSILON4)).toEqual(true);
         expect(Cartesian3.equalsEpsilon(p3, p3n, CesiumMath.EPSILON4)).toEqual(true);
     });
-
-    it('generateArc works with empty array', function() {
-        var newPositions = PolylinePipeline.generateArc({
-            positions: []
-        });
-
-        expect(newPositions.length).toEqual(0);
-    });
-
-    it('generateArc works one position', function() {
-        var newPositions = PolylinePipeline.generateArc({
-            positions: [Cartesian3.UNIT_Z],
-            ellipsoid: Ellipsoid.UNIT_SPHERE
-        });
-
-        expect(newPositions.length).toEqual(3);
-        expect(newPositions).toEqual([0,0,1]);
-    });
-
 });

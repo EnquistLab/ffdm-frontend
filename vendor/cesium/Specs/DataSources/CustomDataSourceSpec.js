@@ -10,6 +10,7 @@ defineSuite([
         DataSourceClock,
         EntityCollection) {
     "use strict";
+    /*global jasmine,it,expect*/
 
     it('constructor has expected defaults', function() {
         var dataSource = new CustomDataSource();
@@ -31,7 +32,7 @@ defineSuite([
         var newName = 'chester';
         dataSource.name = newName;
         expect(dataSource.name).toEqual(newName);
-        expect(spy.calls.count()).toEqual(1);
+        expect(spy.callCount).toEqual(1);
         expect(spy).toHaveBeenCalledWith(dataSource);
     });
 
@@ -44,7 +45,7 @@ defineSuite([
         var newClock = new DataSourceClock();
         dataSource.clock = newClock;
         expect(dataSource.clock).toBe(newClock);
-        expect(spy.calls.count()).toEqual(1);
+        expect(spy.callCount).toEqual(1);
         expect(spy).toHaveBeenCalledWith(dataSource);
     });
 
@@ -55,18 +56,11 @@ defineSuite([
         dataSource.loadingEvent.addEventListener(spy);
 
         dataSource.isLoading = true;
-        expect(spy.calls.count()).toEqual(1);
+        expect(spy.callCount).toEqual(1);
         expect(spy).toHaveBeenCalledWith(dataSource, true);
 
         dataSource.isLoading = false;
-        expect(spy.calls.count()).toEqual(2);
+        expect(spy.callCount).toEqual(2);
         expect(spy).toHaveBeenCalledWith(dataSource, false);
     });
-
-    it('has entity collection with link to data source', function() {
-        var dataSource = new CustomDataSource();
-        var entityCollection = dataSource.entities;
-        expect(entityCollection.owner).toEqual(dataSource);
-    });
-
 });

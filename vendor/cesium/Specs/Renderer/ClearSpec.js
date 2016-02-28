@@ -3,19 +3,14 @@ defineSuite([
         'Core/BoundingRectangle',
         'Core/Color',
         'Renderer/ClearCommand',
-        'Renderer/Framebuffer',
-        'Renderer/RenderState',
-        'Renderer/Texture',
         'Specs/createContext'
     ], 'Renderer/Clear', function(
         BoundingRectangle,
         Color,
         ClearCommand,
-        Framebuffer,
-        RenderState,
-        Texture,
         createContext) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
 
@@ -49,7 +44,7 @@ defineSuite([
 
         var command = new ClearCommand({
             color : Color.WHITE,
-            renderState : RenderState.fromCache({
+            renderState : context.createRenderState({
                 colorMask : {
                     red : true,
                     green : false,
@@ -71,7 +66,7 @@ defineSuite([
         expect(context.readPixels()).toEqual([255, 255, 255, 255]);
 
         command.color = Color.BLACK;
-        command.renderState = RenderState.fromCache({
+        command.renderState = context.createRenderState({
             scissorTest : {
                 enabled : true,
                 rectangle : new BoundingRectangle()
@@ -81,7 +76,7 @@ defineSuite([
         command.execute(context);
         expect(context.readPixels()).toEqual([255, 255, 255, 255]);
 
-        command.renderState = RenderState.fromCache({
+        command.renderState = context.createRenderState({
             scissorTest : {
                 enabled : true,
                 rectangle : new BoundingRectangle(0, 0, 1, 1)
@@ -93,13 +88,11 @@ defineSuite([
     });
 
     it('clears a framebuffer color attachment', function() {
-        var colorTexture = new Texture({
-            context : context,
+        var colorTexture = context.createTexture2D({
             width : 1,
             height : 1
         });
-        var framebuffer = new Framebuffer({
-            context : context,
+        var framebuffer = context.createFramebuffer({
             colorTextures : [colorTexture]
         });
 

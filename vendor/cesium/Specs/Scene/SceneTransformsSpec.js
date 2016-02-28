@@ -5,7 +5,6 @@ defineSuite([
         'Core/Cartesian3',
         'Core/Ellipsoid',
         'Core/Math',
-        'Scene/Camera',
         'Specs/createScene'
     ], function(
         SceneTransforms,
@@ -13,16 +12,16 @@ defineSuite([
         Cartesian3,
         Ellipsoid,
         CesiumMath,
-        Camera,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     var defaultCamera;
 
     beforeAll(function() {
         scene = createScene();
-        defaultCamera = Camera.clone(scene.camera);
+        defaultCamera = scene.camera.clone();
     });
 
     afterAll(function() {
@@ -39,6 +38,7 @@ defineSuite([
     });
 
     it('throws an exception without scene', function() {
+        var ellipsoid = Ellipsoid.WGS84;
         var position = Cartesian3.fromDegrees(0.0, 0.0);
         expect(function() {
             SceneTransforms.wgs84ToWindowCoordinates(undefined, position);
@@ -162,6 +162,7 @@ defineSuite([
         scene.morphTo2D(0);
         scene.initializeFrame();
 
+        var ellipsoid = Ellipsoid.WGS84;
         var position = Cartesian3.fromDegrees(0,0);
 
         var windowCoordinates = SceneTransforms.wgs84ToWindowCoordinates(scene, position);
@@ -174,6 +175,7 @@ defineSuite([
         scene.morphTo2D(0);
         scene.renderForSpecs();
 
+        var ellipsoid = Ellipsoid.WGS84;
         var position = Cartesian3.fromDegrees(0,0);
 
         var drawingBufferCoordinates = SceneTransforms.wgs84ToDrawingBufferCoordinates(scene, position);

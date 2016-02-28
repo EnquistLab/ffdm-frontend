@@ -1,17 +1,10 @@
 /*global defineSuite*/
 defineSuite([
-        'Renderer/Sampler',
-        'Renderer/TextureMagnificationFilter',
-        'Renderer/TextureMinificationFilter',
-        'Renderer/TextureWrap',
         'Specs/createContext'
-    ], function(
-        Sampler,
-        TextureMagnificationFilter,
-        TextureMinificationFilter,
-        TextureWrap,
+    ], 'Renderer/Sampler', function(
         createContext) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
 
@@ -23,18 +16,9 @@ defineSuite([
         context.destroyForSpecs();
     });
 
-    it('has expected default values', function() {
-        var sampler = new Sampler();
-        expect(sampler.wrapS).toEqual(TextureWrap.CLAMP_TO_EDGE);
-        expect(sampler.wrapT).toEqual(TextureWrap.CLAMP_TO_EDGE);
-        expect(sampler.minificationFilter).toEqual(TextureMinificationFilter.LINEAR);
-        expect(sampler.magnificationFilter).toEqual(TextureMinificationFilter.LINEAR);
-        expect(sampler.maximumAnisotropy).toEqual(1.0);
-    });
-
     it('throws when creating a sampler with invalid wrapS', function() {
         expect(function() {
-            return new Sampler({
+            context.createSampler({
                 wrapS : 'invalid wrap'
             });
         }).toThrowDeveloperError();
@@ -42,7 +26,7 @@ defineSuite([
 
     it('throws when creating a sampler with invalid wrapT', function() {
         expect(function() {
-            return new Sampler({
+            context.createSampler({
                 wrapT : 'invalid wrap'
             });
         }).toThrowDeveloperError();
@@ -50,7 +34,7 @@ defineSuite([
 
     it('throws when creating a sampler with invalid minificationFilter', function() {
         expect(function() {
-            return new Sampler({
+            context.createSampler({
                 minificationFilter : 'invalid filter'
             });
         }).toThrowDeveloperError();
@@ -58,7 +42,7 @@ defineSuite([
 
     it('throws when creating a sampler with invalid magnificationFilter', function() {
         expect(function() {
-            return new Sampler({
+            context.createSampler({
                 magnificationFilter : 'invalid filter'
             });
         }).toThrowDeveloperError();
@@ -66,7 +50,7 @@ defineSuite([
 
     it('throws when creating a sampler with invalid maximumAnisotropy', function() {
         expect(function() {
-            return new Sampler({
+            context.createSampler({
                 maximumAnisotropy : 0.0
             });
         }).toThrowDeveloperError();

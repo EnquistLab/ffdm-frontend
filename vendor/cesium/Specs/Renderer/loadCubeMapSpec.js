@@ -4,11 +4,8 @@ defineSuite([
         'Core/Cartesian3',
         'Core/defined',
         'Core/PrimitiveType',
-        'Renderer/Buffer',
         'Renderer/BufferUsage',
         'Renderer/DrawCommand',
-        'Renderer/ShaderProgram',
-        'Renderer/VertexArray',
         'Specs/createContext',
         'ThirdParty/when'
     ], function(
@@ -16,14 +13,12 @@ defineSuite([
         Cartesian3,
         defined,
         PrimitiveType,
-        Buffer,
         BufferUsage,
         DrawCommand,
-        ShaderProgram,
-        VertexArray,
         createContext,
         when) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
 
@@ -36,14 +31,23 @@ defineSuite([
     });
 
     it('loads a cube map', function() {
-        return loadCubeMap(context, {
+        var cm;
+        when(loadCubeMap(context, {
             positiveX : './Data/Images/Green.png',
             negativeX : './Data/Images/Blue.png',
             positiveY : './Data/Images/Green.png',
             negativeY : './Data/Images/Blue.png',
             positiveZ : './Data/Images/Green.png',
             negativeZ : './Data/Images/Blue.png'
-        }).then(function(cm) {
+        }), function(cubeMap) {
+            cm = cubeMap;
+        });
+
+        waitsFor(function() {
+            return defined(cm);
+        }, 'The cube map should load.', 5000);
+
+        runs(function() {
             expect(cm.width).toEqual(1);
             expect(cm.height).toEqual(1);
 
@@ -52,27 +56,15 @@ defineSuite([
                 'uniform samplerCube u_texture;' +
                 'uniform mediump vec3 u_direction;' +
                 'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-            var sp = ShaderProgram.fromCache({
-                context : context,
-                vertexShaderSource : vs,
-                fragmentShaderSource : fs,
-                attributeLocations : {
-                    position : 0
-                }
+            var sp = context.createShaderProgram(vs, fs, {
+                position : 0
             });
             sp.allUniforms.u_texture.value = cm;
 
-            var va = new VertexArray({
-                context : context,
-                attributes : [{
-                    vertexBuffer : Buffer.createVertexBuffer({
-                        context : context,
-                        typedArray : new Float32Array([0, 0, 0, 1]),
-                        usage : BufferUsage.STATIC_DRAW
-                    }),
-                    componentsPerAttribute : 4
-                }]
-            });
+            var va = context.createVertexArray([{
+                vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+                componentsPerAttribute : 4
+            }]);
 
             var command = new DrawCommand({
                 primitiveType : PrimitiveType.POINTS,
@@ -117,87 +109,117 @@ defineSuite([
     });
 
     it('calls error function when positiveX does not exist', function() {
-        return loadCubeMap(context, {
+        var exception = false;
+        when(loadCubeMap(context, {
             positiveX : 'not.found',
             negativeX : './Data/Images/Blue.png',
             positiveY : './Data/Images/Blue.png',
             negativeY : './Data/Images/Blue.png',
             positiveZ : './Data/Images/Blue.png',
             negativeZ : './Data/Images/Blue.png'
-        }).then(function(cubeMap) {
-            fail('should not be called');
-        }).otherwise(function() {
+        }), function(cubeMap) {
+        }, function() {
+            exception = true;
         });
+
+        waitsFor(function() {
+            return exception;
+        }, 'The cube map should load.', 5000);
     });
 
     it('calls error function when negativeX does not exist', function() {
-        return loadCubeMap(context, {
+        var exception = false;
+        when(loadCubeMap(context, {
             positiveX : './Data/Images/Blue.png',
             negativeX : 'not.found',
             positiveY : './Data/Images/Blue.png',
             negativeY : './Data/Images/Blue.png',
             positiveZ : './Data/Images/Blue.png',
             negativeZ : './Data/Images/Blue.png'
-        }).then(function(cubeMap) {
-            fail('should not be called');
-        }).otherwise(function() {
+        }), function(cubeMap) {
+        }, function() {
+            exception = true;
         });
+
+        waitsFor(function() {
+            return exception;
+        }, 'The cube map should load.', 5000);
     });
 
     it('calls error function when positiveY does not exist', function() {
-        return loadCubeMap(context, {
+        var exception = false;
+        when(loadCubeMap(context, {
             positiveX : './Data/Images/Blue.png',
             negativeX : './Data/Images/Blue.png',
             positiveY : 'not.found',
             negativeY : './Data/Images/Blue.png',
             positiveZ : './Data/Images/Blue.png',
             negativeZ : './Data/Images/Blue.png'
-        }).then(function(cubeMap) {
-            fail('should not be called');
-        }).otherwise(function() {
+        }), function(cubeMap) {
+        }, function() {
+            exception = true;
         });
+
+        waitsFor(function() {
+            return exception;
+        }, 'The cube map should load.', 5000);
     });
 
     it('calls error function when negativeY does not exist', function() {
-        return loadCubeMap(context, {
+        var exception = false;
+        when(loadCubeMap(context, {
             positiveX : './Data/Images/Blue.png',
             negativeX : './Data/Images/Blue.png',
             positiveY : './Data/Images/Blue.png',
             negativeY : 'not.found',
             positiveZ : './Data/Images/Blue.png',
             negativeZ : './Data/Images/Blue.png'
-        }).then(function(cubeMap) {
-            fail('should not be called');
-        }).otherwise(function() {
+        }), function(cubeMap) {
+        }, function() {
+            exception = true;
         });
+
+        waitsFor(function() {
+            return exception;
+        }, 'The cube map should load.', 5000);
     });
 
     it('calls error function when positiveZ does not exist', function() {
-        return loadCubeMap(context, {
+        var exception = false;
+        when(loadCubeMap(context, {
             positiveX : './Data/Images/Blue.png',
             negativeX : './Data/Images/Blue.png',
             positiveY : './Data/Images/Blue.png',
             negativeY : './Data/Images/Blue.png',
             positiveZ : 'not.found',
             negativeZ : './Data/Images/Blue.png'
-        }).then(function(cubeMap) {
-            fail('should not be called');
-        }).otherwise(function() {
+        }), function(cubeMap) {
+        }, function() {
+            exception = true;
         });
+
+        waitsFor(function() {
+            return exception;
+        }, 'The cube map should load.', 5000);
     });
 
     it('calls error function when negativeZ does not exist', function() {
-        return loadCubeMap(context, {
+        var exception = false;
+        when(loadCubeMap(context, {
             positiveX : './Data/Images/Blue.png',
             negativeX : './Data/Images/Blue.png',
             positiveY : './Data/Images/Blue.png',
             negativeY : './Data/Images/Blue.png',
             positiveZ : './Data/Images/Blue.png',
             negativeZ : 'not.found'
-        }).then(function(cubeMap) {
-            fail('should not be called');
-        }).otherwise(function() {
+        }), function(cubeMap) {
+        }, function() {
+            exception = true;
         });
+
+        waitsFor(function() {
+            return exception;
+        }, 'The cube map should load.', 5000);
     });
 
     it('throws without a context', function() {

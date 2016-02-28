@@ -22,6 +22,7 @@ defineSuite([
         VertexFormat,
         createPackableSpecs) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('computes positions', function() {
         var rectangle = new Rectangle(-2.0, -1.0, 0.0, 1.0);
@@ -227,7 +228,7 @@ defineSuite([
             vertexFormat : VertexFormat.POSITION_ONLY,
             rectangle : rectangle,
             granularity : 1.0,
-            extrudedHeight : CesiumMath.EPSILON14
+            extrudedHeight : 0.1
         }));
         var positions = m.attributes.position.values;
 

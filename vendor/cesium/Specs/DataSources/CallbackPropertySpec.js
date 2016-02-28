@@ -8,6 +8,7 @@ defineSuite([
         Cartesian3,
         JulianDate) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var time = JulianDate.now();
 
@@ -29,6 +30,7 @@ defineSuite([
     });
 
     it('isConstant returns correct value', function() {
+        var result = {};
         var property = new CallbackProperty(function() {
         }, true);
         expect(property.isConstant).toBe(true);

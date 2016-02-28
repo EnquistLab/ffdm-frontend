@@ -14,6 +14,7 @@ defineSuite([
         VertexFormat,
         createPackableSpecs) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var ellipsoid = Ellipsoid.WGS84;
 
@@ -144,32 +145,6 @@ defineSuite([
         expect(cartographic.height).toEqualEpsilon(2000.0, CesiumMath.EPSILON8);
     });
 
-    it('does not clean positions that add up past EPSILON14', function() {
-        var eightyPercentOfEpsilon14 = 0.8 * CesiumMath.EPSILON14;
-        var inputPositions = Cartesian3.fromRadiansArrayHeights([
-            1.0, 1.0, 1000.0,
-            1.0, 1.0 + eightyPercentOfEpsilon14, 1000.0,
-            1.0, 1.0 + (2 * eightyPercentOfEpsilon14), 1000.0,
-            1.0, 1.0 + (3 * eightyPercentOfEpsilon14), 1000.0
-        ]);
-        var w = WallGeometry.createGeometry(new WallGeometry({
-            vertexFormat : VertexFormat.POSITION_ONLY,
-            positions    : inputPositions
-        }));
-        expect(w).toBeDefined();
-
-        var expectedPositions = Cartesian3.fromRadiansArrayHeights([
-            1.0, 1.0, 1000.0,
-            1.0, 1.0 + (2 * eightyPercentOfEpsilon14), 1000.0
-        ]);
-        var expectedW = WallGeometry.createGeometry(new WallGeometry({
-            vertexFormat : VertexFormat.POSITION_ONLY,
-            positions    : expectedPositions
-        }));
-        var positions = w.attributes.position.values;
-        expect(positions.length).toEqual(expectedW.attributes.position.values.length);
-    });
-
     it('cleans selects maximum height from duplicates', function() {
         var w = WallGeometry.createGeometry(new WallGeometry({
             vertexFormat : VertexFormat.POSITION_ONLY,
@@ -209,29 +184,6 @@ defineSuite([
         expect(w.attributes.binormal.values.length).toEqual(4 * 2 * 3);
         expect(w.attributes.st.values.length).toEqual(4 * 2 * 2);
         expect(w.indices.length).toEqual((4 * 2 - 2) * 3);
-    });
-
-    it('creates correct texture coordinates', function() {
-        var w = WallGeometry.createGeometry(new WallGeometry({
-            vertexFormat : VertexFormat.ALL,
-            positions    : Cartesian3.fromDegreesArrayHeights([
-                49.0, 18.0, 1000.0,
-                50.0, 18.0, 1000.0,
-                51.0, 18.0, 1000.0
-            ])
-        }));
-
-        expect(w.attributes.st.values.length).toEqual(4 * 2 * 2);
-        expect(w.attributes.st.values).toEqual([
-            0.0, 0.0,
-            0.0, 1.0,
-            0.5, 0.0,
-            0.5, 1.0,
-            0.5, 0.0,
-            0.5, 1.0,
-            1.0, 0.0,
-            1.0, 1.0
-        ]);
     });
 
     it('fromConstantHeights throws without positions', function() {

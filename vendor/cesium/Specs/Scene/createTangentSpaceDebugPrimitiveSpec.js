@@ -14,6 +14,7 @@ defineSuite([
         PrimitiveType,
         VertexFormat) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
 
     it('computes all attributes', function() {
@@ -31,7 +32,6 @@ defineSuite([
 
         expect(primitive.geometryInstances).toBeDefined();
         expect(primitive.appearance).toBeDefined();
-        expect(primitive.asynchronous).toBe(false);
 
         var instances = primitive.geometryInstances;
         expect(instances.length).toEqual(3);

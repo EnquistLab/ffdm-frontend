@@ -20,6 +20,7 @@ defineSuite([
         Rectangle,
         createPackableSpecs) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('computes positions', function() {
         var rectangle = new Rectangle(-2.0, -1.0, 0.0, 1.0);
@@ -142,7 +143,7 @@ defineSuite([
         var m = RectangleOutlineGeometry.createGeometry(new RectangleOutlineGeometry({
             rectangle : rectangle,
             granularity : 1.0,
-            extrudedHeight : CesiumMath.EPSILON14
+            extrudedHeight : 0.1
         }));
         var positions = m.attributes.position.values;
 
@@ -151,24 +152,11 @@ defineSuite([
     });
 
     var rectangle = new RectangleOutlineGeometry({
-        rectangle : new Rectangle(0.1, 0.2, 0.3, 0.4),
-        ellipsoid : new Ellipsoid(5, 6, 7),
-        granularity : 8,
-        height : 9,
-        rotation : 10,
-        extrudedHeight : 11
+        rectangle : new Rectangle(-2.0, -1.0, 0.0, 1.0),
+        granularity : 1.0,
+        ellipsoid : Ellipsoid.UNIT_SPHERE
     });
-    var packedInstance = [0.1, 0.2, 0.3, 0.4, 5, 6, 7, 8, 9, 10, 1, 11];
-    createPackableSpecs(RectangleOutlineGeometry, rectangle, packedInstance, 'extruded');
-
-    rectangle = new RectangleOutlineGeometry({
-        rectangle : new Rectangle(0.1, 0.2, 0.3, 0.4),
-        ellipsoid : new Ellipsoid(5, 6, 7),
-        granularity : 8,
-        height : 9,
-        rotation : 10
-    });
-    packedInstance = [0.1, 0.2, 0.3, 0.4, 5, 6, 7, 8, 9, 10, 0, 0];
-    createPackableSpecs(RectangleOutlineGeometry, rectangle, packedInstance, 'at height');
+    var packedInstance = [-2.0, -1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0];
+    createPackableSpecs(RectangleOutlineGeometry, rectangle, packedInstance);
 
 });

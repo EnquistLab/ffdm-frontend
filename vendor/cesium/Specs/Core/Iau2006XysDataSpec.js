@@ -1,15 +1,12 @@
 /*global defineSuite*/
 defineSuite([
         'Core/Iau2006XysData',
-        'Core/defined',
-        'Core/Iau2006XysSample',
-        'Specs/pollToPromise'
+        'Core/defined'
     ], function(
         Iau2006XysData,
-        defined,
-        Iau2006XysSample,
-        pollToPromise) {
+        defined) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var xys;
 
@@ -22,26 +19,30 @@ defineSuite([
     });
 
     it('eventually returns an answer', function() {
-        return pollToPromise(function() {
+        waitsFor(function() {
             return defined(xys.computeXysRadians(2442398, 1234.56));
-        }).then(function() {
-            // Once the data file has been downloaded, later requests
-            // within the same chunk return an answer.
+        }, 'computeXysRadians to return an answer');
+
+        // Once the data file has been downloaded, later requests
+        // within the same chunk return an answer.
+        runs(function() {
             expect(xys.computeXysRadians(2442399, 777.77)).toBeDefined();
         });
     });
 
     it('returns the same answer as STK Components', function() {
         var result;
-        return pollToPromise(function() {
+        waitsFor(function() {
             result = xys.computeXysRadians(2442399, 777.77);
             return defined(result);
-        }).then(function() {
-            expect(result).toEqual(new Iau2006XysSample(
-                -0.0024019733101066816,
-                -0.000024843279494458311,
-                -0.000000016941747917421229
-            ));
+        }, 'computeXysRadians to return an answer');
+
+        runs(function() {
+            expect(result).toEqual({
+                x : -0.0024019733101066816,
+                y : -0.000024843279494458311,
+                s : -0.000000016941747917421229
+            });
         });
     });
 

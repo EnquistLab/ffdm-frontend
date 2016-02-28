@@ -14,6 +14,7 @@ defineSuite([
         CesiumMath,
         Matrix4) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var frustum, planes;
 
@@ -113,10 +114,6 @@ defineSuite([
         expect(farPlane).toEqual(expectedResult);
     });
 
-    it('get sseDenominator', function() {
-        expect(frustum.sseDenominator).toEqualEpsilon(1.1547, CesiumMath.EPSILON5);
-    });
-
     it('get perspective projection matrix', function() {
         var projectionMatrix = frustum.projectionMatrix;
         var expected = Matrix4.computePerspectiveFieldOfView(frustum.fovy, frustum.aspectRatio, frustum.near, frustum.far, new Matrix4());
@@ -134,10 +131,16 @@ defineSuite([
         expect(frustum.infiniteProjectionMatrix).toEqual(expected);
     });
 
-    it('get pixel dimensions', function() {
+    it('get pixel size throws without canvas dimensions', function() {
+        expect(function() {
+            return frustum.getPixelSize();
+        }).toThrowDeveloperError();
+    });
+
+    it('get pixel size', function() {
         var dimensions = new Cartesian2(1.0, 1.0);
-        var pixelSize = frustum.getPixelDimensions(dimensions.x, dimensions.y, 1.0, new Cartesian2());
-        var expected = frustum._offCenterFrustum.getPixelDimensions(dimensions.x, dimensions.y, 1.0, new Cartesian2());
+        var pixelSize = frustum.getPixelSize(dimensions);
+        var expected = frustum._offCenterFrustum.getPixelSize(dimensions);
         expect(pixelSize.x).toEqual(expected.x);
         expect(pixelSize.y).toEqual(expected.y);
     });

@@ -46,6 +46,7 @@ defineSuite([
         createDynamicProperty,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     var time;
@@ -356,26 +357,6 @@ defineSuite([
         expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(outline.getValue(time2)));
     });
 
-    it('createFillGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicPolygon();
-        entity.show = false;
-        entity.polygon.fill = true;
-        var updater = new PolygonGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
-    it('createOutlineGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicPolygon();
-        entity.show = false;
-        entity.polygon.outline = true;
-        var updater = new PolygonGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
     it('dynamic updater sets properties', function() {
         var polygon = new PolygonGraphics();
         polygon.hierarchy = createDynamicProperty(new PolygonHierarchy(Cartesian3.fromRadiansArray([
@@ -414,11 +395,6 @@ defineSuite([
         expect(options.granularity).toEqual(polygon.granularity.getValue());
         expect(options.stRotation).toEqual(polygon.stRotation.getValue());
 
-        entity.show = false;
-        dynamicUpdater.update(JulianDate.now());
-        expect(primitives.length).toBe(0);
-        entity.show = true;
-
         //If a dynamic show returns false, the primitive should go away.
         polygon.show.setValue(false);
         dynamicUpdater.update(time);
@@ -444,23 +420,23 @@ defineSuite([
         updater.geometryChanged.addEventListener(listener);
 
         entity.polygon.hierarchy = new ConstantProperty([]);
-        expect(listener.calls.count()).toEqual(1);
+        expect(listener.callCount).toEqual(1);
 
         entity.polygon.height = new ConstantProperty(82);
-        expect(listener.calls.count()).toEqual(2);
+        expect(listener.callCount).toEqual(2);
 
         entity.availability = new TimeIntervalCollection();
-        expect(listener.calls.count()).toEqual(3);
+        expect(listener.callCount).toEqual(3);
 
         entity.polygon.hierarchy = undefined;
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
 
         //Since there's no valid geometry, changing another property should not raise the event.
         entity.polygon.height = undefined;
 
         //Modifying an unrelated property should not have any effect.
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
     });
 
     it('createFillGeometryInstance throws if object is not filled', function() {
@@ -544,4 +520,4 @@ defineSuite([
     createDynamicGeometryBoundingSphereSpecs(PolygonGeometryUpdater, entity, entity.polygon, function() {
         return scene;
     });
-}, 'WebGL');
+});

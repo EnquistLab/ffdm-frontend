@@ -1,6 +1,7 @@
 (function() {
     "use strict";
-    /*jshint node:true*/
+    /*global console,require,__dirname,process*/
+    /*jshint es3:false*/
 
     var express = require('express');
     var compression = require('compression');
@@ -36,12 +37,9 @@
 
     // eventually this mime type configuration will need to change
     // https://github.com/visionmedia/send/commit/d2cb54658ce65948b0ed6e5fb5de69d022bef941
-    // *NOTE* Any changes you make here must be mirrored in web.config.
     var mime = express.static.mime;
     mime.define({
-        'application/json' : ['czml', 'json', 'geojson', 'topojson'],
-        'model/vnd.gltf+json' : ['gltf'],
-        'model/vnd.gltf.binary' : ['bgltf', 'glb'],
+        'application/json' : ['czml', 'json', 'geojson', 'topojson', 'gltf'],
         'text/plain' : ['glsl']
     });
 
@@ -96,7 +94,7 @@
         }
 
         if (!remoteUrl) {
-            return res.status(400).send('No url specified.');
+            return res.send(400, 'No url specified.');
         }
 
         if (!remoteUrl.protocol) {
@@ -123,7 +121,7 @@
                 res.header(filterHeaders(req, response.headers));
             }
 
-            res.status(code).send(body);
+            res.send(code, body);
         });
     });
 
@@ -153,18 +151,10 @@
         console.log('Cesium development server stopped.');
     });
 
-    var isFirstSig = true;
     process.on('SIGINT', function() {
-        if (isFirstSig) {
-            console.log('Cesium development server shutting down.');
-            server.close(function() {
-              process.exit(0);
-            });
-            isFirstSig = false;
-        } else {
-            console.log('Cesium development server force kill.');
-            process.exit(1);
-        }
+        server.close(function() {
+            process.exit(0);
+        });
     });
 
 })();

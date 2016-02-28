@@ -8,6 +8,7 @@ defineSuite([
         Color,
         EasingFunction) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('add() adds a tween', function() {
         var startObject = {
@@ -74,7 +75,7 @@ defineSuite([
         var complete = jasmine.createSpy('complete');
 
         var tweens = new TweenCollection();
-        tweens.add({
+        var tween = tweens.add({
             startObject : {},
             stopObject : {},
             duration : 0.0,
@@ -172,13 +173,13 @@ defineSuite([
         var cancel = jasmine.createSpy('cancel');
 
         var tweens = new TweenCollection();
-        tweens.add({
+        var tween = tweens.add({
             startObject : {},
             stopObject : {},
             duration : 1.0,
             cancel : cancel
         });
-        tweens.add({
+        var anotherTween = tweens.add({
             startObject : {},
             stopObject : {},
             duration : 1.0,
@@ -189,7 +190,7 @@ defineSuite([
 
         tweens.removeAll();
         expect(tweens.length).toEqual(0);
-        expect(cancel.calls.count()).toEqual(2);
+        expect(cancel.calls.length).toEqual(2);
     });
 
     it('contains() throws without an index', function() {
@@ -258,7 +259,7 @@ defineSuite([
         var object = {
             property : 0.0
         };
-        tweens.addProperty({
+        var tween = tweens.addProperty({
             object : object,
             property : 'property',
             startValue : 0.0,
@@ -346,7 +347,7 @@ defineSuite([
                 darkColor : new Color()
             }
         };
-        tweens.addAlpha({
+        var tween = tweens.addAlpha({
             material : material,
             duration : 1.0
         });
@@ -384,7 +385,7 @@ defineSuite([
                 offset : 0.0
             }
         };
-        tweens.addOffsetIncrement({
+        var tween = tweens.addOffsetIncrement({
             material : material,
             duration : 1.0
         });

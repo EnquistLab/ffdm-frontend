@@ -14,6 +14,7 @@ defineSuite([
         Intersect,
         Rectangle) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('default constructor sets expected values', function() {
         var rectangle = new BoundingRectangle();
@@ -34,7 +35,7 @@ defineSuite([
     it('clone without a result parameter', function() {
         var rectangle = new BoundingRectangle(1.0, 2.0, 3.0, 4.0);
         var result = rectangle.clone();
-        expect(rectangle).not.toBe(result);
+        expect(rectangle).toNotBe(result);
         expect(rectangle).toEqual(result);
     });
 
@@ -42,7 +43,7 @@ defineSuite([
         var rectangle = new BoundingRectangle(1.0, 2.0, 3.0, 4.0);
         var result = new BoundingRectangle(6.0, 7.0, 8.0, 9.0);
         var returnedResult = rectangle.clone(result);
-        expect(result).not.toBe(rectangle);
+        expect(result).toNotBe(rectangle);
         expect(result).toEqual(rectangle);
         expect(result).toBe(returnedResult);
     });

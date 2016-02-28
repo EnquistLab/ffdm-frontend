@@ -4,6 +4,7 @@ defineSuite([
     ], function(
         Interval) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('constructs without arguments', function() {
         var interval = new Interval();

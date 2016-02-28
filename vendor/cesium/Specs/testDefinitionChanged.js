@@ -4,6 +4,7 @@ define([
     ], function(
         ConstantProperty) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     function testDefinitionChanged(property, name, value1, value2) {
         var listener = jasmine.createSpy('listener');
@@ -12,14 +13,14 @@ define([
         var oldValue = property[name];
         property[name] = new ConstantProperty(value1);
         expect(listener).toHaveBeenCalledWith(property, name, property[name], oldValue);
-        listener.calls.reset();
+        listener.reset();
 
         property[name].setValue(value2);
         expect(listener).toHaveBeenCalledWith(property, name, property[name], property[name]);
-        listener.calls.reset();
+        listener.reset();
 
         property[name] = property[name];
-        expect(listener.calls.count()).toEqual(0);
+        expect(listener.callCount).toEqual(0);
     }
 
     return testDefinitionChanged;

@@ -4,6 +4,7 @@ defineSuite([
     ], function(
         Intersections2D) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     describe('clipTriangleAtAxisAlignedThreshold', function() {
         it('eliminates a triangle that is entirely on the wrong side of the threshold', function() {

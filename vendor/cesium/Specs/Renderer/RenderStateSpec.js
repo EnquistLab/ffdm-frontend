@@ -2,16 +2,14 @@
 defineSuite([
         'Renderer/RenderState',
         'Core/WindingOrder',
-        'Renderer/ContextLimits',
-        'Renderer/WebGLConstants',
         'Specs/createContext'
     ], function(
         RenderState,
         WindingOrder,
-        ContextLimits,
-        WebGLConstants,
         createContext) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
+    /*global WebGLRenderingContext*/
 
     var context;
 
@@ -28,7 +26,7 @@ defineSuite([
             frontFace : WindingOrder.COUNTER_CLOCKWISE,
             cull : {
                 enabled : false,
-                face : WebGLConstants.BACK
+                face : WebGLRenderingContext.BACK
             },
             lineWidth : 1,
             polygonOffset : {
@@ -51,7 +49,7 @@ defineSuite([
             },
             depthTest : {
                 enabled : false,
-                func : WebGLConstants.LESS
+                func : WebGLRenderingContext.LESS
             },
             colorMask : {
                 red : true,
@@ -69,28 +67,28 @@ defineSuite([
                     blue : 0.0,
                     alpha : 0.0
                 },
-                equationRgb : WebGLConstants.FUNC_ADD,
-                equationAlpha : WebGLConstants.FUNC_ADD,
-                functionSourceRgb : WebGLConstants.ONE,
-                functionSourceAlpha : WebGLConstants.ONE,
-                functionDestinationRgb : WebGLConstants.ZERO,
-                functionDestinationAlpha : WebGLConstants.ZERO
+                equationRgb : WebGLRenderingContext.FUNC_ADD,
+                equationAlpha : WebGLRenderingContext.FUNC_ADD,
+                functionSourceRgb : WebGLRenderingContext.ONE,
+                functionSourceAlpha : WebGLRenderingContext.ONE,
+                functionDestinationRgb : WebGLRenderingContext.ZERO,
+                functionDestinationAlpha : WebGLRenderingContext.ZERO
             },
             stencilTest : {
                 enabled : false,
-                frontFunction : WebGLConstants.ALWAYS,
-                backFunction : WebGLConstants.ALWAYS,
+                frontFunction : WebGLRenderingContext.ALWAYS,
+                backFunction : WebGLRenderingContext.ALWAYS,
                 reference : 0,
                 mask : ~0,
                 frontOperation : {
-                    fail : WebGLConstants.KEEP,
-                    zFail : WebGLConstants.KEEP,
-                    zPass : WebGLConstants.KEEP
+                    fail : WebGLRenderingContext.KEEP,
+                    zFail : WebGLRenderingContext.KEEP,
+                    zPass : WebGLRenderingContext.KEEP
                 },
                 backOperation : {
-                    fail : WebGLConstants.KEEP,
-                    zFail : WebGLConstants.KEEP,
-                    zPass : WebGLConstants.KEEP
+                    fail : WebGLRenderingContext.KEEP,
+                    zFail : WebGLRenderingContext.KEEP,
+                    zPass : WebGLRenderingContext.KEEP
                 }
             },
             sampleCoverage : {
@@ -100,7 +98,7 @@ defineSuite([
             }
         };
 
-        var rs = RenderState.fromCache();
+        var rs = context.createRenderState();
 
         expect(rs.frontFace).toEqual(defaultRS.frontFace);
         expect(rs.cull.enabled).toEqual(defaultRS.cull.enabled);
@@ -156,9 +154,9 @@ defineSuite([
             frontFace : WindingOrder.CLOCKWISE,
             cull : {
                 enabled : true,
-                face : WebGLConstants.FRONT
+                face : WebGLRenderingContext.FRONT
             },
-            lineWidth : ContextLimits.maximumAliasedLineWidth,
+            lineWidth : context.maximumAliasedLineWidth,
             polygonOffset : {
                 enabled : false,
                 factor : 1,
@@ -179,7 +177,7 @@ defineSuite([
             },
             depthTest : {
                 enabled : true,
-                func : WebGLConstants.GREATER
+                func : WebGLRenderingContext.GREATER
             },
             colorMask : {
                 red : false,
@@ -197,28 +195,28 @@ defineSuite([
                     blue : 1.0,
                     alpha : 1.0
                 },
-                equationRgb : WebGLConstants.FUNC_SUBTRACT,
-                equationAlpha : WebGLConstants.FUNC_SUBTRACT,
-                functionSourceRgb : WebGLConstants.ZERO,
-                functionSourceAlpha : WebGLConstants.ZERO,
-                functionDestinationRgb : WebGLConstants.ONE,
-                functionDestinationAlpha : WebGLConstants.ONE
+                equationRgb : WebGLRenderingContext.FUNC_SUBTRACT,
+                equationAlpha : WebGLRenderingContext.FUNC_SUBTRACT,
+                functionSourceRgb : WebGLRenderingContext.ZERO,
+                functionSourceAlpha : WebGLRenderingContext.ZERO,
+                functionDestinationRgb : WebGLRenderingContext.ONE,
+                functionDestinationAlpha : WebGLRenderingContext.ONE
             },
             stencilTest : {
                 enabled : true,
-                frontFunction : WebGLConstants.NEVER,
-                backFunction : WebGLConstants.NEVER,
+                frontFunction : WebGLRenderingContext.NEVER,
+                backFunction : WebGLRenderingContext.NEVER,
                 reference : 1,
                 mask : 0,
                 frontOperation : {
-                    fail : WebGLConstants.REPLACE,
-                    zFail : WebGLConstants.REPLACE,
-                    zPass : WebGLConstants.REPLACE
+                    fail : WebGLRenderingContext.REPLACE,
+                    zFail : WebGLRenderingContext.REPLACE,
+                    zPass : WebGLRenderingContext.REPLACE
                 },
                 backOperation : {
-                    fail : WebGLConstants.REPLACE,
-                    zFail : WebGLConstants.REPLACE,
-                    zPass : WebGLConstants.REPLACE
+                    fail : WebGLRenderingContext.REPLACE,
+                    zFail : WebGLRenderingContext.REPLACE,
+                    zPass : WebGLRenderingContext.REPLACE
                 }
             },
             sampleCoverage : {
@@ -228,7 +226,7 @@ defineSuite([
             }
         };
 
-        var rs = RenderState.fromCache(r);
+        var rs = context.createRenderState(r);
 
         expect(rs.frontFace).toEqual(r.frontFace);
         expect(rs.cull.enabled).toEqual(r.cull.enabled);
@@ -288,12 +286,12 @@ defineSuite([
             }
         };
 
-        var rs = RenderState.fromCache(r);
+        var rs = context.createRenderState(r);
         expect(rs.frontFace).toEqual(r.frontFace);
         expect(rs.depthRange.near).toEqual(r.depthRange.near);
         expect(rs.depthRange.far).toEqual(r.depthRange.far);
 
-        var defaultRS = RenderState.fromCache();
+        var defaultRS = context.createRenderState();
         expect(rs.cull.enabled).toEqual(defaultRS.cull.enabled);
         expect(rs.cull.face).toEqual(defaultRS.cull.face);
         expect(rs.cull.lineWidth).toEqual(defaultRS.cull.lineWidth);
@@ -341,20 +339,20 @@ defineSuite([
     });
 
     it('caches render states', function() {
-        var rs = RenderState.fromCache();
-        var rs2 = RenderState.fromCache();
+        var rs = context.createRenderState();
+        var rs2 = context.createRenderState();
         // rs3 is still the same state as rs and rs2, but with a partial definition
-        var rs3 = RenderState.fromCache({
+        var rs3 = context.createRenderState({
             depthTest : {
                 enabled : false,
-                func : WebGLConstants.LESS
+                func : WebGLRenderingContext.LESS
             }
         });
         // rs4 is a cache miss since it has a different depthTest
-        var rs4 = RenderState.fromCache({
+        var rs4 = context.createRenderState({
             depthTest : {
                 enabled : true,
-                func : WebGLConstants.NEVER
+                func : WebGLRenderingContext.NEVER
             }
         });
         expect(rs2).toBe(rs);
@@ -362,55 +360,9 @@ defineSuite([
         expect(rs4).not.toBe(rs);
     });
 
-    it('removes from render cache', function() {
-        RenderState.clearCache();
-        var cache = RenderState.getCache();
-
-        var rs = RenderState.fromCache();
-        var undefinedKey = JSON.stringify(undefined);
-        var fullKey = JSON.stringify(new RenderState());
-
-        expect(cache[fullKey].referenceCount).toEqual(1);
-        expect(cache[undefinedKey].referenceCount).toEqual(1);
-
-        var rs2 = RenderState.fromCache();
-
-        expect(cache[fullKey].referenceCount).toEqual(1);
-        expect(cache[undefinedKey].referenceCount).toEqual(2);
-
-        // rs3 is still the same state as rs and rs2, but with a partial definition
-        var param = {
-            depthTest : {
-                enabled : false,
-                func : WebGLConstants.LESS
-            }
-        };
-        var rs3 = RenderState.fromCache(param);
-        var paramKey = JSON.stringify(param);
-
-        expect(rs2).toBe(rs);
-        expect(rs3).toBe(rs);
-
-        expect(cache[fullKey].referenceCount).toEqual(2);
-        expect(cache[undefinedKey].referenceCount).toEqual(2);
-        expect(cache[paramKey].referenceCount).toEqual(1);
-
-        RenderState.removeFromCache(param);
-
-        expect(cache[fullKey].referenceCount).toEqual(1);
-        expect(cache[undefinedKey].referenceCount).toEqual(2);
-        expect(cache[paramKey]).not.toBeDefined();
-
-        RenderState.removeFromCache();
-        RenderState.removeFromCache();
-
-        expect(cache[undefinedKey]).not.toBeDefined();
-        expect(cache[fullKey]).not.toBeDefined();
-    });
-
     it('fails to create (frontFace)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 frontFace : 'invalid value'
             });
         }).toThrowDeveloperError();
@@ -418,7 +370,7 @@ defineSuite([
 
     it('fails to create (cull.face)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 cull : {
                     face : 'invalid value'
                 }
@@ -428,23 +380,23 @@ defineSuite([
 
     it('fails to create (small lineWidth)', function() {
         expect(function() {
-            RenderState.fromCache({
-                lineWidth : ContextLimits.minimumAliasedLineWidth - 1
+            context.createRenderState({
+                lineWidth : context.minimumAliasedLineWidth - 1
             });
-        }).toThrowDeveloperError();
+        }).toThrowRuntimeError();
     });
 
     it('fails to create (large lineWidth)', function() {
         expect(function() {
-            RenderState.fromCache({
-                lineWidth : ContextLimits.maximumAliasedLineWidth + 1
+            context.createRenderState({
+                lineWidth : context.maximumAliasedLineWidth + 1
             });
-        }).toThrowDeveloperError();
+        }).toThrowRuntimeError();
     });
 
     it('fails to create (negative scissorTest.rectangle.width)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 scissorTest : {
                     rectangle : {
                         x : 0,
@@ -459,7 +411,7 @@ defineSuite([
 
     it('fails to create (negative scissorTest.rectangle.height)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 scissorTest : {
                     rectangle : {
                         x : 0,
@@ -474,7 +426,7 @@ defineSuite([
 
     it('fails to create (near > far)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 depthRange : {
                     near : 0.75,
                     far : 0.25
@@ -485,7 +437,7 @@ defineSuite([
 
     it('fails to create (near < 0)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 depthRange : {
                     near : -1
                 }
@@ -495,7 +447,7 @@ defineSuite([
 
     it('fails to create (far > 1)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 depthRange : {
                     far : 2
                 }
@@ -505,7 +457,7 @@ defineSuite([
 
     it('fails to create (depthTest.func)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 depthTest : {
                     func : 'invalid value'
                 }
@@ -515,7 +467,7 @@ defineSuite([
 
     it('fails to create (blending.color < 0)', function() {
         expect(function() {
-            RenderState.fromCache({
+            context.createRenderState({
                 blending : {
                     color : {
                         red : -1.0,
@@ -530,13 +482,13 @@ defineSuite([
 
     it('fails to create (blending.color > 1)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    color: {
-                        red: 0.0,
-                        green: 0.0,
-                        blue: 0.0,
-                        alpha: 2.0
+            context.createRenderState({
+                blending : {
+                    color : {
+                        red : 0.0,
+                        green : 0.0,
+                        blue : 0.0,
+                        alpha : 2.0
                     }
                 }
             });
@@ -545,9 +497,9 @@ defineSuite([
 
     it('fails to create (blend.equationRgb)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    equationRgb: 'invalid value'
+            context.createRenderState({
+                blending : {
+                    equationRgb : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -555,9 +507,9 @@ defineSuite([
 
     it('fails to create (blend.equationAlpha)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    equationAlpha: 'invalid value'
+            context.createRenderState({
+                blending : {
+                    equationAlpha : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -565,9 +517,9 @@ defineSuite([
 
     it('fails to create (blend.functionSourceRgb)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    functionSourceRgb: 'invalid value'
+            context.createRenderState({
+                blending : {
+                    functionSourceRgb : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -575,9 +527,9 @@ defineSuite([
 
     it('fails to create (blend.functionSourceAlpha)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    functionSourceAlpha: 'invalid value'
+            context.createRenderState({
+                blending : {
+                    functionSourceAlpha : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -585,9 +537,9 @@ defineSuite([
 
     it('fails to create (blend.functionDestinationRgb)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    functionDestinationRgb: 'invalid value'
+            context.createRenderState({
+                blending : {
+                    functionDestinationRgb : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -595,9 +547,9 @@ defineSuite([
 
     it('fails to create (blend.functionDestinationAlpha)', function() {
         expect(function() {
-            RenderState.fromCache({
-                blending: {
-                    functionDestinationAlpha: 'invalid value'
+            context.createRenderState({
+                blending : {
+                    functionDestinationAlpha : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -605,9 +557,9 @@ defineSuite([
 
     it('fails to create (stencilTest.frontFunction)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    frontFunction: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    frontFunction : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -615,9 +567,9 @@ defineSuite([
 
     it('fails to create (stencilTest.backFunction)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    backFunction: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    backFunction : 'invalid value'
                 }
             });
         }).toThrowDeveloperError();
@@ -625,10 +577,10 @@ defineSuite([
 
     it('fails to create (stencilTest.frontOperation.fail)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    frontOperation: {
-                        fail: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    frontOperation : {
+                        fail : 'invalid value'
                     }
                 }
             });
@@ -637,10 +589,10 @@ defineSuite([
 
     it('fails to create (stencilTest.frontOperation.zFail)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    frontOperation: {
-                        zFail: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    frontOperation : {
+                        zFail : 'invalid value'
                     }
                 }
             });
@@ -649,10 +601,10 @@ defineSuite([
 
     it('fails to create (stencilTest.frontOperation.zPass)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    frontOperation: {
-                        zPass: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    frontOperation : {
+                        zPass : 'invalid value'
                     }
                 }
             });
@@ -661,10 +613,10 @@ defineSuite([
 
     it('fails to create (stencilTest.backOperation.fail)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    backOperation: {
-                        fail: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    backOperation : {
+                        fail : 'invalid value'
                     }
                 }
             });
@@ -673,10 +625,10 @@ defineSuite([
 
     it('fails to create (stencilTest.backOperation.zFail)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    backOperation: {
-                        zFail: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    backOperation : {
+                        zFail : 'invalid value'
                     }
                 }
             });
@@ -685,19 +637,19 @@ defineSuite([
 
     it('fails to create (stencilTest.backOperation.zPass)', function() {
         expect(function() {
-            RenderState.fromCache({
-                stencilTest: {
-                    backOperation: {
-                        zPass: 'invalid value'
+            context.createRenderState({
+                stencilTest : {
+                    backOperation : {
+                        zPass : 'invalid value'
                     }
                 }
             });
         }).toThrowDeveloperError();
     });
 
-    it('fails to get state without renderState', function() {
+    it('fails to clone without renderState', function() {
         expect(function() {
-            RenderState.getState(undefined);
+            RenderState.clone(undefined);
         }).toThrowDeveloperError();
     });
 
@@ -706,9 +658,9 @@ defineSuite([
             frontFace : WindingOrder.CLOCKWISE,
             cull : {
                 enabled : true,
-                face : WebGLConstants.FRONT
+                face : WebGLRenderingContext.FRONT
             },
-            lineWidth : ContextLimits.maximumAliasedLineWidth,
+            lineWidth : context.maximumAliasedLineWidth,
             polygonOffset : {
                 enabled : false,
                 factor : 1,
@@ -729,7 +681,7 @@ defineSuite([
             },
             depthTest : {
                 enabled : true,
-                func : WebGLConstants.GREATER
+                func : WebGLRenderingContext.GREATER
             },
             colorMask : {
                 red : false,
@@ -747,28 +699,28 @@ defineSuite([
                     blue : 1.0,
                     alpha : 1.0
                 },
-                equationRgb : WebGLConstants.FUNC_SUBTRACT,
-                equationAlpha : WebGLConstants.FUNC_SUBTRACT,
-                functionSourceRgb : WebGLConstants.ZERO,
-                functionSourceAlpha : WebGLConstants.ZERO,
-                functionDestinationRgb : WebGLConstants.ONE,
-                functionDestinationAlpha : WebGLConstants.ONE
+                equationRgb : WebGLRenderingContext.FUNC_SUBTRACT,
+                equationAlpha : WebGLRenderingContext.FUNC_SUBTRACT,
+                functionSourceRgb : WebGLRenderingContext.ZERO,
+                functionSourceAlpha : WebGLRenderingContext.ZERO,
+                functionDestinationRgb : WebGLRenderingContext.ONE,
+                functionDestinationAlpha : WebGLRenderingContext.ONE
             },
             stencilTest : {
                 enabled : true,
-                frontFunction : WebGLConstants.NEVER,
-                backFunction : WebGLConstants.NEVER,
+                frontFunction : WebGLRenderingContext.NEVER,
+                backFunction : WebGLRenderingContext.NEVER,
                 reference : 1,
                 mask : 0,
                 frontOperation : {
-                    fail : WebGLConstants.REPLACE,
-                    zFail : WebGLConstants.REPLACE,
-                    zPass : WebGLConstants.REPLACE
+                    fail : WebGLRenderingContext.REPLACE,
+                    zFail : WebGLRenderingContext.REPLACE,
+                    zPass : WebGLRenderingContext.REPLACE
                 },
                 backOperation : {
-                    fail : WebGLConstants.REPLACE,
-                    zFail : WebGLConstants.REPLACE,
-                    zPass : WebGLConstants.REPLACE
+                    fail : WebGLRenderingContext.REPLACE,
+                    zFail : WebGLRenderingContext.REPLACE,
+                    zPass : WebGLRenderingContext.REPLACE
                 }
             },
             sampleCoverage : {
@@ -778,7 +730,8 @@ defineSuite([
             }
         };
 
-        var rs = RenderState.fromCache(RenderState.getState(r));
+        var r2 = context.createRenderState(r);
+        var rs = context.createRenderState(RenderState.clone(r));
 
         expect(rs.frontFace).toEqual(r.frontFace);
         expect(rs.cull.enabled).toEqual(r.cull.enabled);

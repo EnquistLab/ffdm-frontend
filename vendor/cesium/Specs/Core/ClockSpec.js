@@ -3,15 +3,14 @@ defineSuite([
         'Core/Clock',
         'Core/ClockRange',
         'Core/ClockStep',
-        'Core/JulianDate',
-        'Specs/pollToPromise'
+        'Core/JulianDate'
     ], function(
         Clock,
         ClockRange,
         ClockStep,
-        JulianDate,
-        pollToPromise) {
+        JulianDate) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('constructor sets default parameters', function() {
         var clock = new Clock();
@@ -356,7 +355,7 @@ defineSuite([
         });
         var time1 = JulianDate.clone(clock.tick());
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             var time2 = clock.tick();
             return JulianDate.greaterThan(time2, time1);
         });
@@ -401,7 +400,7 @@ defineSuite([
         });
         var time1 = JulianDate.clone(clock.tick());
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             var time2 = clock.tick();
             return JulianDate.greaterThan(time2, time1);
         });
@@ -420,10 +419,12 @@ defineSuite([
         clock.shouldAnimate = true;
         time1 = JulianDate.clone(clock.tick());
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             time2 = clock.tick();
             return JulianDate.greaterThan(time2, time1);
-        }).then(function() {
+        });
+
+        runs(function() {
             clock.clockStep = ClockStep.SYSTEM_CLOCK;
             currentTime = clock.currentTime;
             clock.shouldAnimate = false;
@@ -431,19 +432,21 @@ defineSuite([
             expect(clock.currentTime).toEqual(currentTime);
             clock.shouldAnimate = true;
             time1 = JulianDate.clone(clock.tick());
+        });
 
-            return pollToPromise(function() {
-                time2 = clock.tick();
-                return JulianDate.greaterThan(time2, time1);
-            }).then(function() {
-                clock.clockStep = ClockStep.TICK_DEPENDENT;
-                currentTime = JulianDate.clone(clock.currentTime);
-                clock.shouldAnimate = false;
-                expect(currentTime).toEqual(clock.tick());
-                expect(clock.currentTime).toEqual(currentTime);
-                clock.shouldAnimate = true;
-                expect(JulianDate.greaterThan(clock.tick(), currentTime)).toEqual(true);
-            });
+        waitsFor(function() {
+            time2 = clock.tick();
+            return JulianDate.greaterThan(time2, time1);
+        });
+
+        runs(function() {
+            clock.clockStep = ClockStep.TICK_DEPENDENT;
+            currentTime = JulianDate.clone(clock.currentTime);
+            clock.shouldAnimate = false;
+            expect(currentTime).toEqual(clock.tick());
+            expect(clock.currentTime).toEqual(currentTime);
+            clock.shouldAnimate = true;
+            expect(JulianDate.greaterThan(clock.tick(), currentTime)).toEqual(true);
         });
     });
 });

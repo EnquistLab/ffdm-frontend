@@ -4,6 +4,7 @@ defineSuite([
     ], function(
         clone) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('can make shallow clones', function() {
         var obj = {

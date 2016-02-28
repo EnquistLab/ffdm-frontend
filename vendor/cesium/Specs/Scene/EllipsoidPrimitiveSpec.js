@@ -26,6 +26,7 @@ defineSuite([
         pick,
         render) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
     var ellipsoid;
@@ -42,11 +43,11 @@ defineSuite([
 
     beforeEach(function() {
         ellipsoid = new EllipsoidPrimitive();
-        frameState = createFrameState(context, createCamera({
+        frameState = createFrameState(createCamera({
             offset : new Cartesian3(1.02, 0.0, 0.0)
         }));
         us = context.uniformState;
-        us.update(frameState);
+        us.update(context, frameState);
     });
 
     afterEach(function() {
@@ -94,8 +95,8 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, ellipsoid);
-        expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
+        render(context, frameState, ellipsoid);
+        expect(context.readPixels()).toNotEqual([0, 0, 0, 0]);
     });
 
     it('renders with a custom modelMatrix', function() {
@@ -105,7 +106,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, ellipsoid);
+        render(context, frameState, ellipsoid);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
     });
 
@@ -117,13 +118,13 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, ellipsoid);
+        render(context, frameState, ellipsoid);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, ellipsoid2);
+        render(context, frameState, ellipsoid2);
         expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         ellipsoid2.destroy();
@@ -154,11 +155,11 @@ defineSuite([
         ellipsoid.radii = new Cartesian3(1.0, 1.0, 1.0);
         ellipsoid.show = false;
 
-        expect(render(frameState, ellipsoid)).toEqual(0);
+        expect(render(context, frameState, ellipsoid)).toEqual(0);
     });
 
     it('does not render without radii', function() {
-        expect(render(frameState, ellipsoid)).toEqual(0);
+        expect(render(context, frameState, ellipsoid)).toEqual(0);
     });
 
     it('does not render when not in view due to center', function() {
@@ -168,7 +169,7 @@ defineSuite([
         ClearCommand.ALL.execute(context);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
-        render(frameState, ellipsoid);
+        render(context, frameState, ellipsoid);
         expect(context.readPixels()).toEqual([0, 0, 0, 0]);
     });
 
@@ -176,7 +177,7 @@ defineSuite([
         ellipsoid.radii = new Cartesian3(1.0, 1.0, 1.0);
         ellipsoid.id = 'id';
 
-        var pickedObject = pick(frameState, ellipsoid, 0, 0);
+        var pickedObject = pick(context, frameState, ellipsoid, 0, 0);
         expect(pickedObject.primitive).toEqual(ellipsoid);
         expect(pickedObject.id).toEqual('id');
     });
@@ -185,7 +186,7 @@ defineSuite([
         ellipsoid.radii = new Cartesian3(1.0, 1.0, 1.0);
         ellipsoid.show = false;
 
-        var pickedObject = pick(frameState, ellipsoid, 0, 0);
+        var pickedObject = pick(context, frameState, ellipsoid, 0, 0);
         expect(pickedObject).not.toBeDefined();
     });
 
@@ -193,7 +194,7 @@ defineSuite([
         ellipsoid.radii = new Cartesian3(1.0, 1.0, 1.0);
         ellipsoid.material.uniforms.color.alpha = 0.0;
 
-        var pickedObject = pick(frameState, ellipsoid, 0, 0);
+        var pickedObject = pick(context, frameState, ellipsoid, 0, 0);
         expect(pickedObject).not.toBeDefined();
     });
 
@@ -208,7 +209,7 @@ defineSuite([
         ellipsoid.material = undefined;
 
         expect(function() {
-            render(frameState, ellipsoid);
+            render(context, frameState, ellipsoid);
         }).toThrowDeveloperError();
     });
 }, 'WebGL');

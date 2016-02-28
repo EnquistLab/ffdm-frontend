@@ -44,6 +44,7 @@ defineSuite([
         createDynamicProperty,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     var time;
@@ -410,26 +411,6 @@ defineSuite([
         expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(outline.getValue(time2)));
     });
 
-    it('createFillGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicEllipse();
-        entity.show = false;
-        entity.ellipse.fill = true;
-        var updater = new EllipseGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
-    it('createOutlineGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicEllipse();
-        entity.show = false;
-        entity.ellipse.outline = true;
-        var updater = new EllipseGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
     it('dynamic updater sets properties', function() {
         var ellipse = new EllipseGraphics();
         ellipse.show = createDynamicProperty(true);
@@ -454,11 +435,6 @@ defineSuite([
         expect(dynamicUpdater._options.id).toBe(entity);
         expect(dynamicUpdater._options.semiMajorAxis).toEqual(ellipse.semiMajorAxis.getValue());
         expect(dynamicUpdater._options.semiMinorAxis).toEqual(ellipse.semiMinorAxis.getValue());
-
-        entity.show = false;
-        dynamicUpdater.update(JulianDate.now());
-        expect(primitives.length).toBe(0);
-        entity.show = true;
 
         ellipse.show.setValue(false);
         dynamicUpdater.update(JulianDate.now());
@@ -490,27 +466,27 @@ defineSuite([
         updater.geometryChanged.addEventListener(listener);
 
         entity.position = new ConstantPositionProperty(Cartesian3.UNIT_Z);
-        expect(listener.calls.count()).toEqual(1);
+        expect(listener.callCount).toEqual(1);
 
         entity.ellipse.semiMajorAxis = new ConstantProperty(82);
-        expect(listener.calls.count()).toEqual(2);
+        expect(listener.callCount).toEqual(2);
 
         entity.availability = new TimeIntervalCollection();
-        expect(listener.calls.count()).toEqual(3);
+        expect(listener.callCount).toEqual(3);
 
         entity.ellipse.semiMajorAxis = undefined;
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
 
         //Since there's no valid geometry, changing another property should not raise the event.
         entity.ellipse.semiMinorAxis = undefined;
 
         //Modifying an unrelated property should not have any effect.
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
 
         entity.ellipse.semiMajorAxis = new SampledProperty(Number);
         entity.ellipse.semiMinorAxis = new SampledProperty(Number);
-        expect(listener.calls.count()).toEqual(5);
+        expect(listener.callCount).toEqual(5);
     });
 
     it('createFillGeometryInstance throws if object is not filled', function() {
@@ -592,4 +568,4 @@ defineSuite([
     createDynamicGeometryBoundingSphereSpecs(EllipseGeometryUpdater, entity, entity.ellipse, function() {
         return scene;
     });
-}, 'WebGL');
+});

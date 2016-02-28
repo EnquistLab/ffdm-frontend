@@ -17,6 +17,7 @@ defineSuite([
         VertexFormat,
         createPackableSpecs) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('throws without hierarchy', function() {
         expect(function() {
@@ -252,61 +253,6 @@ defineSuite([
         expect(p.indices.length).toEqual(3 * 10);
     });
 
-    it('doesn\'t reverse clockwise input array', function() {
-        var p = Cartesian3.fromDegreesArray([
-                                             -124.0, 35.0,
-                                             -124.0, 40.0,
-                                             -110.0, 40.0,
-                                             -110.0, 35.0
-                                         ]);
-        var h1 = Cartesian3.fromDegreesArray([
-                                              -122.0, 36.0,
-                                              -112.0, 36.0,
-                                              -112.0, 39.0,
-                                              -122.0, 39.0
-                                          ]);
-        var h2 = Cartesian3.fromDegreesArray([
-                                              -120.0, 36.5,
-                                              -120.0, 38.5,
-                                              -114.0, 38.5,
-                                              -114.0, 36.5
-                                          ]);
-        var hierarchy = {
-            positions : p,
-            holes : [{
-                positions : h1,
-                holes : [{
-                    positions : h2
-                }]
-            }]
-        };
-
-        PolygonGeometry.createGeometry(new PolygonGeometry({
-            vertexformat : VertexFormat.POSITION_ONLY,
-            polygonHierarchy : hierarchy,
-            granularity : CesiumMath.PI_OVER_THREE
-        }));
-
-        expect(p).toEqual(Cartesian3.fromDegreesArray([
-                                                       -124.0, 35.0,
-                                                       -124.0, 40.0,
-                                                       -110.0, 40.0,
-                                                       -110.0, 35.0
-                                                   ]));
-        expect(h1).toEqual(Cartesian3.fromDegreesArray([
-                                                        -122.0, 36.0,
-                                                        -112.0, 36.0,
-                                                        -112.0, 39.0,
-                                                        -122.0, 39.0
-                                                    ]));
-        expect(h2).toEqual(Cartesian3.fromDegreesArray([
-                                                        -120.0, 36.5,
-                                                        -120.0, 38.5,
-                                                        -114.0, 38.5,
-                                                        -114.0, 36.5
-                                                    ]));
-    });
-
     it('computes correct bounding sphere at height 0', function() {
         var p = PolygonGeometry.createGeometry(PolygonGeometry.fromPositions({
             vertexFormat : VertexFormat.ALL,
@@ -387,12 +333,12 @@ defineSuite([
         var p = PolygonGeometry.createGeometry(new PolygonGeometry({
             vertexFormat : VertexFormat.ALL,
             polygonHierarchy: {
-                positions : Cartesian3.fromDegreesArray([
-                    -50.0, -50.0,
-                    50.0, -50.0,
-                    50.0, 50.0,
-                    -50.0, 50.0
-                ])},
+                    positions : Cartesian3.fromDegreesArray([
+                        -50.0, -50.0,
+                        50.0, -50.0,
+                        50.0, 50.0,
+                        -50.0, 50.0
+                    ])},
             granularity : CesiumMath.PI_OVER_THREE,
             extrudedHeight: 30000
         }));
@@ -403,26 +349,6 @@ defineSuite([
         expect(p.attributes.tangent.values.length).toEqual(3 * 21 * 2);
         expect(p.attributes.binormal.values.length).toEqual(3 * 21 * 2);
         expect(p.indices.length).toEqual(3 * 20 * 2);
-    });
-
-    it('computes correct texture coordinates for polygon with height', function() {
-        var p = PolygonGeometry.createGeometry(new PolygonGeometry({
-            vertexFormat : VertexFormat.POSITION_AND_ST,
-            polygonHierarchy: {
-                positions : Cartesian3.fromDegreesArray([
-                    -100.5, 30.0,
-                    -100.0, 30.0,
-                    -100.0, 30.5,
-                    -100.5, 30.5
-                ])},
-            height: 150000,
-            granularity: CesiumMath.PI
-        }));
-
-        var st = p.attributes.st.values;
-        for (var i = 0; i < st.length; i++) {
-            expect(st[i] + CesiumMath.EPSILON10 >= 0 && st[i] - CesiumMath.EPSILON10 <= 1).toEqual(true);
-        }
     });
 
     it('creates a polygon from hierarchy extruded', function() {
@@ -482,8 +408,7 @@ defineSuite([
         holes : [{
             positions : holePositions0,
             holes : [{
-                positions : holePositions1,
-                holes : undefined
+                positions : holePositions1
             }]
         }]
     };

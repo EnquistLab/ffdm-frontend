@@ -9,7 +9,6 @@ defineSuite([
         'Core/loadWithXhr',
         'Core/Math',
         'Core/TerrainProvider',
-        'Specs/pollToPromise',
         'ThirdParty/when'
     ], function(
         VRTheWorldTerrainProvider,
@@ -21,9 +20,9 @@ defineSuite([
         loadWithXhr,
         CesiumMath,
         TerrainProvider,
-        pollToPromise,
         when) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     beforeEach(function() {
         loadWithXhr.load = function(url, responseType, method, data, headers, deferred, overrideMimeType) {
@@ -75,17 +74,6 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('resolves readyPromise', function() {
-        var provider = new VRTheWorldTerrainProvider({
-            url : 'made/up/url'
-        });
-
-        return provider.readyPromise.then(function (result) {
-            expect(result).toBe(true);
-            expect(provider.ready).toBe(true);
-        });
-    });
-
     it('has error event', function() {
         var provider = new VRTheWorldTerrainProvider({
             url : 'made/up/url'
@@ -99,9 +87,11 @@ defineSuite([
             url : 'made/up/url'
         });
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             return provider.ready;
-        }).then(function() {
+        }, 'provider to be ready');
+
+        runs(function() {
             expect(provider.getLevelMaximumGeometricError(0)).toBeGreaterThan(0.0);
             expect(provider.getLevelMaximumGeometricError(0)).toEqualEpsilon(provider.getLevelMaximumGeometricError(1) * 2.0, CesiumMath.EPSILON10);
             expect(provider.getLevelMaximumGeometricError(1)).toEqualEpsilon(provider.getLevelMaximumGeometricError(2) * 2.0, CesiumMath.EPSILON10);
@@ -124,7 +114,7 @@ defineSuite([
         });
 
         expect(function() {
-            return provider.tilingScheme;
+            var t = provider.tilingScheme;
         }).toThrowDeveloperError();
     });
 
@@ -190,13 +180,14 @@ defineSuite([
             url : 'made/up/url'
         });
 
-        var deferred = when.defer();
-
+        var errorRaised = false;
         terrainProvider.errorEvent.addEventListener(function() {
-            deferred.resolve();
+            errorRaised = true;
         });
 
-        return deferred.promise;
+        waitsFor(function() {
+            return errorRaised;
+        }, 'error to be raised');
     });
 
     describe('requestTileGeometry', function() {
@@ -227,10 +218,21 @@ defineSuite([
                 proxy : new DefaultProxy('/proxy/')
             });
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                 return terrainProvider.ready;
-            }).then(function() {
-                return terrainProvider.requestTileGeometry(0, 0, 0);
+            });
+
+            runs(function() {
+                var promise = terrainProvider.requestTileGeometry(0, 0, 0);
+
+                var loaded = false;
+                when(promise, function(terrainData) {
+                    loaded = true;
+                });
+
+                waitsFor(function() {
+                    return loaded;
+                }, 'request to complete');
             });
         });
 
@@ -248,13 +250,27 @@ defineSuite([
                 url : baseUrl
             });
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                 return terrainProvider.ready;
-            }).then(function() {
+            });
+
+            var loadedData;
+
+            runs(function() {
                 expect(terrainProvider.tilingScheme instanceof GeographicTilingScheme).toBe(true);
-                return terrainProvider.requestTileGeometry(0, 0, 0).then(function(loadedData) {
-                    expect(loadedData).toBeInstanceOf(HeightmapTerrainData);
+                var promise = terrainProvider.requestTileGeometry(0, 0, 0);
+
+                when(promise, function(terrainData) {
+                    loadedData = terrainData;
                 });
+            });
+
+            waitsFor(function() {
+                return defined(loadedData);
+            }, 'request to complete');
+
+            runs(function() {
+                expect(loadedData).toBeInstanceOf(HeightmapTerrainData);
             });
         });
 
@@ -272,9 +288,11 @@ defineSuite([
                 url : baseUrl
             });
 
-            return pollToPromise(function() {
+            waitsFor(function() {
                return terrainProvider.ready;
-            }).then(function() {
+            });
+
+            runs(function() {
                 var promise = terrainProvider.requestTileGeometry(0, 0, 0);
                 expect(promise).toBeDefined();
 

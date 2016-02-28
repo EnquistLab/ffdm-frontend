@@ -10,6 +10,7 @@ defineSuite([
         TimeConstants,
         TimeStandard) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     // All exact Julian Dates found using NASA's Time Conversion Tool: http://ssd.jpl.nasa.gov/tc.cgi
     it('Construct a default date', function() {
@@ -49,7 +50,7 @@ defineSuite([
         var julianDate = JulianDate.now();
         var returnedResult = julianDate.clone();
         expect(returnedResult).toEqual(julianDate);
-        expect(returnedResult).not.toBe(julianDate);
+        expect(returnedResult).toNotBe(julianDate);
     });
 
     it('clone works with result parameter', function() {
@@ -57,7 +58,7 @@ defineSuite([
         var result = JulianDate.now();
         var returnedResult = julianDate.clone(result);
         expect(returnedResult).toBe(result);
-        expect(returnedResult).not.toBe(julianDate);
+        expect(returnedResult).toNotBe(julianDate);
         expect(returnedResult).toEqual(julianDate);
     });
 
@@ -135,7 +136,7 @@ defineSuite([
         var date = new Date('December 31, 2021 18:00:00 UTC');
         var julianDate = JulianDate.fromDate(date);
         expect(julianDate.dayNumber).toEqual(2459580);
-        expect(julianDate.secondsOfDay).toEqual(21636);
+        expect(julianDate.secondsOfDay).toEqual(21635);
     });
 
     it('Construct a date from a JavaScript Date (4)', function() {
@@ -143,13 +144,6 @@ defineSuite([
         var julianDate = JulianDate.fromDate(jsDate);
         expect(julianDate.dayNumber).toEqual(2455806);
         expect(julianDate.secondsOfDay).toEqual(34);
-    });
-
-    it('Construct a date from a JavaScript Date (5)', function() {
-        var jsDate = new Date('11/17/2039 12:00:00 AM UTC');
-        var julianDate = JulianDate.fromDate(jsDate);
-        expect(julianDate.dayNumber).toEqual(2466109);
-        expect(julianDate.secondsOfDay).toEqual(43236);
     });
 
     it('Fail to construct from an undefined JavaScript Date', function() {
@@ -434,18 +428,6 @@ defineSuite([
         expect(julianDate).toEqual(expectedDate);
     });
 
-    it('Construct from ISO8601 local calendar date and time with no seconds and UTC offset in basic format', function() {
-        var expectedDate = JulianDate.fromDate(new Date(Date.UTC(2009, 7, 1, 12, 30, 0)));
-        var computedDate = JulianDate.fromIso8601('20090801T0730-0500');
-        expect(computedDate).toEqual(expectedDate);
-    });
-
-    it('Construct from ISO8601 local calendar date and time with no seconds and UTC offset in extended format', function() {
-        var expectedDate = JulianDate.fromDate(new Date(Date.UTC(2009, 7, 1, 12, 30, 0)));
-        var computedDate = JulianDate.fromIso8601('2009-08-01T07:30-05:00');
-        expect(computedDate).toEqual(expectedDate);
-    });
-
     it('Fails to construct an ISO8601 ordinal date with day less than 1', function() {
         expect(function() {
             return JulianDate.fromIso8601('2009-000');
@@ -724,7 +706,7 @@ defineSuite([
 
     it('toDate works on date later than all leap seconds', function() {
         var expectedDate = new Date('11/17/2039 12:00:00 AM UTC');
-        var date = JulianDate.toDate(new JulianDate(2466109, 43236.0, TimeStandard.TAI));
+        var date = JulianDate.toDate(new JulianDate(2466109, 43235.0, TimeStandard.TAI));
         expect(date).toEqual(expectedDate);
     });
 
@@ -1036,7 +1018,7 @@ defineSuite([
     });
 
     it('computeTaiMinusUtc works after all leap seconds', function() {
-        var date = new JulianDate(2556109, 43236.0, TimeStandard.TAI);
-        expect(JulianDate.computeTaiMinusUtc(date)).toEqual(36);
+        var date = new JulianDate(2556109, 43235.0, TimeStandard.TAI);
+        expect(JulianDate.computeTaiMinusUtc(date)).toEqual(35);
     });
 });

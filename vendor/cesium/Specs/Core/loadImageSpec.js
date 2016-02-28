@@ -8,18 +8,37 @@ defineSuite([
         defined,
         when) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var dataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2Nk+M/wHwAEBgIA5agATwAAAABJRU5ErkJggg==';
 
     it('can load an image', function() {
-        return loadImage('./Data/Images/Green.png').then(function(loadedImage) {
+        var loadedImage;
+        when(loadImage('./Data/Images/Green.png'), function(image) {
+            loadedImage = image;
+        });
+
+        waitsFor(function() {
+            return defined(loadedImage);
+        }, 'The image should load.', 5000);
+
+        runs(function() {
             expect(loadedImage.width).toEqual(1);
             expect(loadedImage.height).toEqual(1);
         });
     });
 
     it('can load an image from a data URI', function() {
-        return loadImage(dataUri).then(function(loadedImage) {
+        var loadedImage;
+        when(loadImage(dataUri), function(image) {
+            loadedImage = image;
+        });
+
+        waitsFor(function() {
+            return defined(loadedImage);
+        }, 'The image should load.');
+
+        runs(function() {
             expect(loadedImage.width).toEqual(1);
             expect(loadedImage.height).toEqual(1);
         });
@@ -33,7 +52,7 @@ defineSuite([
 
     it('sets the crossOrigin property for cross-origin images', function() {
         var fakeImage = {};
-        var imageConstructorSpy = spyOn(window, 'Image').and.returnValue(fakeImage);
+        var imageConstructorSpy = spyOn(window, 'Image').andReturn(fakeImage);
 
         loadImage('http://example.invalid/someImage.png');
         expect(imageConstructorSpy).toHaveBeenCalled();
@@ -42,7 +61,7 @@ defineSuite([
 
     it('does not set the crossOrigin property for cross-origin images when allowCrossOrigin is false', function() {
         var fakeImage = {};
-        var imageConstructorSpy = spyOn(window, 'Image').and.returnValue(fakeImage);
+        var imageConstructorSpy = spyOn(window, 'Image').andReturn(fakeImage);
 
         loadImage('http://example.invalid/someImage.png', false);
         expect(imageConstructorSpy).toHaveBeenCalled();
@@ -51,7 +70,7 @@ defineSuite([
 
     it('does not set the crossOrigin property for non-cross-origin images', function() {
         var fakeImage = {};
-        var imageConstructorSpy = spyOn(window, 'Image').and.returnValue(fakeImage);
+        var imageConstructorSpy = spyOn(window, 'Image').andReturn(fakeImage);
 
         loadImage('./someImage.png', false);
         expect(imageConstructorSpy).toHaveBeenCalled();
@@ -60,7 +79,7 @@ defineSuite([
 
     it('does not set the crossOrigin property for data URIs', function() {
         var fakeImage = {};
-        var imageConstructorSpy = spyOn(window, 'Image').and.returnValue(fakeImage);
+        var imageConstructorSpy = spyOn(window, 'Image').andReturn(fakeImage);
 
         loadImage(dataUri);
         expect(imageConstructorSpy).toHaveBeenCalled();
@@ -69,7 +88,7 @@ defineSuite([
 
     it('resolves the promise when the image loads', function() {
         var fakeImage = {};
-        spyOn(window, 'Image').and.returnValue(fakeImage);
+        spyOn(window, 'Image').andReturn(fakeImage);
 
         var success = false;
         var failure = false;
@@ -94,7 +113,7 @@ defineSuite([
 
     it('rejects the promise when the image errors', function() {
         var fakeImage = {};
-        spyOn(window, 'Image').and.returnValue(fakeImage);
+        spyOn(window, 'Image').andReturn(fakeImage);
 
         var success = false;
         var failure = false;

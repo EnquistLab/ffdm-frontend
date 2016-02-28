@@ -43,10 +43,6 @@
             window.Sandcastle.addToolbarButton(text, onclick, toolbarID);
             defaultAction = onclick;
         },
-        addDefaultToolbarMenu : function(options, toolbarID) {
-            window.Sandcastle.addToolbarMenu(options, toolbarID);
-            defaultAction = options[0].onselect;
-        },
         addToolbarMenu : function(options, toolbarID) {
             var menu = document.createElement('select');
             menu.className = 'cesium-button';

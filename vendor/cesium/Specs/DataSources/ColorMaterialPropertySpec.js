@@ -14,6 +14,7 @@ defineSuite([
         ConstantProperty,
         TimeIntervalCollectionProperty) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('constructor provides the expected defaults', function() {
         var property = new ColorMaterialProperty();
@@ -23,6 +24,10 @@ defineSuite([
 
         var result = property.getValue();
         expect(result.color).toEqual(Color.WHITE);
+
+        property = ColorMaterialProperty.fromColor(Color.BLUE);
+        expect(property.color).toBeInstanceOf(ConstantProperty);
+        expect(property.color.getValue()).toEqual(Color.BLUE);
 
         var colorProperty = new ConstantProperty(Color.BLUE);
         property = new ColorMaterialProperty(colorProperty);
@@ -92,13 +97,13 @@ defineSuite([
         var oldValue = property.color;
         property.color = new ConstantProperty(Color.WHITE);
         expect(listener).toHaveBeenCalledWith(property, 'color', property.color, oldValue);
-        listener.calls.reset();
+        listener.reset();
 
         property.color.setValue(Color.BLACK);
         expect(listener).toHaveBeenCalledWith(property, 'color', property.color, property.color);
-        listener.calls.reset();
+        listener.reset();
 
         property.color = property.color;
-        expect(listener.calls.count()).toEqual(0);
+        expect(listener.callCount).toEqual(0);
     });
 });

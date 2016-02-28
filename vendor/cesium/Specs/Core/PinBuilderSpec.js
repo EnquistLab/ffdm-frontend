@@ -12,6 +12,7 @@ defineSuite([
         defined,
         when) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     function getPinColor(canvas) {
         var context2D = canvas.getContext("2d");
@@ -42,8 +43,17 @@ defineSuite([
     it('fromUrl creates icon of correct color with symbol', function() {
         var builder = new PinBuilder();
 
+        var canvas;
         //Solid square icon
-        return when(builder.fromUrl(buildModuleUrl('Assets/Textures/maki/square.png'), Color.RED, 128), function(canvas) {
+        when(builder.fromUrl(buildModuleUrl('Assets/Textures/maki/square.png'), Color.RED, 128), function(c) {
+            canvas = c;
+        });
+
+        waitsFor(function() {
+            return defined(canvas);
+        });
+
+        runs(function() {
             expect(getPinColor(canvas)).toEqual(Color.RED);
             expect(getIconColor(canvas)).toEqual(Color.WHITE);
         });
@@ -52,8 +62,17 @@ defineSuite([
     it('fromMakiIconId creates icon of correct color with symbol', function() {
         var builder = new PinBuilder();
 
+        var canvas;
         //Solid square icon
-        return when(builder.fromMakiIconId('square', Color.YELLOW, 128), function(canvas) {
+        when(builder.fromMakiIconId('square', Color.YELLOW, 128), function(c) {
+            canvas = c;
+        });
+
+        waitsFor(function() {
+            return defined(canvas);
+        });
+
+        runs(function() {
             expect(getPinColor(canvas)).toEqual(Color.YELLOW);
             expect(getIconColor(canvas)).toEqual(Color.WHITE);
         });

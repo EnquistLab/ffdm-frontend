@@ -24,6 +24,7 @@ defineSuite([
         Entity,
         EntityCollection) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var time = JulianDate.now();
 
@@ -86,14 +87,14 @@ defineSuite([
         expect(listener).toHaveBeenCalledWith(property);
         expect(property.isConstant).toEqual(true);
         expect(property.getValue(time)).toEqual(6);
-        listener.calls.reset();
+        listener.reset();
 
         //Assignment of new leaf property to existing target is reflected in reference.
         testObject.billboard.scale = new ConstantProperty(7);
         expect(listener).toHaveBeenCalledWith(property);
         expect(property.isConstant).toEqual(true);
         expect(property.getValue(time)).toEqual(7);
-        listener.calls.reset();
+        listener.reset();
 
         //Assignment of non-leaf property to existing target is reflected in reference.
         testObject.billboard = new BillboardGraphics();
@@ -101,7 +102,7 @@ defineSuite([
         expect(listener).toHaveBeenCalledWith(property);
         expect(property.isConstant).toEqual(true);
         expect(property.getValue(time)).toEqual(8);
-        listener.calls.reset();
+        listener.reset();
 
         //Removing an object should cause the reference to be severed but maintain last value
         collection.remove(testObject);
@@ -109,7 +110,7 @@ defineSuite([
         expect(listener).not.toHaveBeenCalledWith();
         expect(property.isConstant).toEqual(true);
         expect(property.getValue(time)).toEqual(8);
-        listener.calls.reset();
+        listener.reset();
 
         //adding a new object should re-wire the reference.
         var testObject2 = new Entity({

@@ -12,6 +12,7 @@ defineSuite([
         QuadtreeTile,
         QuadtreeTileLoadState) {
     "use strict";
+    /*global describe,it,expect,beforeEach*/
 
     function Tile(num, loadedState, upsampledState) {
         this._num = num;

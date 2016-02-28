@@ -10,6 +10,7 @@ defineSuite([
         NearFarScalar,
         ConstantProperty) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('creates expected instance from raw assignment and construction', function() {
         var options = {

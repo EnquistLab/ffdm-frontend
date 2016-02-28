@@ -18,6 +18,7 @@ defineSuite([
         HorizontalOrigin,
         VerticalOrigin) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('creates expected instance from raw assignment and construction', function() {
         var options = {
@@ -35,8 +36,7 @@ defineSuite([
             height : 12,
             scaleByDistance : new NearFarScalar(13, 14, 15, 16),
             translucencyByDistance : new NearFarScalar(17, 18, 19, 20),
-            pixelOffsetScaleByDistance : new NearFarScalar(21, 22, 23, 24),
-            sizeInMeters : true
+            pixelOffsetScaleByDistance : new NearFarScalar(21, 22, 23, 24)
         };
 
         var billboard = new BillboardGraphics(options);
@@ -54,7 +54,6 @@ defineSuite([
         expect(billboard.scaleByDistance).toBeInstanceOf(ConstantProperty);
         expect(billboard.translucencyByDistance).toBeInstanceOf(ConstantProperty);
         expect(billboard.pixelOffsetScaleByDistance).toBeInstanceOf(ConstantProperty);
-        expect(billboard.sizeInMeters).toBeInstanceOf(ConstantProperty);
 
         expect(billboard.image.getValue()).toEqual(options.image);
         expect(billboard.rotation.getValue()).toEqual(options.rotation);
@@ -70,7 +69,6 @@ defineSuite([
         expect(billboard.scaleByDistance.getValue()).toEqual(options.scaleByDistance);
         expect(billboard.translucencyByDistance.getValue()).toEqual(options.translucencyByDistance);
         expect(billboard.pixelOffsetScaleByDistance.getValue()).toEqual(options.pixelOffsetScaleByDistance);
-        expect(billboard.sizeInMeters.getValue()).toEqual(options.sizeInMeters);
     });
 
     it('merge assigns unassigned properties', function() {
@@ -91,7 +89,6 @@ defineSuite([
         source.scaleByDistance = new ConstantProperty(new NearFarScalar());
         source.translucencyByDistance = new ConstantProperty(new NearFarScalar());
         source.pixelOffsetScaleByDistance = new ConstantProperty(new NearFarScalar(1.0, 0.0, 3.0e9, 0.0));
-        source.sizeInMeters = new ConstantProperty(true);
 
         var target = new BillboardGraphics();
         target.merge(source);
@@ -112,7 +109,6 @@ defineSuite([
         expect(target.scaleByDistance).toBe(source.scaleByDistance);
         expect(target.translucencyByDistance).toBe(source.translucencyByDistance);
         expect(target.pixelOffsetScaleByDistance).toBe(source.pixelOffsetScaleByDistance);
-        expect(target.sizeInMeters).toBe(source.sizeInMeters);
     });
 
     it('merge does not assign assigned properties', function() {
@@ -133,7 +129,6 @@ defineSuite([
         source.scaleByDistance = new ConstantProperty(new NearFarScalar());
         source.translucencyByDistance = new ConstantProperty(new NearFarScalar());
         source.pixelOffsetScaleByDistance = new ConstantProperty(new NearFarScalar(1.0, 0.0, 3.0e9, 0.0));
-        source.sizeInMeters = new ConstantProperty(true);
 
         var image = new ConstantProperty('');
         var imageSubRegion = new ConstantProperty();
@@ -151,7 +146,6 @@ defineSuite([
         var scaleByDistance = new ConstantProperty(new NearFarScalar());
         var translucencyByDistance = new ConstantProperty(new NearFarScalar());
         var pixelOffsetScaleByDistance = new ConstantProperty(new NearFarScalar());
-        var sizeInMeters = new ConstantProperty(true);
 
         var target = new BillboardGraphics();
         target.image = image;
@@ -170,7 +164,6 @@ defineSuite([
         target.scaleByDistance = scaleByDistance;
         target.translucencyByDistance = translucencyByDistance;
         target.pixelOffsetScaleByDistance = pixelOffsetScaleByDistance;
-        target.sizeInMeters = sizeInMeters;
 
         target.merge(source);
 
@@ -190,7 +183,6 @@ defineSuite([
         expect(target.scaleByDistance).toBe(scaleByDistance);
         expect(target.translucencyByDistance).toBe(translucencyByDistance);
         expect(target.pixelOffsetScaleByDistance).toBe(pixelOffsetScaleByDistance);
-        expect(target.sizeInMeters).toBe(sizeInMeters);
     });
 
     it('clone works', function() {
@@ -211,7 +203,6 @@ defineSuite([
         source.scaleByDistance = new ConstantProperty(new NearFarScalar());
         source.translucencyByDistance = new ConstantProperty(new NearFarScalar());
         source.pixelOffsetScaleByDistance = new ConstantProperty(new NearFarScalar(1.0, 0.0, 3.0e9, 0.0));
-        source.sizeInMeters = new ConstantProperty(true);
 
         var result = source.clone();
         expect(result.image).toBe(source.image);
@@ -230,7 +221,6 @@ defineSuite([
         expect(result.scaleByDistance).toBe(source.scaleByDistance);
         expect(result.translucencyByDistance).toBe(source.translucencyByDistance);
         expect(result.pixelOffsetScaleByDistance).toBe(source.pixelOffsetScaleByDistance);
-        expect(result.sizeInMeters).toBe(source.sizeInMeters);
     });
 
     it('merge throws if source undefined', function() {

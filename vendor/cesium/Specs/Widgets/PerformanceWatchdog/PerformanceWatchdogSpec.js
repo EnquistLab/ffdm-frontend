@@ -6,6 +6,7 @@ defineSuite([
         PerformanceWatchdog,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     beforeAll(function() {
@@ -72,4 +73,4 @@ defineSuite([
             });
         }).toThrowDeveloperError();
     });
-}, 'WebGL');
+});

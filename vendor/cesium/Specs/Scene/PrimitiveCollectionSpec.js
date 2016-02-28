@@ -2,62 +2,68 @@
 defineSuite([
         'Scene/PrimitiveCollection',
         'Core/Cartesian3',
-        'Core/ColorGeometryInstanceAttribute',
         'Core/defaultValue',
-        'Core/defined',
-        'Core/GeometryInstance',
+        'Core/Ellipsoid',
         'Core/Math',
-        'Core/Matrix4',
-        'Core/Rectangle',
-        'Core/RectangleGeometry',
+        'Renderer/ClearCommand',
         'Scene/HorizontalOrigin',
         'Scene/LabelCollection',
-        'Scene/PerInstanceColorAppearance',
-        'Scene/Primitive',
+        'Scene/Polygon',
         'Scene/VerticalOrigin',
-        'Specs/createScene'
+        'Specs/createCamera',
+        'Specs/createContext',
+        'Specs/createFrameState',
+        'Specs/pick',
+        'Specs/render'
     ], function(
         PrimitiveCollection,
         Cartesian3,
-        ColorGeometryInstanceAttribute,
         defaultValue,
-        defined,
-        GeometryInstance,
+        Ellipsoid,
         CesiumMath,
-        Matrix4,
-        Rectangle,
-        RectangleGeometry,
+        ClearCommand,
         HorizontalOrigin,
         LabelCollection,
-        PerInstanceColorAppearance,
-        Primitive,
+        Polygon,
         VerticalOrigin,
-        createScene) {
+        createCamera,
+        createContext,
+        createFrameState,
+        pick,
+        render) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
-    var scene;
     var context;
-    var rectangle;
     var primitives;
+    var frameState;
+    var us;
+    var camera;
 
     beforeAll(function() {
-        scene = createScene();
-        scene.primitives.destroyPrimitives = false;
-        context = scene.context;
-        rectangle = Rectangle.fromDegrees(-80.0, 20.0, -70.0, 30.0);
+        context = createContext();
+        frameState = createFrameState();
     });
 
     afterAll(function() {
-        scene.destroyForSpecs();
+        context.destroyForSpecs();
     });
 
     beforeEach(function() {
         primitives = new PrimitiveCollection();
+
+        camera = createCamera();
+        camera.position = new Cartesian3(1.02, 0.0, 0.0);
+        camera.up = Cartesian3.clone(Cartesian3.UNIT_Z);
+        camera.direction = Cartesian3.negate(Cartesian3.normalize(camera.position, new Cartesian3()), new Cartesian3());
+
+        us = context.uniformState;
+        us.update(context, createFrameState(camera));
     });
 
     afterEach(function() {
-        scene.primitives.removeAll();
-        primitives = primitives && !primitives.isDestroyed() && primitives.destroy();
+        primitives = primitives && primitives.destroy();
+        us = undefined;
     });
 
     function createLabels(position) {
@@ -76,35 +82,20 @@ defineSuite([
         return labels;
     }
 
-    function createRectangle() {
-        return new Primitive({
-            geometryInstances : new GeometryInstance({
-                geometry : new RectangleGeometry({
-                    rectangle : rectangle
-                }),
-                attributes : {
-                    color : new ColorGeometryInstanceAttribute(1.0, 1.0, 0.0, 0.5)
-                }
-            }),
-            appearance : new PerInstanceColorAppearance(),
-            releaseGeometryInstances : true,
-            asynchronous : false
-        });
-    }
-
-    function verifyPrimitivesRender(primitives, color) {
-        scene.primitives.removeAll();
-        scene.camera.setView({ destination : rectangle });
-
-        expect(scene.renderForSpecs()).toEqual([0, 0, 0, 255]);
-
-        scene.primitives.add(primitives);
-
-        if (defined(color)) {
-            expect(scene.renderForSpecs()).toEqual(color);
-        } else {
-            expect(scene.renderForSpecs()).not.toEqual([0, 0, 0, 255]);
-        }
+    function createPolygon(degree, ellipsoid) {
+        degree = defaultValue(degree, 50.0);
+        ellipsoid = defaultValue(ellipsoid, Ellipsoid.UNIT_SPHERE);
+        var polygon = new Polygon();
+        polygon.ellipsoid = ellipsoid;
+        polygon.granularity = CesiumMath.toRadians(20.0);
+        polygon.positions = Cartesian3.fromDegreesArray([
+            -degree, -degree,
+            degree, -degree,
+            degree,  degree,
+            -degree,  degree
+        ], ellipsoid);
+        polygon.asynchronous = false;
+        return polygon;
     }
 
     it('constructs with options', function() {
@@ -251,8 +242,6 @@ defineSuite([
 
         expect(otherPrimitives.contains(p)).toEqual(false);
         expect(otherPrimitives.remove(p)).toEqual(false);
-
-        otherPrimitives.destroy();
     });
 
     it('gets default destroyPrimitives', function() {
@@ -260,46 +249,67 @@ defineSuite([
     });
 
     it('renders a primitive added with add()', function() {
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
         primitives.add(createLabels());
-        verifyPrimitivesRender(primitives);
+        render(context, frameState, primitives);
+        expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
     });
 
     it('does not render', function() {
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
         primitives.show = false;
         primitives.add(createLabels());
-        verifyPrimitivesRender(primitives, [0, 0, 0, 255]);
+        render(context, frameState, primitives);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
     });
 
     it('renders a primitive in more than one composite', function() {
+        var otherPrimitives = new PrimitiveCollection();
+
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
         var p = createLabels();
         primitives.add(p);
-
-        var otherPrimitives = new PrimitiveCollection();
-        otherPrimitives.destroyPrimitives = false;
         otherPrimitives.add(p);
+        otherPrimitives.destroyPrimitives = false;
 
-        verifyPrimitivesRender(primitives);
-        verifyPrimitivesRender(otherPrimitives);
+        render(context, frameState, primitives);
+        expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
+
+        // Render using other composite
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
+        render(context, frameState, otherPrimitives);
+        expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
 
         otherPrimitives.destroy();
     });
 
     it('renders child composites', function() {
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
         var children = new PrimitiveCollection();
         children.add(createLabels());
         primitives.add(children);
 
-        verifyPrimitivesRender(primitives);
+        render(context, frameState, primitives);
+        expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
     });
 
     it('picks a primitive added with add()', function() {
         var labels = createLabels();
         var l = labels.get(0);
+
         primitives.add(labels);
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(l);
     });
 
@@ -309,9 +319,7 @@ defineSuite([
         primitives.show = false;
         primitives.add(labels);
 
-        verifyPrimitivesRender(primitives, [0, 0, 0, 255]);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject).not.toBeDefined();
     });
 
@@ -323,157 +331,137 @@ defineSuite([
         children.add(labels);
         primitives.add(children);
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(l);
     });
 
     it('picks a primitive added with render order (0)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with render order (1)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p1);
         primitives.add(p0);
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with raise (0)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.raise(p1); // Already on top
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with raise (1)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.raise(p0); // Moved to top
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with raiseToTop (0)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.raiseToTop(p1); // Already on top
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with raiseToTop (1)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.raiseToTop(p0); // Moved to top
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with lower (0)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.lower(p1); // Moved back
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with lower (1)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.lower(p0); // Already on bottom
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with lowerToBottom (0)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.lowerToBottom(p1); // Moved back
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with lowerToBottom (1)', function() {
-        var p0 = createRectangle();
-        var p1 = createRectangle();
+        var p0 = createPolygon();
+        var p1 = createPolygon();
 
         primitives.add(p0);
         primitives.add(p1);
         primitives.lowerToBottom(p0); // Already on bottom
 
-        verifyPrimitivesRender(primitives);
-
-        var pickedObject = scene.pickForSpecs();
+        var pickedObject = pick(context, frameState, primitives, 0, 0);
         expect(pickedObject.primitive).toEqual(p1);
     });
+
 
     it('is not destroyed when first constructed', function() {
         expect(primitives.isDestroyed()).toEqual(false);
     });
 
     it('is destroyed after calling destroy()', function() {
-        primitives.destroy();
-        expect(primitives.isDestroyed()).toEqual(true);
+        var p = new PrimitiveCollection();
+        p.destroy();
+        expect(p.isDestroyed()).toEqual(true);
     });
 
     it('destroys its primitives', function() {
@@ -482,7 +470,7 @@ defineSuite([
         primitives.add(labels);
         expect(labels.isDestroyed()).toEqual(false);
 
-        primitives.destroy();
+        primitives = primitives.destroy();
         expect(labels.isDestroyed()).toEqual(true);
     });
 
@@ -496,7 +484,7 @@ defineSuite([
         expect(children.isDestroyed()).toEqual(false);
         expect(labels.isDestroyed()).toEqual(false);
 
-        primitives.destroy();
+        primitives = primitives.destroy();
         expect(children.isDestroyed()).toEqual(true);
         expect(labels.isDestroyed()).toEqual(true);
     });
@@ -521,6 +509,7 @@ defineSuite([
         expect(labels.isDestroyed()).toEqual(true);
     });
 
+
     it('does not destroy its primitives', function() {
         var labels = new LabelCollection(context);
 
@@ -528,7 +517,7 @@ defineSuite([
         primitives.add(labels);
         expect(labels.isDestroyed()).toEqual(false);
 
-        primitives.destroy();
+        primitives = primitives.destroy();
         expect(labels.isDestroyed()).toEqual(false);
 
         labels.destroy();

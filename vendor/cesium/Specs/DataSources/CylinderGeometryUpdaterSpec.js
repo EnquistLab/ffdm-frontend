@@ -46,6 +46,7 @@ defineSuite([
         createDynamicProperty,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     var time;
@@ -356,26 +357,6 @@ defineSuite([
         expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(outline.getValue(time2)));
     });
 
-    it('createFillGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicCylinder();
-        entity.show = false;
-        entity.cylinder.fill = true;
-        var updater = new CylinderGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
-    it('createOutlineGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicCylinder();
-        entity.show = false;
-        entity.cylinder.outline = true;
-        var updater = new CylinderGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
     it('dynamic updater sets properties', function() {
         var cylinder = new CylinderGraphics();
         cylinder.show = createDynamicProperty(true);
@@ -402,11 +383,6 @@ defineSuite([
         expect(dynamicUpdater._options.id).toBe(entity);
         expect(dynamicUpdater._options.topRadius).toEqual(cylinder.topRadius.getValue());
         expect(dynamicUpdater._options.bottomRadius).toEqual(cylinder.bottomRadius.getValue());
-
-        entity.show = false;
-        dynamicUpdater.update(JulianDate.now());
-        expect(primitives.length).toBe(0);
-        entity.show = true;
 
         cylinder.show.setValue(false);
         dynamicUpdater.update(JulianDate.now());
@@ -438,27 +414,27 @@ defineSuite([
         updater.geometryChanged.addEventListener(listener);
 
         entity.position = new ConstantPositionProperty(Cartesian3.UNIT_Z);
-        expect(listener.calls.count()).toEqual(1);
+        expect(listener.callCount).toEqual(1);
 
         entity.cylinder.topRadius = new ConstantProperty(82);
-        expect(listener.calls.count()).toEqual(2);
+        expect(listener.callCount).toEqual(2);
 
         entity.availability = new TimeIntervalCollection();
-        expect(listener.calls.count()).toEqual(3);
+        expect(listener.callCount).toEqual(3);
 
         entity.cylinder.topRadius = undefined;
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
 
         //Since there's no valid geometry, changing another property should not raise the event.
         entity.cylinder.bottomRadius = undefined;
 
         //Modifying an unrelated property should not have any effect.
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
 
         entity.cylinder.topRadius = new SampledProperty(Number);
         entity.cylinder.bottomRadius = new SampledProperty(Number);
-        expect(listener.calls.count()).toEqual(5);
+        expect(listener.callCount).toEqual(5);
     });
 
     it('createFillGeometryInstance throws if object is not filled', function() {
@@ -540,4 +516,4 @@ defineSuite([
     createDynamicGeometryBoundingSphereSpecs(CylinderGeometryUpdater, entity, entity.cylinder, function() {
         return scene;
     });
-}, 'WebGL');
+});

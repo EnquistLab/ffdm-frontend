@@ -48,6 +48,7 @@ defineSuite([
         createDynamicProperty,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     beforeAll(function(){
@@ -271,22 +272,12 @@ defineSuite([
         expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(show.getValue(time2)));
     });
 
-    it('createFillGeometryInstance obeys Entity.show is false.', function() {
-        var entity = createBasicPolyline();
-        entity.show = false;
-        entity.polyline.fill = true;
-        var updater = new PolylineGeometryUpdater(entity, scene);
-        var instance = updater.createFillGeometryInstance(new JulianDate());
-        var attributes = instance.attributes;
-        expect(attributes.show.value).toEqual(ShowGeometryInstanceAttribute.toValue(false));
-    });
-
     it('dynamic updater sets properties', function() {
         var entity = new Entity();
         var polyline = new PolylineGraphics();
         entity.polyline = polyline;
 
-        var time = new JulianDate(0, 0);
+        var time1 = new JulianDate(0, 0);
         var time2 = new JulianDate(10, 0);
         var time3 = new JulianDate(20, 0);
 
@@ -343,23 +334,23 @@ defineSuite([
             0, 0,
             1, 0
         ]));
-        expect(listener.calls.count()).toEqual(1);
+        expect(listener.callCount).toEqual(1);
 
         entity.polyline.width = new ConstantProperty(82);
-        expect(listener.calls.count()).toEqual(2);
+        expect(listener.callCount).toEqual(2);
 
         entity.availability = new TimeIntervalCollection();
-        expect(listener.calls.count()).toEqual(3);
+        expect(listener.callCount).toEqual(3);
 
         entity.polyline.positions = undefined;
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
 
         //Since there's no valid geometry, changing another property should not raise the event.
         entity.polyline.width = undefined;
 
         //Modifying an unrelated property should not have any effect.
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
-        expect(listener.calls.count()).toEqual(4);
+        expect(listener.callCount).toEqual(4);
     });
 
     it('createFillGeometryInstance throws if object is not shown', function() {
@@ -494,4 +485,4 @@ defineSuite([
         updater.destroy();
         scene.primitives.removeAll();
     });
-}, 'WebGL');
+});

@@ -1,49 +1,32 @@
 /*global defineSuite*/
 defineSuite([
-        'Renderer/CubeMap',
         'Core/Cartesian3',
         'Core/Color',
-        'Core/loadImage',
         'Core/PixelFormat',
         'Core/PrimitiveType',
-        'Renderer/Buffer',
         'Renderer/BufferUsage',
         'Renderer/ClearCommand',
-        'Renderer/ContextLimits',
         'Renderer/DrawCommand',
         'Renderer/PixelDatatype',
-        'Renderer/Sampler',
-        'Renderer/ShaderProgram',
-        'Renderer/Texture',
         'Renderer/TextureMagnificationFilter',
         'Renderer/TextureMinificationFilter',
         'Renderer/TextureWrap',
-        'Renderer/VertexArray',
-        'Specs/createContext',
-        'ThirdParty/when'
-    ], function(
-        CubeMap,
+        'Specs/createContext'
+    ], 'Renderer/CubeMap', function(
         Cartesian3,
         Color,
-        loadImage,
         PixelFormat,
         PrimitiveType,
-        Buffer,
         BufferUsage,
         ClearCommand,
-        ContextLimits,
         DrawCommand,
         PixelDatatype,
-        Sampler,
-        ShaderProgram,
-        Texture,
         TextureMagnificationFilter,
         TextureMinificationFilter,
         TextureWrap,
-        VertexArray,
-        createContext,
-        when) {
+        createContext) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
     var sp;
@@ -57,22 +40,6 @@ defineSuite([
 
     beforeAll(function() {
         context = createContext();
-
-        var promises = [];
-        promises.push(loadImage('./Data/Images/Green.png').then(function(result) {
-            greenImage = result;
-        }));
-        promises.push(loadImage('./Data/Images/Blue.png').then(function(result) {
-            blueImage = result;
-        }));
-        promises.push(loadImage('./Data/Images/BlueAlpha.png').then(function(result) {
-            blueAlphaImage = result;
-        }));
-        promises.push(loadImage('./Data/Images/BlueOverRed.png').then(function(result) {
-            blueOverRedImage = result;
-        }));
-
-        return when.all(promises);
     });
 
     afterAll(function() {
@@ -85,9 +52,26 @@ defineSuite([
         cubeMap = cubeMap && cubeMap.destroy();
     });
 
+    it('create images', function() {
+        greenImage = new Image();
+        greenImage.src = './Data/Images/Green.png';
+
+        blueImage = new Image();
+        blueImage.src = './Data/Images/Blue.png';
+
+        blueAlphaImage = new Image();
+        blueAlphaImage.src = './Data/Images/BlueAlpha.png';
+
+        blueOverRedImage = new Image();
+        blueOverRedImage.src = './Data/Images/BlueOverRed.png';
+
+        waitsFor(function() {
+            return greenImage.complete && blueImage.complete && blueAlphaImage.complete && blueOverRedImage.complete;
+        }, 'Load .png file(s) for texture test.', 3000);
+    });
+
     it('gets the pixel format', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -102,8 +86,7 @@ defineSuite([
     });
 
     it('gets the pixel datatype', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -117,14 +100,36 @@ defineSuite([
         expect(cubeMap.negativeZ.pixelDatatype).toEqual(PixelDatatype.UNSIGNED_BYTE);
     });
 
-    it('sets a sampler', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('default sampler returns undefined', function() {
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
 
-        var sampler = new Sampler({
+        var sampler = cubeMap.sampler;
+        expect(sampler).toBeUndefined();
+    });
+
+    it('default sampler returns undefined, data type is FLOAT ', function() {
+        if (context.floatingPointTexture) {
+            cubeMap = context.createCubeMap({
+                width : 16,
+                height : 16,
+                pixelDatatype : PixelDatatype.FLOAT
+            });
+
+            var sampler = cubeMap.sampler;
+            expect(sampler).toBeUndefined();
+        }
+    });
+
+    it('sets a sampler', function() {
+        cubeMap = context.createCubeMap({
+            width : 16,
+            height : 16
+        });
+
+        var sampler = context.createSampler({
             wrapS : TextureWrap.REPEAT,
             wrapT : TextureWrap.MIRRORED_REPEAT,
             minificationFilter : TextureMinificationFilter.NEAREST,
@@ -140,8 +145,7 @@ defineSuite([
     });
 
     it('gets width and height', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -151,8 +155,7 @@ defineSuite([
     });
 
     it('gets flip Y', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16,
             flipY : true
@@ -162,8 +165,7 @@ defineSuite([
     });
 
     it('draws with a cube map', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             source : {
                 positiveX : blueImage,
                 negativeX : greenImage,
@@ -179,29 +181,15 @@ defineSuite([
             'uniform samplerCube u_texture;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_texture.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -241,8 +229,7 @@ defineSuite([
     });
 
     it('draws with a cube map with premultiplied alpha', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             source : {
                 positiveX : blueAlphaImage,
                 negativeX : blueAlphaImage,
@@ -260,29 +247,15 @@ defineSuite([
             'uniform samplerCube u_texture;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_texture.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -327,29 +300,15 @@ defineSuite([
             'uniform samplerCube u_texture;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_texture.value = context.defaultCubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -383,8 +342,7 @@ defineSuite([
     });
 
     it('creates a cube map with typed arrays', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             source : {
                 positiveX : {
                     width : 1,
@@ -424,29 +382,15 @@ defineSuite([
             'uniform samplerCube u_texture;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_texture.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -488,8 +432,7 @@ defineSuite([
             var positiveZColor = new Color(0.0, 0.0, 1.0, 1.0);
             var negativeZColor = new Color(1.0, 1.0, 0.0, 0.0);
 
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 source : {
                     positiveX : {
                         width : 1,
@@ -530,29 +473,15 @@ defineSuite([
                 'uniform samplerCube u_texture;' +
                 'uniform mediump vec3 u_direction;' +
                 'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-
-            sp = ShaderProgram.fromCache({
-                context : context,
-                vertexShaderSource : vs,
-                fragmentShaderSource : fs,
-                attributeLocations : {
-                    position : 0
-                }
+            sp = context.createShaderProgram(vs, fs, {
+                position : 0
             });
-
             sp.allUniforms.u_texture.value = cubeMap;
 
-            va = new VertexArray({
-                context : context,
-                attributes : [{
-                    vertexBuffer : Buffer.createVertexBuffer({
-                        context : context,
-                        typedArray : new Float32Array([0, 0, 0, 1]),
-                        usage : BufferUsage.STATIC_DRAW
-                    }),
-                    componentsPerAttribute : 4
-                }]
-            });
+            va = context.createVertexArray([{
+                vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+                componentsPerAttribute : 4
+            }]);
 
             var command = new DrawCommand({
                 primitiveType : PrimitiveType.POINTS,
@@ -587,8 +516,7 @@ defineSuite([
     });
 
     it('creates a cube map with typed arrays and images', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             source : {
                 positiveX : blueImage,
                 negativeX : greenImage,
@@ -620,29 +548,15 @@ defineSuite([
             'uniform samplerCube u_texture;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_texture.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -676,8 +590,7 @@ defineSuite([
     });
 
     it('copies to a cube map', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -693,29 +606,15 @@ defineSuite([
             'uniform samplerCube u_cubeMap;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_cubeMap, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_cubeMap.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -755,8 +654,7 @@ defineSuite([
     });
 
     it('copies from a typed array', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -796,29 +694,15 @@ defineSuite([
             'uniform samplerCube u_cubeMap;' +
             'uniform mediump vec3 u_direction;' +
             'void main() { gl_FragColor = textureCube(u_cubeMap, normalize(u_direction)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_cubeMap.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -852,8 +736,7 @@ defineSuite([
     });
 
     it('copies from the framebuffer', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -863,29 +746,15 @@ defineSuite([
         var fs =
             'uniform samplerCube u_cubeMap;' +
             'void main() { gl_FragColor = textureCube(u_cubeMap, vec3(1.0, 0.0, 0.0)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_cubeMap.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -915,8 +784,7 @@ defineSuite([
     });
 
     it('draws with a cube map and a texture', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             source : {
                 positiveX : greenImage,
                 negativeX : greenImage,
@@ -927,8 +795,7 @@ defineSuite([
             }
         });
 
-        var texture = new Texture({
-            context : context,
+        var texture = context.createTexture2D({
             source : blueImage
         });
 
@@ -937,30 +804,16 @@ defineSuite([
             'uniform samplerCube u_cubeMap;' +
             'uniform sampler2D u_texture;' +
             'void main() { gl_FragColor = textureCube(u_cubeMap, vec3(1.0, 0.0, 0.0)) + texture2D(u_texture, vec2(0.0)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_cubeMap.value = cubeMap;
         sp.allUniforms.u_texture.value = texture;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -974,8 +827,7 @@ defineSuite([
     });
 
     it('generates mipmaps', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             source : {
                 positiveX : blueImage,
                 negativeX : greenImage,
@@ -987,7 +839,7 @@ defineSuite([
         });
 
         cubeMap.generateMipmap();
-        cubeMap.sampler = new Sampler({
+        cubeMap.sampler = context.createSampler({
             minificationFilter : TextureMinificationFilter.NEAREST_MIPMAP_LINEAR
         });
 
@@ -995,29 +847,15 @@ defineSuite([
         var fs =
             'uniform samplerCube u_cubeMap;' +
             'void main() { gl_FragColor = textureCube(u_cubeMap, vec3(1.0, 0.0, 0.0)); }';
-
-        sp = ShaderProgram.fromCache({
-            context : context,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        sp = context.createShaderProgram(vs, fs, {
+            position : 0
         });
-
         sp.allUniforms.u_cubeMap.value = cubeMap;
 
-        va = new VertexArray({
-            context : context,
-            attributes : [{
-                vertexBuffer : Buffer.createVertexBuffer({
-                    context : context,
-                    typedArray : new Float32Array([0, 0, 0, 1]),
-                    usage : BufferUsage.STATIC_DRAW
-                }),
-                componentsPerAttribute : 4
-            }]
-        });
+        va = context.createVertexArray([{
+            vertexBuffer : context.createVertexBuffer(new Float32Array([0, 0, 0, 1]), BufferUsage.STATIC_DRAW),
+            componentsPerAttribute : 4
+        }]);
 
         var command = new DrawCommand({
             primitiveType : PrimitiveType.POINTS,
@@ -1029,8 +867,7 @@ defineSuite([
     });
 
     it('destroys', function() {
-        var c = new CubeMap({
-            context : context,
+        var c = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1042,22 +879,19 @@ defineSuite([
 
     it('fails to create (options)', function() {
         expect(function() {
-            cubeMap = new CubeMap();
+            cubeMap = context.createCubeMap();
         }).toThrowDeveloperError();
     });
 
     it('fails to create (source)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context
-            });
+            cubeMap = context.createCubeMap({});
         }).toThrowDeveloperError();
     });
 
     it('fails to create (width, no height)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 16
             });
         }).toThrowDeveloperError();
@@ -1065,8 +899,7 @@ defineSuite([
 
     it('fails to create (width != height)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 16,
                 height : 32
             });
@@ -1075,8 +908,7 @@ defineSuite([
 
     it('fails to create (small width)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 0,
                 height : 0
             });
@@ -1085,18 +917,16 @@ defineSuite([
 
     it('fails to create (large width)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
-                width : ContextLimits.maximumCubeMapSize + 1,
-                height : ContextLimits.maximumCubeMapSize + 1
+            cubeMap = context.createCubeMap({
+                width : context.maximumCubeMapSize + 1,
+                height : context.maximumCubeMapSize + 1
             });
         }).toThrowDeveloperError();
     });
 
     it('fails to create (PixelFormat)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 16,
                 height : 16,
                 pixelFormat : 'invalid PixelFormat'
@@ -1106,8 +936,7 @@ defineSuite([
 
     it('throws during creation if pixel format is depth or depth-stencil', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 16,
                 height : 16,
                 pixelFormat : PixelFormat.DEPTH_COMPONENT
@@ -1118,8 +947,7 @@ defineSuite([
     it('throws during creation if pixelDatatype is FLOAT, and OES_texture_float is not supported', function() {
         if (!context.floatingPointTexture) {
             expect(function() {
-                cubeMap = new CubeMap({
-                    context : context,
+                cubeMap = context.createCubeMap({
                     width : 16,
                     height : 16,
                     pixelDatatype : PixelDatatype.FLOAT
@@ -1130,8 +958,7 @@ defineSuite([
 
     it('fails to create (pixelDatatype)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 16,
                 height : 16,
                 pixelFormat : PixelFormat.RGBA,
@@ -1142,8 +969,7 @@ defineSuite([
 
     it('fails to create (source)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 source : {}
             });
         }).toThrowDeveloperError();
@@ -1151,8 +977,7 @@ defineSuite([
 
     it('fails to create (source width and height)', function() {
         expect(function() {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 source : {
                     positiveX : greenImage, // 1x1
                     negativeX : greenImage, // 1x1
@@ -1166,8 +991,7 @@ defineSuite([
     });
 
     it('fails to copy from an image (source)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1178,8 +1002,7 @@ defineSuite([
     });
 
     it('fails to copy from an image (xOffset)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1191,8 +1014,7 @@ defineSuite([
     });
 
     it('fails to copy from an image (yOffset)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1204,8 +1026,7 @@ defineSuite([
     });
 
     it('fails to copy from an image (width)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1218,8 +1039,7 @@ defineSuite([
     });
 
     it('fails to copy from an image (height)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1231,10 +1051,9 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('fails to copy from the framebuffer (invalid data type)', function() {
+    it('fails to copy from the frame buffer (invalid data type)', function() {
         if (context.floatingPointTexture) {
-            cubeMap = new CubeMap({
-                context : context,
+            cubeMap = context.createCubeMap({
                 width : 1,
                 height : 1,
                 pixelDatatype : PixelDatatype.FLOAT
@@ -1246,9 +1065,8 @@ defineSuite([
         }
     });
 
-    it('fails to copy from the framebuffer (xOffset)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('fails to copy from the frame buffer (xOffset)', function() {
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -1258,9 +1076,8 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('fails to copy from the framebuffer (yOffset)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('fails to copy from the frame buffer (yOffset)', function() {
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -1270,9 +1087,8 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('fails to copy from the framebuffer (framebufferXOffset)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('fails to copy from the frame buffer (framebufferXOffset)', function() {
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -1282,9 +1098,8 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('fails to copy from the framebuffer (framebufferYOffset)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('fails to copy from the frame buffer (framebufferYOffset)', function() {
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -1294,9 +1109,8 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('fails to copy from the framebuffer (width)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('fails to copy from the frame buffer (width)', function() {
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -1306,9 +1120,8 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
-    it('fails to copy from the framebuffer (height)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+    it('fails to copy from the frame buffer (height)', function() {
+        cubeMap = context.createCubeMap({
             width : 1,
             height : 1
         });
@@ -1319,8 +1132,7 @@ defineSuite([
     });
 
     it('fails to generate mipmaps (width)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 3,
             height : 3
         });
@@ -1331,8 +1143,7 @@ defineSuite([
     });
 
     it('fails to generate mipmaps (hint)', function() {
-        cubeMap = new CubeMap({
-            context : context,
+        cubeMap = context.createCubeMap({
             width : 16,
             height : 16
         });
@@ -1342,9 +1153,40 @@ defineSuite([
         }).toThrowDeveloperError();
     });
 
+    it('throws when data type is FLOAT and minification filter is not NEAREST or NEAREST_MIPMAP_NEAREST', function() {
+        if (context.floatingPointTexture) {
+            cubeMap = context.createCubeMap({
+                width : 16,
+                height : 16,
+                pixelDatatype : PixelDatatype.FLOAT
+            });
+
+            expect(function() {
+                cubeMap.sampler = context.createSampler({
+                    minificationFilter : TextureMinificationFilter.LINEAR
+                });
+            }).toThrowDeveloperError();
+        }
+    });
+
+    it('throws when data type is FLOAT and magnification filter is not NEAREST', function() {
+        if (context.floatingPointTexture) {
+            cubeMap = context.createCubeMap({
+                width : 16,
+                height : 16,
+                pixelDatatype : PixelDatatype.FLOAT
+            });
+
+            expect(function() {
+                cubeMap.sampler = context.createSampler({
+                    magnificationFilter : TextureMagnificationFilter.LINEAR
+                });
+            }).toThrowDeveloperError();
+        }
+    });
+
     it('fails to destroy', function() {
-        var c = new CubeMap({
-            context : context,
+        var c = context.createCubeMap({
             width : 16,
             height : 16
         });

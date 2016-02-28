@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">  <!-- Use Chrome Frame in IE -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
     <meta name="description" content="Layer imagery from multiple sources, including WMS servers, Bing Maps, ArcGIS Online, OpenStreetMaps, and more, and adjust the alpha of each independently.">
     <meta name="cesium-sandcastle-labels" content="Showcases">
     <title>Cesium Demo</title>
     <script type="text/javascript" src="../Sandcastle-header.js"></script>
-    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.20/require.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.9/require.js"></script>
     <script type="text/javascript">
     require.config({
         baseUrl : '../../../Source',
@@ -124,22 +124,22 @@ function setupLayers() {
             }));
     addBaseLayerOption(
             'OpenStreetMaps',
-            Cesium.createOpenStreetMapImageryProvider());
+            new Cesium.OpenStreetMapImageryProvider());
     addBaseLayerOption(
             'MapQuest OpenStreetMaps',
-            Cesium.createOpenStreetMapImageryProvider({
+            new Cesium.OpenStreetMapImageryProvider({
                 url: '//otile1-s.mqcdn.com/tiles/1.0.0/osm/'
             }));
     addBaseLayerOption(
             'Stamen Maps',
-            Cesium.createOpenStreetMapImageryProvider({
+            new Cesium.OpenStreetMapImageryProvider({
                 url: '//stamen-tiles.a.ssl.fastly.net/watercolor/',
                 fileExtension: 'jpg',
                 credit: 'Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA.'
             }));
     addBaseLayerOption(
             'Natural Earth II (local)',
-            Cesium.createTileMapServiceImageryProvider({
+            new Cesium.TileMapServiceImageryProvider({
                 url : require.toUrl('Assets/Textures/NaturalEarthII')
             }));
     addBaseLayerOption(
@@ -181,7 +181,7 @@ function setupLayers() {
             }));
     addAdditionalLayerOption(
             'TileMapService Image',
-            Cesium.createTileMapServiceImageryProvider({
+            new Cesium.TileMapServiceImageryProvider({
                 url : '../images/cesium_maptiler/Cesium_Logo_Color'
             }),
             0.2);

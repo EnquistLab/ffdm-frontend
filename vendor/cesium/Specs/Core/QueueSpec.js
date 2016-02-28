@@ -4,6 +4,7 @@ defineSuite([
     ], function(
         Queue) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var queue;
     beforeEach(function() {
@@ -44,18 +45,6 @@ defineSuite([
         }
 
         expect(queue._array.length).toBeLessThan(1000);
-    });
-
-    it('can peek at the item at the head of the queue', function() {
-        queue.enqueue(1);
-        queue.enqueue(2);
-
-        expect(queue.peek()).toEqual(1);
-        expect(queue.length).toEqual(2);
-    });
-
-    it('returns undefined when peeking while empty', function() {
-        expect(queue.peek()).toBeUndefined();
     });
 
     it('can check if it contains an item', function() {

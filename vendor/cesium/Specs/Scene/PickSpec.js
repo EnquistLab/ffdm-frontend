@@ -10,10 +10,11 @@ defineSuite([
         'Core/Rectangle',
         'Core/RectangleGeometry',
         'Core/ShowGeometryInstanceAttribute',
-        'Scene/EllipsoidSurfaceAppearance',
         'Scene/OrthographicFrustum',
+        'Scene/EllipsoidSurfaceAppearance',
         'Scene/PerspectiveFrustum',
         'Scene/Primitive',
+        'Scene/RectanglePrimitive',
         'Scene/SceneMode',
         'Specs/createScene'
     ], 'Scene/Pick', function(
@@ -27,13 +28,15 @@ defineSuite([
         Rectangle,
         RectangleGeometry,
         ShowGeometryInstanceAttribute,
-        EllipsoidSurfaceAppearance,
         OrthographicFrustum,
+        EllipsoidSurfaceAppearance,
         PerspectiveFrustum,
         Primitive,
+        RectanglePrimitive,
         SceneMode,
         createScene) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var scene;
     var primitives;
@@ -73,19 +76,11 @@ defineSuite([
     function createRectangle() {
         var ellipsoid = Ellipsoid.UNIT_SPHERE;
 
-        var e = new Primitive({
-            geometryInstances: new GeometryInstance({
-                geometry: new RectangleGeometry({
-                    rectangle: Rectangle.fromDegrees(-50.0, -50.0, 50.0, 50.0),
-                    vertexFormat: EllipsoidSurfaceAppearance.VERTEX_FORMAT,
-                    ellipsoid: ellipsoid,
-                    granularity: CesiumMath.toRadians(20.0)
-                })
-            }),
-            appearance: new EllipsoidSurfaceAppearance({
-                aboveGround: false
-            }),
-            asynchronous: false
+        var e = new RectanglePrimitive({
+            ellipsoid : ellipsoid,
+            granularity : CesiumMath.toRadians(20.0),
+            rectangle : Rectangle.fromDegrees(-50.0, -50.0, 50.0, 50.0),
+            asynchronous : false
         });
 
         primitives.add(e);
@@ -93,13 +88,13 @@ defineSuite([
         return e;
     }
 
-    it('does not pick undefined window positions', function() {
+    it('pick (undefined window position)', function() {
         expect(function() {
             scene.pick(undefined);
         }).toThrowDeveloperError();
     });
 
-    it('picks a primitive', function() {
+    it('is picked', function() {
         if (FeatureDetection.isInternetExplorer()) {
             // Workaround IE 11.0.9.  This test fails when all tests are ran without a breakpoint here.
             return;
@@ -110,7 +105,7 @@ defineSuite([
         expect(pickedObject.primitive).toEqual(rectangle);
     });
 
-    it('does not pick primitives when show is false', function() {
+    it('is not picked (show === false)', function() {
         var rectangle = createRectangle();
         rectangle.show = false;
 
@@ -118,15 +113,15 @@ defineSuite([
         expect(pickedObject).not.toBeDefined();
     });
 
-    it('does not pick primitives when alpha is zero', function() {
+    it('is not picked (alpha === 0.0)', function() {
         var rectangle = createRectangle();
-        rectangle.appearance.material.uniforms.color.alpha = 0.0;
+        rectangle.material.uniforms.color.alpha = 0.0;
 
         var pickedObject = scene.pick(new Cartesian2(0, 0));
         expect(pickedObject).not.toBeDefined();
     });
 
-    it('picks the top primitive', function() {
+    it('is picked (top primitive only)', function() {
         createRectangle();
         var rectangle2 = createRectangle();
         rectangle2.height = 0.01;
@@ -135,13 +130,13 @@ defineSuite([
         expect(pickedObject.primitive).toEqual(rectangle2);
     });
 
-    it('does not drill pick undefined window positions', function() {
+    it('drill pick (undefined window position)', function() {
         expect(function() {
             scene.pick(undefined);
         }).toThrowDeveloperError();
     });
 
-    it('drill picks multiple objects', function() {
+    it('drill pick (all picked)', function() {
         var rectangle1 = createRectangle();
         var rectangle2 = createRectangle();
         rectangle2.height = 0.01;
@@ -152,7 +147,7 @@ defineSuite([
         expect(pickedObjects[1].primitive).toEqual(rectangle1);
     });
 
-    it('does not drill pick when show is false', function() {
+    it('drill pick (show === false)', function() {
         var rectangle1 = createRectangle();
         var rectangle2 = createRectangle();
         rectangle2.height = 0.01;
@@ -163,18 +158,18 @@ defineSuite([
         expect(pickedObjects[0].primitive).toEqual(rectangle1);
     });
 
-    it('does not drill pick when alpha is zero', function() {
+    it('drill pick (alpha === 0.0)', function() {
         var rectangle1 = createRectangle();
         var rectangle2 = createRectangle();
         rectangle2.height = 0.01;
-        rectangle2.appearance.material.uniforms.color.alpha = 0.0;
+        rectangle2.material.uniforms.color.alpha = 0.0;
 
         var pickedObjects = scene.drillPick(new Cartesian2(0, 0));
         expect(pickedObjects.length).toEqual(1);
         expect(pickedObjects[0].primitive).toEqual(rectangle1);
     });
 
-    it('can drill pick batched Primitives with show attribute', function() {
+    it('drill pick batched Primitives with show attribute', function() {
         var geometry = new RectangleGeometry({
             rectangle : Rectangle.fromDegrees(-50.0, -50.0, 50.0, 50.0),
             ellipsoid : Ellipsoid.UNIT_SPHERE,
@@ -228,40 +223,7 @@ defineSuite([
         expect(pickedObjects[1].id).toEqual(1);
     });
 
-    it('can drill pick without ID', function() {
-        var geometry = new RectangleGeometry({
-            rectangle : Rectangle.fromDegrees(-50.0, -50.0, 50.0, 50.0),
-            ellipsoid : Ellipsoid.UNIT_SPHERE,
-            granularity : CesiumMath.toRadians(20.0),
-            vertexFormat : EllipsoidSurfaceAppearance.VERTEX_FORMAT
-        });
-
-        var instance1 = new GeometryInstance({
-            geometry : geometry,
-            attributes : {
-                show : new ShowGeometryInstanceAttribute(true)
-            }
-        });
-
-        var instance2 = new GeometryInstance({
-            geometry : geometry,
-            attributes : {
-                show : new ShowGeometryInstanceAttribute(true)
-            }
-        });
-
-        var primitive = primitives.add(new Primitive({
-            geometryInstances : [instance1, instance2],
-            asynchronous : false,
-            appearance : new EllipsoidSurfaceAppearance()
-        }));
-
-        var pickedObjects = scene.drillPick(new Cartesian2(0, 0));
-        expect(pickedObjects.length).toEqual(1);
-        expect(pickedObjects[0].primitive).toEqual(primitive);
-    });
-
-    it('can drill pick batched Primitives without show attribute', function() {
+    it('drill pick batched Primitives without show attribute', function() {
         var geometry = new RectangleGeometry({
             rectangle : Rectangle.fromDegrees(-50.0, -50.0, 50.0, 50.0),
             ellipsoid : Ellipsoid.UNIT_SPHERE,
@@ -304,22 +266,7 @@ defineSuite([
         expect(pickedObjects[0].id).toEqual(3);
     });
 
-    it('stops drill picking when the limit is reached.', function() {
-        var rectangle2 = createRectangle();
-        var rectangle3 = createRectangle();
-        var rectangle4 = createRectangle();
-        rectangle2.height = 0.01;
-        rectangle3.height = 0.02;
-        rectangle4.height = 0.03;
-
-        var pickedObjects = scene.drillPick(new Cartesian2(0, 0), 3);
-        expect(pickedObjects.length).toEqual(3);
-        expect(pickedObjects[0].primitive).toEqual(rectangle4);
-        expect(pickedObjects[1].primitive).toEqual(rectangle3);
-        expect(pickedObjects[2].primitive).toEqual(rectangle2);
-    });
-
-    it('picks in 2D', function() {
+    it('pick in 2D', function() {
         var ellipsoid = scene.mapProjection.ellipsoid;
         var maxRadii = ellipsoid.maximumRadius;
 
@@ -347,7 +294,7 @@ defineSuite([
         expect(pickedObject.primitive).toEqual(rectangle);
     });
 
-    it('picks in 2D when rotated', function() {
+    it('pick in 2D when rotated', function() {
         var ellipsoid = scene.mapProjection.ellipsoid;
         var maxRadii = ellipsoid.maximumRadius;
 

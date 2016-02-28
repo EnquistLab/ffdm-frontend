@@ -6,12 +6,13 @@ defineSuite([
         ShowGeometryInstanceAttribute,
         ComponentDatatype) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('constructor', function() {
         var attribute = new ShowGeometryInstanceAttribute(false);
         expect(attribute.componentDatatype).toEqual(ComponentDatatype.UNSIGNED_BYTE);
         expect(attribute.componentsPerAttribute).toEqual(1);
-        expect(attribute.normalize).toEqual(false);
+        expect(attribute.normalize).toEqual(true);
 
         expect(attribute.value).toEqual(new Uint8Array([false]));
     });

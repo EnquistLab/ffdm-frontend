@@ -4,38 +4,33 @@ defineSuite([
         'Core/BoundingSphere',
         'Core/Cartesian3',
         'Core/JulianDate',
-        'Core/Matrix4',
-        'Core/Quaternion',
         'Core/Transforms',
         'DataSources/BoundingSphereState',
         'DataSources/ConstantPositionProperty',
         'DataSources/ConstantProperty',
         'DataSources/EntityCollection',
         'DataSources/ModelGraphics',
-        'DataSources/NodeTransformationProperty',
         'Scene/Globe',
         'Specs/createScene',
-        'Specs/pollToPromise'
+        'Specs/waitsForPromise'
     ], function(
         ModelVisualizer,
         BoundingSphere,
         Cartesian3,
         JulianDate,
-        Matrix4,
-        Quaternion,
         Transforms,
         BoundingSphereState,
         ConstantPositionProperty,
         ConstantProperty,
         EntityCollection,
         ModelGraphics,
-        NodeTransformationProperty,
         Globe,
         createScene,
-        pollToPromise) {
+        waitsForPromise) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
-    var boxUrl = './Data/Models/Box/CesiumBoxTest.gltf';
+    var duckUrl = 'Data/Models/duck/duck.gltf';
 
     var scene;
     var visualizer;
@@ -100,7 +95,7 @@ defineSuite([
 
         var testObject = entityCollection.getOrCreateEntity('test');
         var model = testObject.model = new ModelGraphics();
-        model.uri = new ConstantProperty(boxUrl);
+        model.uri = new ConstantProperty(duckUrl);
 
         visualizer.update(JulianDate.now());
         expect(scene.primitives.length).toEqual(0);
@@ -115,19 +110,7 @@ defineSuite([
         model.show = new ConstantProperty(true);
         model.scale = new ConstantProperty(2);
         model.minimumPixelSize = new ConstantProperty(24.0);
-        model.uri = new ConstantProperty(boxUrl);
-
-        var translation = new Cartesian3(1.0, 2.0, 3.0);
-        var rotation = new Quaternion(0.0, 0.707, 0.0, 0.707);
-        var scale = new Cartesian3(2.0, 2.0, 2.0);
-        var nodeTransforms = {
-            Mesh : new NodeTransformationProperty({
-                translation : new ConstantProperty(translation),
-                rotation : new ConstantProperty(rotation),
-                scale : new ConstantProperty(scale)
-            })
-        };
-        model.nodeTransformations = nodeTransforms;
+        model.uri = new ConstantProperty(duckUrl);
 
         var testObject = entityCollection.getOrCreateEntity('test');
         testObject.position = new ConstantPositionProperty(Cartesian3.fromDegrees(1, 2, 3));
@@ -143,20 +126,6 @@ defineSuite([
         expect(primitive.scale).toEqual(2);
         expect(primitive.minimumPixelSize).toEqual(24.0);
         expect(primitive.modelMatrix).toEqual(Transforms.eastNorthUpToFixedFrame(Cartesian3.fromDegrees(1, 2, 3), scene.globe.ellipsoid));
-
-        // wait till the model is loaded before we can check node transformations
-        return pollToPromise(function() {
-            scene.render();
-            return primitive.ready;
-        }).then(function() {
-            visualizer.update(time);
-
-            var node = primitive.getNode('Mesh');
-            expect(node).toBeDefined();
-
-            var transformationMatrix = Matrix4.fromTranslationQuaternionRotationScale(translation, rotation, scale);
-            expect(node.matrix).toEqual(transformationMatrix);
-        });
     });
 
     it('removing removes primitives.', function() {
@@ -164,7 +133,7 @@ defineSuite([
         visualizer = new ModelVisualizer(scene, entityCollection);
 
         var model = new ModelGraphics();
-        model.uri = new ConstantProperty(boxUrl);
+        model.uri = new ConstantProperty(duckUrl);
 
         var time = JulianDate.now();
         var testObject = entityCollection.getOrCreateEntity('test');
@@ -189,7 +158,7 @@ defineSuite([
         testObject.model = model;
 
         testObject.position = new ConstantProperty(new Cartesian3(5678, 1234, 1101112));
-        model.uri = new ConstantProperty(boxUrl);
+        model.uri = new ConstantProperty(duckUrl);
         visualizer.update(time);
 
         var modelPrimitive = scene.primitives.get(0);
@@ -206,7 +175,7 @@ defineSuite([
         testObject.model = model;
 
         testObject.position = new ConstantProperty(new Cartesian3(5678, 1234, 1101112));
-        model.uri = new ConstantProperty(boxUrl);
+        model.uri = new ConstantProperty(duckUrl);
         visualizer.update(time);
 
         var modelPrimitive = scene.primitives.get(0);
@@ -214,11 +183,13 @@ defineSuite([
         var state = visualizer.getBoundingSphere(testObject, result);
         expect(state).toBe(BoundingSphereState.PENDING);
 
-        return pollToPromise(function() {
+        waitsFor(function() {
             scene.render();
             state = visualizer.getBoundingSphere(testObject, result);
             return state !== BoundingSphereState.PENDING;
-        }).then(function() {
+        });
+
+        runs(function() {
             expect(state).toBe(BoundingSphereState.DONE);
             var expected = BoundingSphere.transform(modelPrimitive.boundingSphere, modelPrimitive.modelMatrix, new BoundingSphere());
             expect(result).toEqual(expected);

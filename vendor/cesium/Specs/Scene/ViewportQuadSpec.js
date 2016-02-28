@@ -3,46 +3,53 @@ defineSuite([
         'Scene/ViewportQuad',
         'Core/BoundingRectangle',
         'Core/Color',
-        'Core/loadImage',
         'Renderer/ClearCommand',
-        'Renderer/Texture',
         'Scene/Material',
-        'Specs/createScene',
-        'Specs/pollToPromise'
+        'Specs/createCamera',
+        'Specs/createContext',
+        'Specs/createFrameState',
+        'Specs/render'
     ], function(
         ViewportQuad,
         BoundingRectangle,
         Color,
-        loadImage,
         ClearCommand,
-        Texture,
         Material,
-        createScene,
-        pollToPromise) {
+        createCamera,
+        createContext,
+        createFrameState,
+        render) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
-    var scene;
+    var context;
+    var frameState;
     var viewportQuad;
+    var us;
     var testImage;
 
     beforeAll(function() {
-        scene = createScene();
-        return loadImage('./Data/Images/Red16x16.png').then(function(image) {
-            testImage = image;
-        });
+        context = createContext();
+        frameState = createFrameState();
+        testImage = new Image();
+        testImage.src = './Data/Images/Red16x16.png';
     });
 
     afterAll(function() {
-        scene.destroyForSpecs();
+        context.destroyForSpecs();
     });
 
     beforeEach(function() {
         viewportQuad = new ViewportQuad();
         viewportQuad.rectangle = new BoundingRectangle(0, 0, 2, 2);
+
+        us = context.uniformState;
+        us.update(context, createFrameState(createCamera()));
     });
 
     afterEach(function() {
-        scene.primitives.removeAll();
+        viewportQuad = viewportQuad && viewportQuad.destroy();
+        us = undefined;
     });
 
     it('constructs with a rectangle', function() {
@@ -62,52 +69,58 @@ defineSuite([
             new Color(1.0, 1.0, 1.0, 1.0));
     });
 
-    it('throws when rendered without a rectangle', function() {
+    it('throws when rendered with without a rectangle', function() {
         viewportQuad.rectangle = undefined;
-        scene.primitives.add(viewportQuad);
 
         expect(function() {
-            scene.renderForSpecs();
+            render(context, frameState, viewportQuad);
         }).toThrowDeveloperError();
     });
 
-    it('throws when rendered without a material', function() {
+    it('throws when rendered with without a material', function() {
         viewportQuad.material = undefined;
-        scene.primitives.add(viewportQuad);
 
         expect(function() {
-            scene.renderForSpecs();
+            render(context, frameState, viewportQuad);
         }).toThrowDeveloperError();
     });
 
     it('does not render when show is false', function() {
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
         viewportQuad.show = false;
-        expect(scene.renderForSpecs()).toEqual([0, 0, 0, 255]);
-        scene.primitives.add(viewportQuad);
-        expect(scene.renderForSpecs()).toEqual([0, 0, 0, 255]);
+        render(context, frameState, viewportQuad);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
     });
 
     it('renders material', function() {
-        expect(scene.renderForSpecs()).toEqual([0, 0, 0, 255]);
-        scene.primitives.add(viewportQuad);
-        expect(scene.renderForSpecs()).not.toEqual([0, 0, 0, 255]);
+        ClearCommand.ALL.execute(context);
+        expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
+        render(context, frameState, viewportQuad);
+        expect(context.readPixels()).not.toEqual([0, 0, 0, 0]);
     });
 
     it('renders user created texture', function() {
-        var texture = new Texture({
-            context : scene.context,
-            source : testImage
-        });
 
-        viewportQuad.material = Material.fromType(Material.ImageType);
-        viewportQuad.material.uniforms.image = texture;
+        waitsFor( function() {
+            return testImage.complete;
+        }, 'Load test image for texture test.', 3000);
 
-        pollToPromise(function() {
-            return viewportQuad.material._loadedImages.length !== 0;
-        }).then(function() {
-            expect(scene.renderForSpecs()).toEqual([0, 0, 0, 255]);
-            scene.primitives.add(viewportQuad);
-            expect(scene.renderForSpecs()).toEqual([255, 0, 0, 255]);
+        runs( function() {
+            var texture = context.createTexture2D({
+                source : testImage
+            });
+
+            viewportQuad.material = Material.fromType(Material.ImageType);
+            viewportQuad.material.uniforms.image = texture;
+
+            ClearCommand.ALL.execute(context);
+            expect(context.readPixels()).toEqual([0, 0, 0, 0]);
+
+            render(context, frameState, viewportQuad);
+            expect(context.readPixels()).toEqual([255, 0, 0, 255]);
         });
     });
 

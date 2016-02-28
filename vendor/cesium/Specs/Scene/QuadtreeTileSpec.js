@@ -12,6 +12,8 @@ defineSuite([
         Rectangle,
         WebMercatorTilingScheme) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
+
 
     it('throws without a options', function() {
         expect(function() {

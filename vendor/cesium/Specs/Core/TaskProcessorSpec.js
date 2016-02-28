@@ -2,12 +2,13 @@
 defineSuite([
         'Core/TaskProcessor',
         'require',
-        'ThirdParty/when'
+        'Specs/waitsForPromise'
     ], function(
         TaskProcessor,
         require,
-        when) {
+        waitsForPromise) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var taskProcessor;
 
@@ -22,7 +23,7 @@ defineSuite([
         }
 
         TaskProcessor._loaderConfig = {
-            baseUrl : absolutize(require.toUrl('Source'))
+            baseUrl : absolutize(require.toUrl('Specs/../Source'))
         };
     });
 
@@ -44,8 +45,9 @@ defineSuite([
                 val : true
             }
         };
+        var promise = taskProcessor.scheduleTask(parameters);
 
-        return taskProcessor.scheduleTask(parameters).then(function(result) {
+        waitsForPromise(promise, function(result) {
             expect(result).toEqual(parameters);
         });
     });
@@ -67,7 +69,7 @@ defineSuite([
         var parameters = new ArrayBuffer(byteLength);
         expect(parameters.byteLength).toEqual(byteLength);
 
-        return when(TaskProcessor._canTransferArrayBuffer, function(canTransferArrayBuffer) {
+        waitsForPromise(TaskProcessor._canTransferArrayBuffer, function(canTransferArrayBuffer) {
             var promise = taskProcessor.scheduleTask(parameters, [parameters]);
 
             if (canTransferArrayBuffer) {
@@ -76,7 +78,7 @@ defineSuite([
             }
 
             // the worker should see the array with proper byte length
-            return promise.then(function(result) {
+            waitsForPromise(promise, function(result) {
                 expect(result).toEqual(byteLength);
             });
         });
@@ -90,8 +92,10 @@ defineSuite([
             byteLength : byteLength
         };
 
+        var promise = taskProcessor.scheduleTask(parameters);
+
         // the worker should see the array with proper byte length
-        return taskProcessor.scheduleTask(parameters).then(function(result) {
+        waitsForPromise(promise, function(result) {
             expect(result.byteLength).toEqual(100);
         });
     });
@@ -104,9 +108,9 @@ defineSuite([
             message : message
         };
 
-        return taskProcessor.scheduleTask(parameters).then(function() {
-            fail('should not be called');
-        }).otherwise(function(error) {
+        var promise = taskProcessor.scheduleTask(parameters);
+
+        waitsForPromise.toReject(promise, function(error) {
             expect(error.message).toEqual(message);
         });
     });
@@ -119,9 +123,9 @@ defineSuite([
             message : message
         };
 
-        return taskProcessor.scheduleTask(parameters).then(function() {
-            fail('should not be called');
-        }).otherwise(function(error) {
+        var promise = taskProcessor.scheduleTask(parameters);
+
+        waitsForPromise.toReject(promise, function(error) {
             expect(error).toContain('postMessage failed');
         });
     });

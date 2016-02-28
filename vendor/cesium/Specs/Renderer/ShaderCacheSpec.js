@@ -6,6 +6,7 @@ defineSuite([
         ShaderCache,
         createContext) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     var context;
 
@@ -22,25 +23,16 @@ defineSuite([
         var fs = 'void main() { gl_FragColor = vec4(1.0); }';
 
         var cache = new ShaderCache(context);
-
-        var sp = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp = cache.getShaderProgram(vs, fs, {
+            position : 0
         });
-
         expect(sp._cachedShader.count).toEqual(1);
-        expect(cache.numberOfShaders).toEqual(1);
 
         cache.releaseShaderProgram(sp);
         expect(sp.isDestroyed()).toEqual(false);
-        expect(cache.numberOfShaders).toEqual(1);
 
         cache.destroyReleasedShaderPrograms();
         expect(sp.isDestroyed()).toEqual(true);
-        expect(cache.numberOfShaders).toEqual(0);
 
         cache.destroy();
     });
@@ -50,12 +42,8 @@ defineSuite([
         var fs = 'void main() { gl_FragColor = vec4(1.0); }';
 
         var cache = new ShaderCache(context);
-        var sp = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp = cache.getShaderProgram(vs, fs, {
+            position : 0
         });
         expect(sp._cachedShader.count).toEqual(1);
 
@@ -73,31 +61,21 @@ defineSuite([
         var fs = 'void main() { gl_FragColor = vec4(1.0); }';
 
         var cache = new ShaderCache(context);
-        var sp = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp = cache.getShaderProgram(vs, fs, {
+            position : 0
         });
-        var sp2 = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp2 = cache.getShaderProgram(vs, fs, {
+            position : 0
         });
 
         expect(sp).toBe(sp2);
         expect(sp._cachedShader.count).toEqual(2);
-        expect(cache.numberOfShaders).toEqual(1);
 
         sp.destroy();
         sp2.destroy();
         cache.destroyReleasedShaderPrograms();
 
         expect(sp.isDestroyed()).toEqual(true);
-        expect(cache.numberOfShaders).toEqual(0);
 
         cache.destroy();
     });
@@ -111,19 +89,10 @@ defineSuite([
         };
 
         var cache = new ShaderCache(context);
-        var sp = cache.replaceShaderProgram({
-            shaderProgram : sp,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : attributeLocations
-        });
+        var sp;
 
-        var sp2 = cache.replaceShaderProgram({
-            shaderProgram : sp,
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs2,
-            attributeLocations : attributeLocations
-        });
+        sp = cache.replaceShaderProgram(sp, vs, fs, attributeLocations);
+        var sp2 = cache.replaceShaderProgram(sp, vs, fs2, attributeLocations);
 
         expect(sp._cachedShader.count).toEqual(0);
         expect(sp2._cachedShader.count).toEqual(1);
@@ -136,20 +105,12 @@ defineSuite([
         var fs = 'void main() { gl_FragColor = vec4(1.0); }';
 
         var cache = new ShaderCache(context);
-        var sp = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp = cache.getShaderProgram(vs, fs, {
+            position : 0
         });
         sp.destroy();
-        var sp2 = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp2 = cache.getShaderProgram(vs, fs, {
+            position : 0
         }); // still cache hit
 
         cache.destroyReleasedShaderPrograms(); // does not destroy
@@ -170,12 +131,8 @@ defineSuite([
         var fs = 'void main() { gl_FragColor = vec4(1.0); }';
 
         var cache = new ShaderCache(context);
-        var sp = cache.getShaderProgram({
-            vertexShaderSource : vs,
-            fragmentShaderSource : fs,
-            attributeLocations : {
-                position : 0
-            }
+        var sp = cache.getShaderProgram(vs, fs, {
+            position : 0
         });
 
         cache.destroy();

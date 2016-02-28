@@ -6,6 +6,7 @@ defineSuite([
         SvgPathBindingHandler,
         knockout) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('check binding with constants', function() {
         var div = document.createElement('div');

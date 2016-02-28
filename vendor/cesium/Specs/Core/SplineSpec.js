@@ -8,6 +8,7 @@ defineSuite([
         Cartesian3,
         HermiteSpline) {
     "use strict";
+    /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
     it('contructor throws', function() {
         expect(function() {
