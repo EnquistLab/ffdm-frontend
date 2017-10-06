@@ -14,29 +14,35 @@
   },
   "repository": "",
   "engines": {
-    "node": ">= 0.10.0"
+    "node": ">= 6.11.4"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "cesium": "1.38",
+    "d3": "4.11.0",
+    "loader.js": "4.6.0",
     "broccoli-asset-rev": "^2.0.0",
     "broccoli-ember-hbs-template-compiler": "1.7.0",
-    "broccoli-merge-trees": "0.2.1",
-    "broccoli-sass": "0.3.3",
-    "broccoli-static-compiler": "0.2.1",
-    "ember-cli": "0.2.3",
-    "ember-cli-6to5": "0.2.1",
-    "ember-cli-content-security-policy": "0.3.0",
-    "ember-cli-dependency-checker": "0.0.7",
-    "ember-cli-font-awesome": "0.0.9",
-    "ember-cli-ic-ajax": "0.1.1",
+    "broccoli-merge-trees": "2.0.0",
+    "broccoli-sass": "0.7.0",
+    "broccoli-static-compiler": "0.2.2",
+    "ember-cli": "2.15.1",
+    "ember-cli-6to5": "3.0.0",
+    "ember-cli-content-security-policy": "1.0.0",
+    "ember-cli-dependency-checker": "2.0.1",
+    "ember-font-awesome": "4.0.0-alpha.10",
+    "ember-cli-ic-ajax": "1.0.0",
     "ember-cli-inject-live-reload": "^1.3.0",
-    "ember-cli-qunit": "0.1.2",
-    "ember-cli-toggle": "0.5.0",
-    "ember-data": "1.0.0-beta.12",
-    "ember-export-application-global": "^1.0.0",
+    "ember-cli-qunit": "4.0.1",
+    "ember-cli-toggle": "3.0.0",
+    "ember-data": "^2.3.0",
+    "ember-export-application-global": "^2.0.0",
     "express": "^4.8.5",
-    "glob": "^4.0.5",
-    "install": "0.1.8"
+    "glob": "^7.1.2",
+    "install": "0.10.1"
+  },
+  "dependencies": {
+    "ember-cli": "^2.15.1"
   }
 }

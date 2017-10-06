@@ -4,7 +4,7 @@ module.exports = function(environment) {
   var ENV = {
     modulePrefix: 'ffdm-frontend',
     environment: environment,
-    baseURL: '',
+    rootURL: '',
     locationType: 'auto',
     contentSecurityPolicy: {
       'default-src': "'none'",
@@ -37,19 +37,19 @@ module.exports = function(environment) {
      ENV.APP.LOG_TRANSITIONS = true;
      ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
      ENV.APP.LOG_VIEW_LOOKUPS = true;
-     ENV.baseURL = 'ffdm';
+     ENV.rootURL = 'ffdm';
      ENV.APP.API_HOST = 'http://localhost:1337';
 
   }
 
   if (environment === 'dev_server') {
      ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; // default setting
-     ENV.baseURL = 'ffdm';
+     ENV.rootURL = 'ffdm';
   }
 
   if (environment === 'test') {
     // Testem prefers this...
-    ENV.baseURL = '/';
+    ENV.rootURL = '/';
     ENV.locationType = 'none';
 
     // keep test console output quieter

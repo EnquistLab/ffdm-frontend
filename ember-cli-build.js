@@ -1,38 +1,39 @@
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
+module.exports = function(defaults) {
+	var app = new EmberApp({
+	  fingerprint: {
+	    enabled: true,
+	    exclude: ['assets/images']
+	  }
+	  });
+	var pickFiles = require('broccoli-static-compiler');
+	//var mergeTrees = require('broccoli-merge-trees');
 
-var app = new EmberApp({
-  fingerprint: {
-    enabled: true,
-    exclude: ['assets/images']
-  }
-  });
-var pickFiles = require('broccoli-static-compiler');
-var mergeTrees = require('broccoli-merge-trees');
+	app.import('bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
 
-app.import('bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
+	app.import('bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js');
 
-app.import('bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js');
-
+};
 // Glyphicons -- 404 cannot GET
-var bootstrapFonts= pickFiles('bower_components/bootstrap-sass-official/assets/fonts/bootstrap', {
+/*var bootstrapFonts= pickFiles('bower_components/bootstrap-sass-official/assets/fonts/bootstrap', {
   srcDir: '/',
   files: [
   'glyphicons-halflings-regular.*',
     ],
   destDir: '/assets/fonts/bootstrap'
 });
-
+*/
 // Cesium
-var cesiumFiles = pickFiles('vendor/cesium/Build/Cesium', {
+/*var cesiumFiles = pickFiles('vendor/cesium/Build/Cesium', {
   srcDir: '/',
   files: ['*'],
   destDir: '/assets/cesium',
 });
-
+*/
 // Bootstrap .scss
-var bootstrap = pickFiles('bower_components/bootstrap-sass-official/assets/stylesheets/', {
+/*var bootstrap = pickFiles('bower_components/bootstrap-sass-official/assets/stylesheets/', {
   srcDir: '/',
   files: ['*'],
   destDir: '/assets/styles/bootstrap'
@@ -46,7 +47,7 @@ var fontAwesomeFonts = pickFiles('bower_components/fontawesome/fonts', {
   destDir: '/assets/fonts/fontawesome'
 });
 
-
+*/
 
 // Use `app.import` to add additional libraries to the generated
 // output files.
@@ -61,4 +62,4 @@ var fontAwesomeFonts = pickFiles('bower_components/fontawesome/fonts', {
 // please specify an object with the list of modules as keys
 // along with the exports of each module as its value.
 
-module.exports = mergeTrees([app.toTree(), cesiumFiles, bootstrapFonts, bootstrap,  fontAwesomeFonts]);
+//module.exports = mergeTrees([app.toTree(), cesiumFiles, bootstrapFonts, bootstrap,  fontAwesomeFonts]);
