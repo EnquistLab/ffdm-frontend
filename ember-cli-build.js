@@ -1,21 +1,26 @@
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
-module.exports = function(defaults) {
-	var app = new EmberApp({
+module.exports = function(defaults) 
+	{
+	var app = new EmberApp(defaults, {
 	  fingerprint: {
 	    enabled: true,
 	    exclude: ['assets/images']
 	  }
-	  });
+	});
 	var pickFiles = require('broccoli-static-compiler');
 	//var mergeTrees = require('broccoli-merge-trees');
 
 	app.import('bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
-
 	app.import('bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js');
 
+	return app.toTree();
 };
+
+
+
+
 // Glyphicons -- 404 cannot GET
 /*var bootstrapFonts= pickFiles('bower_components/bootstrap-sass-official/assets/fonts/bootstrap', {
   srcDir: '/',
