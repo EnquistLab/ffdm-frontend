@@ -1,7 +1,6 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
-//this is modal
   actions: {
     showModal: function(name, model) {
       this.render(name, {
@@ -17,5 +16,4 @@ export default Ember.Route.extend({
       });
     }
   }
-
 });

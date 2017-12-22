@@ -5,13 +5,13 @@ module.exports = function(environment) {
     modulePrefix: 'ffdm-frontend',
     environment: environment,
     rootURL: '',
-    locationType: 'auto',
+    locationType: 'hash',
     contentSecurityPolicy: {
       'default-src': "'none'",
-      'script-src': "'self' https://player.vimeo.com",
+      'script-src': "'self' https://player.vimeo.com www.google-analytics.com 'nonce-7fgda89vsd789'",
       'font-src': "'self' http://fonts.googleapis.com http://fonts.gstatic.com",
       'connect-src': "'self' http://localhost:1337 http://192.81.135.213:1337 http://scooby.iplantcollaborative.org:1337",
-      'img-src': "'self'",
+      'img-src': "'self' www.google-analytics.com",
       'style-src': "'self' http://fonts.googleapis.com",
       'frame-src': "'self' https://player.vimeo.com",
       'media-src': "'self' https://player.vimeo.com"
@@ -37,13 +37,20 @@ module.exports = function(environment) {
      ENV.APP.LOG_TRANSITIONS = true;
      ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
      ENV.APP.LOG_VIEW_LOOKUPS = true;
+     ENV.APP.LOG_ACTIVE_GENERATION=true;
      ENV.rootURL = 'ffdm';
      ENV.APP.API_HOST = 'http://localhost:1337';
 
   }
 
   if (environment === 'dev_server') {
-     ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; // default setting
+     ENV.APP.LOG_RESOLVER = true;
+     ENV.APP.LOG_ACTIVE_GENERATION = true;
+     ENV.APP.LOG_TRANSITIONS = true;
+     ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
+     ENV.APP.LOG_VIEW_LOOKUPS = true;
+     ENV.APP.LOG_ACTIVE_GENERATION=true;
+     ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; 
      ENV.rootURL = 'ffdm';
   }
 
@@ -63,5 +70,6 @@ module.exports = function(environment) {
       ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; // default setting
   }
 
+  
   return ENV;
 };

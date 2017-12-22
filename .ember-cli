@@ -4,6 +4,11 @@
     anonymous, but there are times when you might want to disable this behavior.
 
     Setting `disableAnalytics` to true will prevent any data from being sent.
+
+	This file merely sets default command-line arguments for convenience
   */
-  "disableAnalytics": false
+  "disableAnalytics": false,
+  "liveReload" : false,
+  "environment": "development",
+  "disableAnalytics": true
 }

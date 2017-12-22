@@ -6,12 +6,12 @@ var Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-//  this.route("welcome", { path: "/"});
+  this.route("index", { path: "/"});
   this.route("welcome");
   this.route("cesium", { path: "/"});
   this.route("cesium");
   this.route("plants");
-  this.resource("headlines", {path: '/headlines/:pageId'});
+  this.route("headlines", {path: '/headlines/:pageId'});
   this.route("carousel");
 });
 
