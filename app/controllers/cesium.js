@@ -1,8 +1,9 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
-  needs: ['plants', 'outerras'],
-  proxy: '/cgi-bin/proxy.cgi?url=http://scooby.iplantcollaborative.org/maxent/', //allows access to records without opening cors
+  //proxy: '/cgi-bin/proxy.cgi?url=http://scooby.iplantcollaborative.org/maxent/', //allows access to records without opening cors
+  proxy: 'http://localhost:1337/maxent/',
+  //proxy: 'http://scooby.iplantcollaborative.org/maxent/',
   species: '', // object holding the record from the plant table
   speciesName: 'Populus_tremuloides',
   year: '2011',
@@ -14,7 +15,7 @@ export default Ember.Controller.extend({
   isAnimated: 0, // boolean to signal animations
   years: [1,2,3,4,5,6,7,8], 
   activeDate: 1, // counter to track the current year/layer
-  outerrasController: Ember.computed.alias("controllers.outerras"),
+  outerras: Ember.inject.controller(),
   // --- testing scene2d change     
   // sceneMode: null,
 
@@ -89,7 +90,7 @@ export default Ember.Controller.extend({
   }.observes('selectedYear'), 
 
   createImageryProvider: function(url) {
-    var wms = new Cesium.TileMapServiceImageryProvider({
+    var wms = new Cesium.createTileMapServiceImageryProvider({
       url: url,
       maximumLevel: 7,
       gamma: 2,
@@ -134,7 +135,7 @@ export default Ember.Controller.extend({
     //});
    
     var speciesName = this.get('speciesName');
-    console.log(speciesName);
+    //console.log(speciesName);
     //Iterate through the years for each layer
     var readyCounter = 0;
     for (var i = 0; i < years.length; i++) {
@@ -172,36 +173,41 @@ export default Ember.Controller.extend({
   loadPoints: function() {
 
    //This function will load the data for outerra points.
-  
-    // Get the Model from the Outerra controller
-    var outerraModel = this.get('outerrasController').get('model');
+   //Getting the models from the outerras controller results in a PromiseArray
+    var outerraModel = this.get('outerras').get('model');
+   //We can enumerate it this way
+    outerraModel.then(function(model) 
+	{ outerraModel.forEach(function(item)
+		{ 
+			var lat = item.get('y');
+        		var lon = item.get('x');
+        		console.log('lat: '+lat+', lon: '+lon);
+        		var title = item.get('title');
+        		var description = item.get('url');
+        		//Add the marker to the map
+        		//self.addBillboard(lon, lat, title, description);
+		}); 
+	});
+    
     //Capture scope for timeout function
-    var self = this;
+    /*var self = this;
     setTimeout(function() {
-     
-      console.log('Second try');
-      //this gathers a reference to promise array that pulls the outerra records
       var content = outerraModel.get('content');
-      console.log(content);
-
+      //console.log(content);
+	
+	//For some reason there are three levels of 'content' to get to actual data
       if (content.isLoaded) {
-      //For some reason there are three levels of 'content' to get to actual data
       var points = content.get('content');
-      //Iterate through the returned records
+      //console.log(points);      
+
+	//Iterate through the returned records
       for (var x =0, len = points.length; x < len; x++) {
-        var lat = points[x].get('y');
-        var lon = points[x].get('x');
-        console.log('lat: '+lat+', lon: '+lon);
-        var title = points[x].get('title');
-        var description = points[x].get('url');
-        //Add the marker to the map
-        //self.addBillboard(lon, lat, title, description);
-      }
+	//console.log(points[x]);
+        
+      	}
       }
 
-    }, 1000);
-
-
+    }, 1000);*/
   },
  
   
@@ -423,8 +429,196 @@ export default Ember.Controller.extend({
     return terrainViewModels;
   },
 
+  initCB: function() {
+    var cesiumController = this;
+
+    //cesiumController.setupLayers();
+
+    var viewer = cesiumController.get('viewer');
+    var camera = viewer.camera;
+
+    cesiumController.loadPoints();   // enable cesium markers
+    /*camera.flyTo({ 
+        destination: Cesium.Cartesian3.fromDegrees(-111.100, 36.998, 5000000.0)
+    });*/
+    //console.log(camera.positionCartographic);
+  },
+
+  webglDetect: function(return_context) {
+      
+    if (!!window.WebGLRenderingContext) {
+      var canvas = document.createElement("canvas"),
+          names = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"],
+          context = false;
+
+      for (var i=0;i<4;i++) {
+        try {
+          context = canvas.getContext(names[i]);
+          if (context && typeof context.getParameter == "function") {
+            // WebGL is enabled
+            if (return_context) {
+              // return WebGL object if the the function's argument is present
+              return {name:names[i], gl:context};
+            }
+            // else return just true
+            return true;
+          }
+        } catch(e) {}
+      }
+
+      // WebGL is supported, but disabled
+      return false;
+    }
+    return false;
+  },
 
   actions: {
+    showCesium: function() {
+
+	/* modal on page load
+    $(function() {
+      $("#instructions").modal();
+    });*/
+
+    var webgl = this.webglDetect();
+    if (webgl) {
+      console.log("WebGL supported");
+    } else {
+      console.log("WebGL disabled or not supported");
+      $("#instructions").modal();
+    }
+    
+    window.CESIUM_BASE_URL = './assets/images';
+    var cesiumController = this; 
+    var proxy = cesiumController.get('proxy');
+    var rcp = cesiumController.get('rcp');
+    var species = cesiumController.get('species');
+       
+    var imageryLayers = cesiumController.get('imageryLayers');
+    //var imageryViewModels = cesiumController.get('imageryViewModels');
+    Cesium.BingMapsApi.defaultKey = 'AslSxct_WT1tBMfBnXE7Haqq3rosfoymosE84z64f5FO7RMjEez3fFWw5HU0WLJ-'; 
+
+    //Define the default imagery and terrain models
+    var imageryViewModels = cesiumController.createDefaultImageryViewModels(); 
+    var terrainViewModels = cesiumController.createDefaultTerrainViewModels();
+
+    //-- Set cesium view extend with rectangle
+    //-- Can be substituted with view.camera.setView() for allowing zoom level (elevation)
+    // testing testing -- uncomment the following three lines for default view
+    //var extent =  new Cesium.Rectangle.fromDegrees(-125.0, 20.0, -80.0, 55); 
+    //Cesium.Camera.DEFAULT_VIEW_RECTANGLE = extent;
+    //Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+
+    //var west = 122.0;
+    //var south = 33.0;
+    //var east = 130.0;
+    //var north = 47.0;
+    //var rectangle = Cesium.Rectangle.fromDegrees(west, south, east, north);
+    //Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+    //Cesium.Camera.DEFAULT_VIEW_RECTANGLE = rectangle;
+
+    var viewer = new Cesium.Viewer('cesiumContainer', {
+      
+      animation: false, 
+      baseLayerPicker: true,
+      fullscreenButton: true,
+      geocoder: true,
+      homeButton: true,
+      infoBox: true,
+      sceneModePicker: true,
+      selectionIndicator: true,
+      timeline: false,
+      navigationHelpButton: true,
+      navigationInstructionsInitiallyVisible: true,
+      imageryProviderViewModels: imageryViewModels,
+      terrainProviderViewModels: terrainViewModels
+    });
+    viewer.resize();
+    viewer.clock.onTick.addEventListener(function(clock) {
+    var camera = viewer.camera;
+    });
+    var scene = viewer.scene;
+    var globe = scene.globe;
+    cesiumController.set('viewer', viewer);
+    
+    //-- Set center of cesium view, with height
+    //-- Replaced DEFAULT_VEW_RECTANGLE with below- allows for elevation zoom
+    // testing testing -- default view
+
+    //viewer.camera.setView( {
+    //  position: Cesium.Cartesian3.fromDegrees(-110, 40, 2800000.0)
+    //});
+
+    //var center = Cesium.Cartesian3.fromDegrees(-110,40);
+    var heading = Cesium.Math.toRadians(0);
+    var pitch = Cesium.Math.toRadians(-75.0);
+    var range = 2800000.0;
+    
+    // testing testing -- this adds tilt to the globe,
+    //                    outerra markers glitch when at a certain tilt
+    //viewer.camera.lookAt(center, new Cesium.HeadingPitchRange(heading, pitch, range));
+    
+    var center = Cesium.Cartesian3.fromDegrees(-110.0, 40.0);
+    var cameraPos = new Cesium.Cartesian3(0.0, -1790.0, 2800000.0);
+    viewer.camera.lookAt(center, cameraPos);
+    viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+
+    // testing testing -- scene2d change
+    //cesiumController.set('sceneMode', scene.mode);
+
+    viewer.homeButton.viewModel.tooltip = 'Reset zoom';
+    console.log(viewer.homeButton.viewModel.command);
+    //set the imagery layers for controller
+    imageryLayers = globe.imageryLayers; 
+    cesiumController.set('imageryLayers', imageryLayers);
+
+
+	viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo){
+	//Zoom to custom extent
+	var west = Cesium.Math.toRadians(-21.0);
+	var south = Cesium.Math.toRadians(36.0);
+	var east = Cesium.Math.toRadians(35.0);
+	var north = Cesium.Math.toRadians(68.0);
+
+	    var center = Cesium.Cartesian3.fromDegrees(-110.0, 40.0);
+	    var cameraPos = new Cesium.Cartesian3(0.0, -1790.0, 2800000.0);
+	    var loc = viewer.camera.lookAt(center, cameraPos);
+	    viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+
+		var extent = new Cesium.Extent(west, south, east, north);
+
+		var flight = Cesium.CameraFlightPath.createAnimationExtent(scene, {
+		    destination : loc 
+		});
+		scene.getAnimations().add(flight);
+
+
+	//Tell the home button not to do anything.
+	commandInfo.cancel = true;
+	});
+	
+
+    /*
+    Create an event handler for onclick events
+    var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+    handler.setInputAction(function(cursor) {
+      console.log(cursor.position);
+      var pickedObject = scene.pick(cursor.position);
+      console.log(pickedObject);
+      if (Cesium.defined(pickedObject)) {
+        var id = Cesium.defaultValue(pickedObject.id, pickedObject.primitive.id);
+        if (id instanceof Cesium.Entity) {
+          console.log(id.name);
+        }
+      } else {
+        console.log("No entity here");
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+ */
+     
+    //this.initCB();
+  },
+
     reloadLayers: function() {
       this.removeLayers();
       //this.changeSpecies();
@@ -456,6 +650,8 @@ export default Ember.Controller.extend({
         this.set('isAnimated', 1);
       }
     },
+
+    //Will need changes for enumeration as in loadPoints()
     toggleOuterraMarkers: function() {
 
       var viewer = this.get('viewer');
@@ -464,12 +660,12 @@ export default Ember.Controller.extend({
       var logLength =  'markerArray.length = ' + markerArrayLength;
 
       if ( markerArrayLength == 0 ) {
-        var outerraModel = this.get('outerrasController').get('model');
+        var outerraModel = this.get('outerras').get('model');
         var self = this;
         setTimeout(function() {
           //console.log('Second try');
           var content = outerraModel.get('content');
-          //console.log(content);
+          console.log("Content listing: " +  content);
           if (content.isLoaded) {
             var points = content.get('content');
             for (var x =0, len = points.length; x < len; x++) {

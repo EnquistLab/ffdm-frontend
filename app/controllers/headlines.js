@@ -1,12 +1,12 @@
 import Ember from 'ember';
 
-export default Ember.ArrayController.extend({
+export default Ember.Controller.extend({
   sortProperties: ['orderId'],
   sortAscending: true,
   previousScroll: $(window).scrollTop(),
-  classArray: [],
+  classArray: Ember.computed('model', function()
+			{return this.get('model').sortBy('orderId').mapBy('classId');}),
   classCounter: 0,
-
 
   comparePos: function(id, pos) {
     console.log('comparePos called');
@@ -50,9 +50,10 @@ export default Ember.ArrayController.extend({
     return arr;
   },
 
+	//Doing things I don't understand with jQuery
   highlightFirstDot: function() {
-    
     var activeDot = this.get('classArray')[0];
+    console.log(activeDot);
     var activeDotId = '#'+ activeDot + "-scroll";
     console.log("Active dot id is: ");
     console.log($(activeDotId));
@@ -61,15 +62,13 @@ export default Ember.ArrayController.extend({
     if ($(activeDotId).hasClass('right-nav-active') === false) {
     console.log('Adding right-nav-active class...');
     $(activeDotId).addClass('right-nav-active');
+	console.log($(activeDotId));
     } 
      
     console.log(activeDotId + " has active class: "+$(activeDotId).hasClass('right-nav-active'));
   },
   modelDidChange: function() {
-    console.info(this.get('model').type);
-    console.log('Setting classArray');
-    console.log(this.get('model').sortBy('orderId'));
-    this.set('classArray', this.get('model').sortBy('orderId').mapBy('classId'));
+    console.log(this.get('model'));
     console.log(this.get('classArray'));
     this.set('classCounter', 0);
     var _this = this;
@@ -82,6 +81,7 @@ export default Ember.ArrayController.extend({
       _this.highlightFirstDot();
      }, 0);
   }.observes('model.isLoaded'),
+
   bindScrolling: function(opts) {
     var onScroll, _this =this;
     //opts = opts || {debounce: 100};
@@ -125,6 +125,13 @@ export default Ember.ArrayController.extend({
 
   
   actions: {
+
+  showHeadline: function() {
+    this.set('classCounter', this.get('classCounter') + 1);
+    if (this.get('classCounter') === this.get('classArray').length) {
+      this.bindScrolling();
+    }
+  },
 
   toggleDetail: function(detail) {
     console.log("openDetail called.");

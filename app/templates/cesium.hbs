@@ -1,17 +1,17 @@
 <!-- begin cesium -->
 
 <div id="cesium-main" data-video="http://player.vimeo.com/external/97766233.sd.mp4?s=5df211c4da525ce8da33fddd981d52df">
+
   <div id="cesium-submain" class="full-height map-overlap">
 
     <div class="row cesium-top-margin"></div>
 
     <div id="cesium-left-col" class="col-md-3 full-height">
-<!--      <div class="form-horizontal span8">-->
       <div id="select-group">
         <div id="plant-desc" class="map-step">
           Step 1: Choose a species
           <button class="cesium-modal-button" {{action 'showModal' 'maptip1-modal'}}>?</button>
-          {{!--
+  {{!--
           <div id="maptips" class="tip1">&nbsp;
             <span class="tips">
               <h3>How do I get a map?</h3><br>
@@ -24,17 +24,17 @@
               </ol>
             </span>
           </div>
-          --}}
+   --}}
         </div> 
         <p><hr class="maps-hr"></p>
         <div class="form-group form-group-1">
           <div class="controls">
-            {{view "select"
+            {{box-select
               id="plantSelect"
-              contentBinding="controllers.plants.arrangedContent"
+              content=controllers.plants.arrangedContent
               optionValuePath="content.sci_name"
               optionLabelPath="content.name"
-              selectionBinding="controller.species"
+              selection=controller.species
               prompt="Aspen, Quaking"
             }}
           </div>
@@ -53,13 +53,17 @@
             <p><hr class="maps-hr"></p>
             <div class="btn-row">
               <div id="rcp26-label" {{action 'setBestRcp' '0' }} class="col-sm-6 btn-temp active-label">
-                {{!--{{view Forest.RadioButton id="best-case" name="rcp-radio" selectionBinding="selectedRcp" value="rcp26"}}--}}
+                {{!--{{view Forest.RadioButton 
+		id="best-case" 
+		name="rcp-radio" 
+		selection=selectedRcp 
+		value="rcp26"}}--}}
                 <label class="rcp-label" for="best-case">
                   <div class="best-case-label"></div>
                   Best Case
                 </label>
               </div>
-              <div id="rcp85-label" {{action setWorstRcp}} class="col-sm-6 btn-temp">
+              <div id="rcp85-label" {{action 'setWorstRcp'}} class="col-sm-6 btn-temp">
                 {{!--{view Forest.RadioButton id="worst-case" class="rcp-radio" selectedBinding="selectedRcp" value="rcp85"}}--}}
                 <label class="rcp-label" for="worst-case">
                   <div class="worst-case-label"></div>
@@ -101,7 +105,7 @@
             <hr class="maps-hr">
           </p>
           <div id="year-field-container" class="col-sm-12">
-            {{view Ember.TextField valueBinding="controller.year" class="year-field"}}
+            {{input value=controller.year class="year-field"}}
           </div>
           <div id="year-controls-container" class="col-sm-12">
             <div class="minus-container col-sm-3">
@@ -136,7 +140,7 @@
           <div class="row col-sm-12 year-tablet-container">
 
           <div id="year-field-container" class="year-tablet-left">
-            {{view Ember.TextField valueBinding="controller.year" class="year-field"}}
+            {{input value=controller.year class="year-field"}}
           </div>
 
          <!-- <div id="year-controls-container" class="col-sm-3">-->
@@ -228,23 +232,25 @@
 	  <div class="cesium-ua"></div>
 	</div>
       </div> <!-- cesium-mid-col-->
-
+	
       <div id="cesium-right-col" class="col-md-8 full-height">
-        <div id="cesiumViewContainer" class="container full-hw">
-          <div id="cesiumContainer"> 
-            <div id="baseLayerPickerContainer" style="position:absolute;top:124px;right:376px;width:38px;height:38px;z-index:100;"></div>
+        <div id="cesiumViewContainer" class="container-fluid full-height">
+	  <div id="cesiumContainer">
+<!--This component has an empty tag to prevent undesired formatting, since we are hacking it to just call methods on a controller. The controller itself should be rewritten as the component here-->
+	    {{show-cesium showCesium='showCesium'}}
+	    <div id="baseLayerPickerContainer" style="position:absolute;top:124px;right:376px;width:38px;height:38px;z-index:100;"></div>
           </div><!-- cesiumContainer -->
         </div><!-- cesiumViewContainer -->
       </div><!--cesium-right-col -->
 
-    </div>
+    <!--/div> <!--cesium-top-margin -->
   </div> <!-- cesium--submain -->
 </div> <!-- cesium-main-->
 
 
 <!-- begin instructions modal -->
 
-<div class="modal fade" id="instructions" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<!--div class="modal fade" id="instructions" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-instr-dialog">
     <div class="modal-content modal-instructions">
       <div class="modal-header instr-modal-header">
@@ -260,8 +266,8 @@
       <button type="button" class="btn btn-primary" data-dismiss="modal">
         Close
       </button>
-    </div>
-  </div>
-</div>
-</div>
-<!-- / modal instructions -->
+    </div> <!--modal-footer- ->
+  	</div> <!--modal-body- ->
+</div> <!--modal-content modal-instructions- ->
+</div> <!--modal-dialog modal-instr-dialog- ->
+</div> <!-- modal fade -->

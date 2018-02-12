@@ -2,72 +2,50 @@
   <div class="container-fluid full">
     <!-- Brand and toggle get grouped for better mobile display -->
     
-
-<!-- left col -->
-    <div id="header-left">
-
+ <!-- left col -->
+ <div id="header-left">
       <div class="navbar-header navbar-ffdm-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+    	<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" 
+		data-target="#bs-example-navbar-collapse-1">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-      {{#link-to "cesium" tagName="a" class="navbar-brand"}}<div class="logo-globe"></div>{{/link-to}} 
-{{!--      {{#link-to "cesium" tagName="a" class="navbar-brand"}}<img src="assets/images/logo-globe-light.png"/>{{/link-to}} --}}
-    <!-- responsive -->
-{{!--        <div id="navbar-brand-collapsed">
-          <span>{{#link-to "cesium" class="navbar-brand"}}Forest Forecasts{{/link-to}}</span>
-        </div>
---}}
-              </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-      <div id="navContainer" class="" id="bs-example-navbar-collapse-1">
-        <ul class="nav navbar-nav">
-          {{#link-to "cesium" tagName="li" class="navbar-brand"}}Forest Forecasts{{/link-to}} 
-     
-     <div class="navbar-brand-sub">
-                <span>{{#link-to "headlines" "about" tagName="button" class="app-button"}}About{{/link-to}}</span><span>{{#link-to "headlines" "methods" tagName="button" class="app-button"}}Methods{{/link-to}}</span>
-      </div>
-
-        </ul>
-        
-        {{!--
-        <!-- breadcrumbs -->
-        <div id="breadcrumbs"> 
-        <ul id="main-menu" class="nav navbar-nav navbar-right">
-          {{#link-to "headlines" "climate" tagName="li"}}Forest<br>Change{{/link-to}}
-          {{#link-to "headlines" "forest" tagName="li"}}Forest<br>Loss{{/link-to}}
-          {{#link-to "headlines" "lost" tagName="li"}}Lost<br>Services{{/link-to}}
-        </ul>
-       </div>
-      <!--/breadcrumbs-->
-        --}}
-      </div>
-      </div><!--/header-left-->
+{{#link-to "cesium" tagName="a" class="navbar-brand"}}<div class="logo-globe"></div>{{/link-to}}
+     </div> <!-- navbar-header-->
+     <div id="navContainer" class="" id="bs-example-navbar-collapse-1">
+	<ul class="nav navbar-nav">
+          {{#link-to "cesium" tagName="li" class="navbar-brand"}}Forests Forecasts{{/link-to}}	
+	<div class="navbar-brand-sub">
+<span>{{#link-to "headlines" "about" tagName="button" class="app-button"}}About{{/link-to}}</span>
+<span>{{#link-to "headlines" "methods" tagName="button" class="app-button"}}Methods{{/link-to}}</span>
+      	</div>
+	</ul> 	
+    </div> <!--/nav-container-->
+</div><!--/header-left--> 
 
 <!-- mid col -->
 
-	<div id="header-mid">
-		<span class="heading-wide">Visualizing forest change in the Western United States</span>
-		<span class="heading-slim">Visualizing forest change in<br/> the Western United States</span>
-	</div>
+<div id="header-mid">
+	<span class="heading-wide">Visualizing forest change in the Western United States</span>
+	<span class="heading-slim">Visualizing forest change in<br/>the Western United States</span>
+</div>	
 		
  
 <!-- right col -->
-     <div id="header-right">
-      <div id="breadcrumbs" class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-      {{#link-to "headlines" "climate" tagName="li"}} Forest<br> Change{{/link-to}}
-      {{#link-to "headlines" "forest" tagName="li"}}Forest<br> Loss{{/link-to}}
-      {{#link-to "headlines" "lost" tagName="li"}}Lost<br> Services{{/link-to}}
-      </ul>
-      </div><!-- /.navbar-collapse -->
-      </div><!-- /header-right-->
-
+<div id="header-right">
+	<div id="breadcrumbs"> 
+        	<ul id="main-menu" class="nav navbar-nav navbar-right">
+          		{{#link-to "headlines" "climate" tagName="li"}}Forest<br>Change{{/link-to}}
+          		{{#link-to "headlines" "forest" tagName="li"}}Forest<br>Loss{{/link-to}}
+          		{{#link-to "headlines" "lost" tagName="li"}}Lost<br>Services{{/link-to}}
+        	</ul>
+       </div><!--/breadcrumbs-->
+</div>	<!-- /header-right-->
 
   </div>
-</nav>
+</nav> 
 
 
 {{outlet}}

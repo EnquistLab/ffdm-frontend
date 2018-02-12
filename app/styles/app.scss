@@ -1,5 +1,6 @@
-@import 'bower_components/bootstrap-sass-official/assets/stylesheets/_bootstrap';
-@import 'bower_components/fontawesome/scss/font-awesome';
+@import 'ember-bootstrap/bootstrap';
+@import 'ember-cli-font-awesome-sass';
+@import 'node_modules/cesium/Build/Cesium/Widgets/widgets';
 @import 'responsive.scss';
 @import 'bc-carousel.scss';
 
@@ -61,7 +62,7 @@ html, body {
 }
 //Set the default view size
 .ember-view { 
-  height: 100% ;
+  height: 100%;
 }
 @media (max-width: 1000px) {
   body {font-size: large; }
@@ -71,6 +72,12 @@ html, body {
 }
 *, *:before, *:after{
   box-sizing: border-box;
+}
+.full {
+  display: table-cell;
+  height: 60px;
+  vertical-align: middle;
+  padding-top: 25px;
 }
 .full-height {
   height: 100%
@@ -211,7 +218,8 @@ h3, h4, h5, h6, p, div {
 }
 .navbar-brand-sub {
   padding-left:1vw;
-  padding-top: 52px;
+  padding-top: 40px;
+  padding-bottom: 10px;
   button {
     border: 1px solid rgba(255,255,255,0.3);
     background-color: rgba(0,0,0,0.5);
@@ -224,7 +232,7 @@ h3, h4, h5, h6, p, div {
   }
 }
 .navbar-brand-sub span:first-child {
-  padding-right: 10px;
+  padding-right: 15px;
 }
   // remove bootstrap default style w=100% important
 .navbar-ffdm-header {
@@ -338,7 +346,7 @@ h3, h4, h5, h6, p, div {
 //for new frontend testing - bootstrap default = padding-top=15px
   padding-top: 4px !important;
   padding-bottom: 15px;
-  font-size: 3.2em;
+  font-size: 2.2em;
   outline: 0;
   color: $primary-green;
   cursor: pointer;
@@ -350,10 +358,7 @@ h3, h4, h5, h6, p, div {
   color: $primary-green;
 }
 .container-fluid {
-  display: table-cell;
-  height: 120px;
-  vertical-align: middle;
-  padding-top: 25px;
+  
 }
 .logo-globe {
   height: 84px;
@@ -546,13 +551,13 @@ h3, h4, h5, h6, p, div {
 #cesiumContainer {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: visible;
   padding: 0;
   font-family: sans-serif;
 }
 #cesiumViewContainer {
   padding-right: 0px !important;
-  height: 100% !important;
+  //height: 100% !important;
 }
 #cesium-main {
   background: url(images/cesium-main.jpg) 50% 0 no-repeat;
@@ -560,10 +565,10 @@ h3, h4, h5, h6, p, div {
   background-attachment: fixed;
   height: 100%;
   width: 100%;
-  padding-top: 120px;
+  padding-top: 105px;
 }
 #cesium-submain {
-  overflow: hidden;
+  overflow: visible;
 //  height: calc(100% - 120px);
 }
 #cesium-left-col {
@@ -581,8 +586,9 @@ h3, h4, h5, h6, p, div {
   float: left;
 }
 #cesium-right-col {
-  padding-right: 0px !important;
+  padding-right: 5px !important;
   float: left;
+  height: 100%;
   //width: 66%;
 }
   // providers logos

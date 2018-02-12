@@ -8,12 +8,12 @@ module.exports = function(environment) {
     locationType: 'hash',
     contentSecurityPolicy: {
       'default-src': "'none'",
-      'script-src': "'self' https://player.vimeo.com www.google-analytics.com 'nonce-7fgda89vsd789'",
+      'script-src': "* 'self' https://player.vimeo.com www.google-analytics.com 'nonce-7fgda89vsd789' 'unsafe-eval'",
       'font-src': "'self' http://fonts.googleapis.com http://fonts.gstatic.com",
-      'connect-src': "'self' http://localhost:1337 http://192.81.135.213:1337 http://scooby.iplantcollaborative.org:1337",
-      'img-src': "'self' www.google-analytics.com",
-      'style-src': "'self' http://fonts.googleapis.com",
-      'frame-src': "'self' https://player.vimeo.com",
+      'connect-src': "* 'self' http://localhost:1337 http://192.81.135.213:1337 http://scooby.iplantcollaborative.org:1337",
+      'img-src': "* 'self' blob: data: http://localhost:1337 www.google-analytics.com",
+      'style-src': "'self' 'unsafe-inline' http://fonts.googleapis.com",
+      'child-src': "'self' https://player.vimeo.com",
       'media-src': "'self' https://player.vimeo.com"
     },
     EmberENV: {
@@ -40,6 +40,8 @@ module.exports = function(environment) {
      ENV.APP.LOG_ACTIVE_GENERATION=true;
      ENV.rootURL = 'ffdm';
      ENV.APP.API_HOST = 'http://localhost:1337';
+
+     ENV.CESIUM_BASE_URL = "http://localhost:4200/public/assets";
 
   }
 

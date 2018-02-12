@@ -3,6 +3,8 @@ import Ember from 'ember';
 export default Ember.Route.extend({
   actions: {
     showModal: function(name, model) {
+	  console.log(name);
+	  console.log(model);
       this.render(name, {
         into: 'application',
         outlet: 'modal',
@@ -15,5 +17,6 @@ export default Ember.Route.extend({
         parentView: 'application'
       });
     }
+//	error(reason) { console.log(reason);}
   }
 });

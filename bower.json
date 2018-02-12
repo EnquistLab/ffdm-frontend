@@ -1,17 +1,15 @@
 {
   "name": "ffdm-frontend",
   "dependencies": {
-    "handlebars": "~2.0",
     "jquery": "^3.2.1",
-    "ember": "^2.0.0",
+    "ember": "~2.18.0",
     "loader.js": "ember-cli/loader.js#1.0.1",
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.1.0",
     "ember-cli-test-loader": "rwjblue/ember-cli-test-loader#0.0.4",
     "ember-qunit": "2.0.0-beta.1",
     "ember-qunit-notifications": "0.0.5",
     "qunit": "~1.17.1",
-    "bootstrap-sass-official": "~3.3.1",
-    "fontawesome": "~4.7.0"
+    "font-awesome": "^4.7.0"
   },
   "devDependencies": {
     "jquery.scrollTo": "~1.4.14"

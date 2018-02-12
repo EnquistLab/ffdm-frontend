@@ -6,7 +6,6 @@ var Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-  this.route("index", { path: "/"});
   this.route("welcome");
   this.route("cesium", { path: "/"});
   this.route("cesium");

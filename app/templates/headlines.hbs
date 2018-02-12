@@ -1,11 +1,11 @@
 <div id="rightNavContainer">
-  {{#each headline in controller}}
-    <div {{bind-attr id="headline.scrollId"}} {{action "scrollToHeadline" headline.classId}} class="right-nav-icon"></div>
+  {{#each model as |headline|}}
+    <div id={{headline.scrollId}} {{action "scrollToHeadline" headline.classId}} class="right-nav-icon"></div>
   {{/each}}
 </div>
 
-<div id="headlinesContainer" >
-{{#each headline in controller}}
-  {{view 'headline' contentBinding=this}}
+<div id="headlinesContainer">
+{{#each model as |headline|}}
+  {{show-headline showHeadline='showHeadline' headline=headline}}
 {{/each}}
 </div>
