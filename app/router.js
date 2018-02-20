@@ -8,8 +8,6 @@ var Router = Ember.Router.extend({
 Router.map(function() {
   this.route("welcome");
   this.route("cesium", { path: "/"});
-  this.route("cesium");
-  this.route("plants");
   this.route("headlines", {path: '/headlines/:pageId'});
   this.route("carousel");
 });

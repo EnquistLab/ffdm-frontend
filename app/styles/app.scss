@@ -1,6 +1,7 @@
 @import 'ember-bootstrap/bootstrap';
 @import 'ember-cli-font-awesome-sass';
 @import 'node_modules/cesium/Build/Cesium/Widgets/widgets';
+@import 'node_modules/jquery-scrollto/out/styles/generic';
 @import 'responsive.scss';
 @import 'bc-carousel.scss';
 
@@ -256,7 +257,7 @@ h3, h4, h5, h6, p, div {
 	text-align: center;
 	float: left;
 	color: rgba(0,0,0,0.4);
-	width: 37%;
+	width: 30%;
 	font-style: italic;
 	span {
 		font-size: 1.9vw;
@@ -269,7 +270,7 @@ h3, h4, h5, h6, p, div {
   overflow: hidden;
   padding-right: 10px;
 	float: left;
-	width: 33%;
+	width: 40%;
 }
 //breadcrumbs navigation
 //
@@ -338,6 +339,7 @@ h3, h4, h5, h6, p, div {
 
 .navbar {
   background-color: white;
+  padding-top: 0px;
 }
 .navbar-simple {
   display: table;
@@ -556,7 +558,9 @@ h3, h4, h5, h6, p, div {
   font-family: sans-serif;
 }
 #cesiumViewContainer {
+  padding-left: 0px !important;
   padding-right: 0px !important;
+  overflow: visible;
   //height: 100% !important;
 }
 #cesium-main {
@@ -586,7 +590,7 @@ h3, h4, h5, h6, p, div {
   float: left;
 }
 #cesium-right-col {
-  padding-right: 5px !important;
+  padding-right: 0px !important;
   float: left;
   height: 100%;
   //width: 66%;

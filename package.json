@@ -52,6 +52,7 @@
     "loader.js": "4.6.0"
   },
   "dependencies": {
-    "ember-cli": "^2.18.0"
+    "ember-cli": "^2.18.0",
+    "jquery-scrollto": "^1.4.6"
   }
 }

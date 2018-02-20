@@ -30,11 +30,9 @@
         <div class="form-group form-group-1">
           <div class="controls">
             {{box-select
-              id="plantSelect"
-              content=controllers.plants.arrangedContent
-              optionValuePath="content.sci_name"
-              optionLabelPath="content.name"
-              selection=controller.species
+              optionValuePath="sci_name"
+              optionLabelPath="name"
+              selection=species
               prompt="Aspen, Quaking"
             }}
           </div>
@@ -105,7 +103,7 @@
             <hr class="maps-hr">
           </p>
           <div id="year-field-container" class="col-sm-12">
-            {{input value=controller.year class="year-field"}}
+            {{input value=year class="year-field"}}
           </div>
           <div id="year-controls-container" class="col-sm-12">
             <div class="minus-container col-sm-3">
@@ -140,7 +138,7 @@
           <div class="row col-sm-12 year-tablet-container">
 
           <div id="year-field-container" class="year-tablet-left">
-            {{input value=controller.year class="year-field"}}
+            {{input value=year class="year-field"}}
           </div>
 
          <!-- <div id="year-controls-container" class="col-sm-3">-->
@@ -233,8 +231,8 @@
 	</div>
       </div> <!-- cesium-mid-col-->
 	
-      <div id="cesium-right-col" class="col-md-8 full-height">
-        <div id="cesiumViewContainer" class="container-fluid full-height">
+      <div id="cesium-right-col" class="col-md-7 full-height">
+        <div id="cesiumViewContainer" class="container-fluid full-hw">
 	  <div id="cesiumContainer">
 <!--This component has an empty tag to prevent undesired formatting, since we are hacking it to just call methods on a controller. The controller itself should be rewritten as the component here-->
 	    {{show-cesium showCesium='showCesium'}}

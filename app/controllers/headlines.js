@@ -143,9 +143,11 @@ export default Ember.Controller.extend({
     console.log($(detailId).css('max-height'));
     $(detailId).css("max-height", $(detailId).css("max-height") === '0px' ? '3600px' : '0px');
     if ($(detailId).css('max-height') === '0px') {
-      $('body').scrollTo($(detailId).offset().top - 120, {duration: 'slow', offsetTop: '200',  easing: 'swing'});
-    } else {
-      $('body').scrollTo($(headline), {duration: 'slow', easing: 'swing'});
+      $('body').scrollTo($(detailId).offset().top - 120);
+//, {duration: 'slow', offsetTop: '200',  easing: 'swing'});
+    } else { 
+      $('body').scrollTo($(headline));
+//,{duration: 'slow', easing: 'swing'});
     }
 
   },

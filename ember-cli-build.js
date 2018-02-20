@@ -4,7 +4,7 @@ var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
     Funnel = require('broccoli-funnel'),
     Merge = require('broccoli-merge-trees');
 
-var bootstrap = 'bower_components/bootstrap-sass-official/assets';
+//var bootstrap = 'bower_components/bootstrap-sass-official/assets';
 var fontawesome = 'bower_components/font-awesome/scss';
 
 module.exports = function(defaults) 
@@ -17,8 +17,8 @@ module.exports = function(defaults)
 
       sassOptions: {
         includePaths: ['app/styles', 
-                bootstrap+'/stylesheets', 
                 'node_modules/cesium/Build/CesiumUnminified/Widgets/',
+		'node_modules/jquery-scrollto/out/styles',
 		fontawesome ]
       },
 
@@ -28,13 +28,15 @@ module.exports = function(defaults)
       },
 
       'ember-bootstrap': {
-        'bootstrapVersion': 3,
-        'importBootstrapFont': true,
-        'importBootstrapCSS': true
+	bootstrapVersion: 3,
+        importBootstrapFont: true,
+        importBootstrapCSS: true,
+	whitelist: ['bs-modal-simple', 'bs-navbar']
       }
     });
 
-    app.import('bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
+    //app.import('bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
+    app.import('node_modules/jquery-scrollto/out/lib/jquery-scrollto.js');
     //app.import('bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js');
 
     //Cesium
@@ -45,11 +47,11 @@ module.exports = function(defaults)
     //D3
     app.import('node_modules/d3/build/d3.min.js');
     
-    var bootstrapFonts = new Funnel(bootstrap, {
+    /*var bootstrapFonts = new Funnel(bootstrap, {
         srcDir: '/fonts/bootstrap',
         include: ['glyphicons-halflings-regular.*',],
         destDir: '/fonts/bootstrap'
-    });
+    });*/
     
     // Bootstrap .scss
     /*var bootstrapStyles = new Funnel(bootstrap, {

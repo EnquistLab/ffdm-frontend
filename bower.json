@@ -12,7 +12,6 @@
     "font-awesome": "^4.7.0"
   },
   "devDependencies": {
-    "jquery.scrollTo": "~1.4.14"
   },
   "resolutions": {
     "jquery": "^3.2.1",

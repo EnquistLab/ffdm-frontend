@@ -16,6 +16,7 @@ export default Ember.Controller.extend({
   years: [1,2,3,4,5,6,7,8], 
   activeDate: 1, // counter to track the current year/layer
   outerras: Ember.inject.controller(),
+  //plantModels: Ember.computed('plants', function() { return plants.get('model'); }),
   // --- testing scene2d change     
   // sceneMode: null,
 
@@ -38,12 +39,12 @@ export default Ember.Controller.extend({
 */
 
   plantsSelected: function() {
-    console.log('plant selection changed ' + this.get('species').get('sci_name'));
+    console.log('plant selection changed ' + this.get('species').get('name'));
     this.animateMaps(0);
     $('#rcp-group').css('visibility', 'visible');
     this.set('speciesName', this.get('species').get('sci_name'));
     this.remindSubmit();
-  }.observes('species'),
+  }.observes('species'),	//potentially change observer to explicit action on component
 
     
   rcpSelected: function() {
@@ -94,10 +95,11 @@ export default Ember.Controller.extend({
       url: url,
       maximumLevel: 7,
       gamma: 2,
+      flipXY: true,
       parameters: {
         transparent: 'true',
         format: 'image/png'
-      }
+      },
     });
     return wms;
   },
@@ -143,7 +145,6 @@ export default Ember.Controller.extend({
       var imageryProvider = this.createImageryProvider(newUrl);
       var alpha = this.setLayerAlpha(years[i]);
       var name = speciesName + '-20' + years[i] + '1';
-      
       
       this.addLayerOption(name, imageryProvider, alpha, 1);
      
@@ -490,9 +491,6 @@ export default Ember.Controller.extend({
     
     window.CESIUM_BASE_URL = './assets/images';
     var cesiumController = this; 
-    var proxy = cesiumController.get('proxy');
-    var rcp = cesiumController.get('rcp');
-    var species = cesiumController.get('species');
        
     var imageryLayers = cesiumController.get('imageryLayers');
     //var imageryViewModels = cesiumController.get('imageryViewModels');
@@ -660,7 +658,6 @@ export default Ember.Controller.extend({
       var logLength =  'markerArray.length = ' + markerArrayLength;
 
       if ( markerArrayLength == 0 ) {
-        var outerraModel = this.get('outerras').get('model');
         var self = this;
         setTimeout(function() {
           //console.log('Second try');
