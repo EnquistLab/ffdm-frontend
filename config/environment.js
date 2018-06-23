@@ -38,11 +38,11 @@ module.exports = function(environment) {
      ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
      ENV.APP.LOG_VIEW_LOOKUPS = true;
      ENV.APP.LOG_ACTIVE_GENERATION=true;
-     ENV.rootURL = 'ffdm';
+     
      ENV.APP.API_HOST = 'http://localhost:1337';
+     ENV.rootURL = 'ffdm';
 
      ENV.CESIUM_BASE_URL = "http://localhost:4200/public/assets";
-
   }
 
   if (environment === 'dev_server') {
@@ -52,6 +52,7 @@ module.exports = function(environment) {
      ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
      ENV.APP.LOG_VIEW_LOOKUPS = true;
      ENV.APP.LOG_ACTIVE_GENERATION=true;
+
      ENV.APP.API_HOST = 'http://scooby.iplantcollaborative.org/sails'; 
      ENV.rootURL = 'ffdm';
   }

@@ -45,11 +45,20 @@ Make use of the many generators for code, try `ember help generate` for more det
 ### Building
 
 * `ember build` (development)
+Building environment=dev_server seems to work
 * `ember build --environment production` (production)
 
 ### Deploying
 
-Specify what it takes to deploy your app.
+In root ffdm-frontend folder:
+
+sudo rsync -uavz -e "ssh -p 1657" dist h4ck3rd4wg@scooby.iplantcollaborative.org:~
+
+Log in to scooby, at /home/h4ck3rd4wg/ where we rsync'd :
+
+sudo cp -r dist/. /var/www/html
+
+Watch out for your broswer's cache if it looks like the website isn't updating
 
 ## Further Reading / Useful Links
 

@@ -2,8 +2,8 @@ import Ember from 'ember';
 
 export default Ember.Controller.extend({
   //proxy: '/cgi-bin/proxy.cgi?url=http://scooby.iplantcollaborative.org/maxent/', //allows access to records without opening cors
-  proxy: 'http://localhost:1337/maxent/',
-  //proxy: 'http://scooby.iplantcollaborative.org/maxent/',
+  //proxy: 'http://localhost:1337/maxent/',
+  proxy: 'http://scooby.iplantcollaborative.org/maxent/', //THIS WORKS
   species: '', // object holding the record from the plant table
   speciesName: 'Populus_tremuloides',
   year: '2011',

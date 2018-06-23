@@ -53,6 +53,6 @@
   },
   "dependencies": {
     "ember-cli": "^2.18.0",
-    "jquery-scrollto": "^1.4.6"
+    "jquery.scrollto": "~2.1.2"
   }
 }

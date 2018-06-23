@@ -18,7 +18,7 @@ module.exports = function(defaults)
       sassOptions: {
         includePaths: ['app/styles', 
                 'node_modules/cesium/Build/CesiumUnminified/Widgets/',
-		'node_modules/jquery-scrollto/out/styles',
+		//'node_modules/jquery-scrollto/out/styles',
 		fontawesome ]
       },
 
@@ -36,7 +36,8 @@ module.exports = function(defaults)
     });
 
     //app.import('bower_components/jquery.scrollTo/jquery.scrollTo.min.js');
-    app.import('node_modules/jquery-scrollto/out/lib/jquery-scrollto.js');
+    //app.import('node_modules/jquery-scrollto/out/lib/jquery-scrollto.js');
+    app.import('node_modules/jquery.scrollto/jquery.scrollTo.js');
     //app.import('bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js');
 
     //Cesium
